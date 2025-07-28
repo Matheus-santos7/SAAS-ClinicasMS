@@ -13,7 +13,6 @@ import {
 import { patientsTable } from "@/db/schema";
 
 import AddPatientButton from "./add-patient-button";
-import PatientSearchForm from "./patient-search-form";
 import { patientsTableColumns } from "./table-columns";
 
 interface PatientsPageClientProps {
@@ -31,7 +30,6 @@ const PatientsPageClient = ({ initialPatients }: PatientsPageClientProps) => {
           </PageDescription>
         </PageHeaderContent>
         <PageActions>
-          <PatientSearchForm isOpen={false} onSuccess={() => {}} />
           <AddPatientButton />
         </PageActions>
       </PageHeader>
