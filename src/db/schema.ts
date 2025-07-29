@@ -117,7 +117,6 @@ export const doctorsTable = pgTable("doctors", {
     .references(() => clinicsTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   avatarImageUrl: text("avatar_image_url"),
-  // 1 - Monday, 2 - Tuesday, 3 - Wednesday, 4 - Thursday, 5 - Friday, 6 - Saturday, 0 - Sunday
   availableFromWeekDay: integer("available_from_week_day").notNull(),
   availableToWeekDay: integer("available_to_week_day").notNull(),
   availableFromTime: time("available_from_time").notNull(),
@@ -152,24 +151,126 @@ export const patientsTable = pgTable("patients", {
   email: text("email").notNull(),
   phoneNumber: text("phone_number").notNull(),
   sex: patientSexEnum("sex").notNull(),
-  cpf: text("cpf"), // Campo CPF opcional
+  cpf: text("cpf"),
+  birthDate: timestamp("birth_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
 
-export const patientsTableRelations = relations(
-  patientsTable,
-  ({ one, many }) => ({
-    clinic: one(clinicsTable, {
-      fields: [patientsTable.clinicId],
-      references: [clinicsTable.id],
-    }),
-    appointments: many(appointmentsTable),
-  }),
-);
 
+// Tabela de Documentos refatorada para ser genérica
+export const documentsTable = pgTable("documents", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  fileName: text("file_name").notNull(),
+  filePath: text("file_path").notNull(), // Caminho no seu storage (ex: S3, Vercel Blob)
+  fileType: text("file_type").notNull(), // ex: 'application/pdf', 'image/jpeg'
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+  
+  anamnesisId: uuid("anamnesis_id").references(() => patientsAnamnesisTable.id, { onDelete: 'cascade' }),
+  evolutionId: uuid("evolution_id").references(() => evolutionTable.id, { onDelete: 'cascade' }),
+});
+
+// Tabela de Anamnese simplificada
+export const patientsAnamnesisTable = pgTable("patients_anamnesis", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  patientId: uuid("patient_id")
+    .notNull()
+    .references(() => patientsTable.id, { onDelete: "cascade" }),
+  doctorId: uuid("doctor_id")
+    .notNull()
+    .references(() => doctorsTable.id, { onDelete: "cascade" }),
+  reasonConsultation: text("reason_consultation"),
+  systemicDiseases: text("systemic_diseases"),
+  medicationUsage: text("medication_usage"),
+  allergies: text("allergies"),
+  previousSurgeries: text("previous_surgeries"),
+  habits: text("habits"),
+  oralHygiene: text("oral_hygiene"),
+  previousDentalProblems: text("previous_dental_problems"),
+  currentTreatment: text("current_treatment"),
+  familyHistory: text("family_history"),
+  mentalConditions: text("mental_conditions"),
+  observations: text("observations"),
+  hasAllergies: boolean("has_allergies").default(false),
+  usesMedication: boolean("uses_medication").default(false),
+  hadPreviousSurgeries: boolean("had_previous_surgeries").default(false),
+  smokes: boolean("smokes").default(false),
+  drinksAlcohol: boolean("drinks_alcohol").default(false),
+  isPregnant: boolean("pregnant").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Tabela de Evolução
+export const evolutionTable = pgTable("evolution", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  doctorId: uuid("doctor_id")
+    .notNull()
+    .references(() => doctorsTable.id, { onDelete: "cascade" }),
+  patientId: uuid("patient_id")
+    .notNull()
+    .references(() => patientsTable.id, { onDelete: "cascade" }),
+  date: timestamp("date").defaultNow().notNull(),
+  observations: text("observations").notNull(),
+  description: text("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const patientsTableRelations = relations(patientsTable, ({ one, many }) => ({
+  clinic: one(clinicsTable, {
+    fields: [patientsTable.clinicId],
+    references: [clinicsTable.id],
+  }),
+  appointments: many(appointmentsTable),
+  anamnesisForms: many(patientsAnamnesisTable), 
+  evolutionEntries: many(evolutionTable),  
+}));
+
+export const patientsAnamnesisTableRelations = relations(patientsAnamnesisTable, ({ one, many }) => ({
+  patient: one(patientsTable, {
+    fields: [patientsAnamnesisTable.patientId],
+    references: [patientsTable.id],
+  }),
+  doctor: one(doctorsTable, {
+    fields: [patientsAnamnesisTable.doctorId],
+    references: [doctorsTable.id],
+  }),
+  documents: many(documentsTable, { relationName: "anamnesisDocuments" }),
+}));
+
+export const evolutionTableRelations = relations(evolutionTable, ({ one, many }) => ({
+  patient: one(patientsTable, {
+    fields: [evolutionTable.patientId],
+    references: [patientsTable.id],
+  }),
+  doctor: one(doctorsTable, {
+    fields: [evolutionTable.doctorId],
+    references: [doctorsTable.id],
+  }),
+  documents: many(documentsTable, { relationName: "evolutionDocuments" }), // NOVA RELAÇÃO
+}));
+
+// Relação da tabela de documentos de volta para seus "pais"
+export const documentsTableRelations = relations(documentsTable, ({ one }) => ({
+  anamnesis: one(patientsAnamnesisTable, {
+    fields: [documentsTable.anamnesisId],
+    references: [patientsAnamnesisTable.id],
+    relationName: "anamnesisDocuments",
+  }),
+  evolution: one(evolutionTable, {
+    fields: [documentsTable.evolutionId],
+    references: [evolutionTable.id],
+    relationName: "evolutionDocuments",
+  }),
+}));
+
+
+// Tabela de agendamentos
 export const appointmentsTable = pgTable("appointments", {
   id: uuid("id").defaultRandom().primaryKey(),
   date: timestamp("date").notNull(),

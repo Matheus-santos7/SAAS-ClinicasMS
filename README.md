@@ -16,11 +16,11 @@
 ## Roteiro Aula 03: Gerenciamento de Profissionais e Disponibilidade
 
 - [x] Sidebar e Route Groups
-- [x] Página de médicos
-- [x] Criação de médicos & NextSafeAction
-- [x] Listagem de médicos
-- [x] Atualização de médicos
-- [x] Deleção de médicos
+- [x] Página de Dentistas
+- [x] Criação de Dentistas & NextSafeAction
+- [x] Listagem de Dentistas
+- [x] Atualização de Dentistas
+- [x] Deleção de Dentistas
 - [ ] Deletar precificação da consulta, incluir orçamento temporario e valor do tratamento, impressao PDF
 
 ## Roteiro Aula 04: Gerenciamento de Pacientes e Agendamentos

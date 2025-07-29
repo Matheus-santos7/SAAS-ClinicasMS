@@ -27,9 +27,11 @@ const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
 
   // --- LÓGICA DE PAGINAÇÃO E BUSCA ---
 
-  const page = Number(searchParams.page) || 1;
-  const search = searchParams.search || "";
-  const itemsPerPage = 10; // Defina quantos itens por página você quer
+  // Aguarda os searchParams antes de usar suas propriedades
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
+  const search = params.search || "";
+  const itemsPerPage = 4; // Defina quantos itens por página você quer
 
   // Cria a condição de busca (WHERE)
   const whereCondition = and(
