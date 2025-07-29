@@ -76,7 +76,23 @@ const UpsertPatientForm = ({
 
   useEffect(() => {
     if (isOpen) {
-      form.reset(patient);
+      form.reset(
+        patient
+          ? {
+              name: patient.name ?? "",
+              email: patient.email ?? "",
+              phoneNumber: patient.phoneNumber ?? "",
+              cpf: patient.cpf ?? "",
+              sex: patient.sex ?? undefined,
+            }
+          : {
+              name: "",
+              email: "",
+              phoneNumber: "",
+              cpf: "",
+              sex: undefined,
+            }
+      );
     }
   }, [isOpen, form, patient]);
 

@@ -1,4 +1,6 @@
-import { eq } from "drizzle-orm";
+// app/patients/page.tsx
+
+import { and, count, eq, ilike, or } from "drizzle-orm"; // Adicione and, count, or, ilike
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -8,23 +10,60 @@ import { auth } from "@/lib/auth";
 
 import PatientsPageClient from "./_components/patients-page-client";
 
-const PatientsPage = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    redirect("/authentication");
-  }
-  if (!session.user.clinic) {
-    redirect("/clinic-form");
-  }
-  if (!session.user.plan) {
-    redirect("/new-subscription");
-  }
+// Tipagem para os parâmetros da URL que vamos receber
+interface PatientsPageProps {
+  searchParams: {
+    page?: string;
+    search?: string;
+  };
+}
+
+const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
+  // ... (toda a lógica de autenticação permanece a mesma)
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) redirect("/authentication");
+  if (!session.user.clinic) redirect("/clinic-form");
+  if (!session.user.plan) redirect("/new-subscription");
+
+  // --- LÓGICA DE PAGINAÇÃO E BUSCA ---
+
+  const page = Number(searchParams.page) || 1;
+  const search = searchParams.search || "";
+  const itemsPerPage = 10; // Defina quantos itens por página você quer
+
+  // Cria a condição de busca (WHERE)
+  const whereCondition = and(
+    eq(patientsTable.clinicId, session.user.clinic.id),
+    // Se houver um termo de busca, filtre por nome OU CPF
+    search
+      ? or(
+          ilike(patientsTable.name, `%${search}%`),
+          ilike(patientsTable.cpf, `%${search}%`),
+        )
+      : undefined,
+  );
+
+  // 1. Busca os pacientes da página atual
   const patients = await db.query.patientsTable.findMany({
-    where: eq(patientsTable.clinicId, session.user.clinic.id),
+    where: whereCondition,
+    limit: itemsPerPage,
+    offset: (page - 1) * itemsPerPage, // Calcula o deslocamento
+    orderBy: (patients, { desc }) => [desc(patients.createdAt)], // Opcional: ordenar
   });
-  return <PatientsPageClient initialPatients={patients} />;
+
+  // 2. Busca a contagem total de pacientes que correspondem à busca
+  const totalPatientsResult = await db
+    .select({ total: count() })
+    .from(patientsTable)
+    .where(whereCondition);
+
+  const totalPatients = totalPatientsResult[0]?.total ?? 0;
+  const pageCount = Math.ceil(totalPatients / itemsPerPage);
+
+  // Passa os dados e a contagem de páginas para o cliente
+  return (
+    <PatientsPageClient initialPatients={patients} pageCount={pageCount} />
+  );
 };
 
 export default PatientsPage;
