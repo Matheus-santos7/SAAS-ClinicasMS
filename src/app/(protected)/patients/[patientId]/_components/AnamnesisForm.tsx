@@ -167,32 +167,48 @@ export const AnamnesisForm = ({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Campo de seleção do doutor */}
-            <FormField
-              control={form.control}
-              name="doctorId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Médico responsável</FormLabel>
-                  <FormControl>
-                    <select
-                      {...field}
-                      className="w-full rounded border px-2 py-1"
-                      defaultValue={doctorId ?? ""}
-                    >
-                      <option value="" disabled>
-                        Selecione o médico
-                      </option>
-                      {doctors.map((doctor) => (
-                        <option key={doctor.id} value={doctor.id}>
-                          {doctor.name}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex items-end justify-between gap-4">
+              {/* Coluna 1: O seletor de médico */}
+              <div className="flex-grow">
+                <FormField
+                  control={form.control}
+                  name="doctorId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Médico responsável</FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="w-full rounded border px-2 py-1"
+                          value={field.value}
+                          onChange={field.onChange}
+                        >
+                          <option value="" disabled>
+                            Selecione o médico
+                          </option>
+                          {doctors.map((doctor) => (
+                            <option key={doctor.id} value={doctor.id}>
+                              {doctor.name}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Coluna 2: A data da última atualização */}
+              <div className="pb-1 whitespace-nowrap">
+                <span className="text-muted-foreground text-sm">
+                  Última atualização:&nbsp;
+                  {anamnesis?.updatedAt
+                    ? new Date(anamnesis.updatedAt).toLocaleString("pt-BR")
+                    : "Nunca"}
+                </span>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Coluna da Esquerda */}
