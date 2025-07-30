@@ -17,7 +17,8 @@ interface PatientDetailsPageProps {
 }
 
 const PatientDetailsPage = async ({ params }: PatientDetailsPageProps) => {
-  const { patientId } = params;
+  // Aguarda os params antes de usar suas propriedades
+  const { patientId } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),
   }); // Adapte se necessário
