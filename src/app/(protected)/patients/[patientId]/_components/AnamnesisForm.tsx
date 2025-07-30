@@ -45,19 +45,24 @@ const anamnesisSchema = z.object({
   smokes: z.boolean(),
   drinksAlcohol: z.boolean(),
   isPregnant: z.boolean(),
+
+  // Campo de seleção do médico
+  doctorId: z.string().optional(),
 });
 
 type AnamnesisFormValues = z.infer<typeof anamnesisSchema>;
 
 interface AnamnesisFormProps {
   patientId: string;
-  doctorId: string; // Adicionado para passar para a action
+  doctorId?: string; // Torne opcional para seleção manual
+  doctors: Array<{ id: string; name: string }>; // Lista de médicos
   anamnesis?: typeof patientsAnamnesisTable.$inferSelect;
 }
 
 export const AnamnesisForm = ({
   patientId,
   doctorId,
+  doctors,
   anamnesis,
 }: AnamnesisFormProps) => {
   const form = useForm<AnamnesisFormValues>({
@@ -82,20 +87,26 @@ export const AnamnesisForm = ({
       smokes: anamnesis?.smokes ?? false,
       drinksAlcohol: anamnesis?.drinksAlcohol ?? false,
       isPregnant: anamnesis?.isPregnant ?? false,
+      doctorId: anamnesis?.doctorId ?? doctorId ?? "",
     },
   });
 
   const { execute, isPending } = useAction(upsertAnamnesis, {
     onSuccess: () => toast.success("Anamnese salva com sucesso!"),
     onError: (error) =>
-      toast.error(typeof error?.error?.serverError === "string" && error.error.serverError.length > 0 ? error.error.serverError : "Erro ao salvar anamnese."),
+      toast.error(
+        typeof error?.error?.serverError === "string" &&
+          error.error.serverError.length > 0
+          ? error.error.serverError
+          : "Erro ao salvar anamnese.",
+      ),
   });
 
   const onSubmit = (values: AnamnesisFormValues) => {
     execute({
       ...values,
       patientId: patientId,
-      doctorId: doctorId,
+      doctorId: values.doctorId,
       id: anamnesis?.id,
     });
   };
@@ -155,6 +166,34 @@ export const AnamnesisForm = ({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Campo de seleção do doutor */}
+            <FormField
+              control={form.control}
+              name="doctorId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Médico responsável</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="w-full rounded border px-2 py-1"
+                      defaultValue={doctorId ?? ""}
+                    >
+                      <option value="" disabled>
+                        Selecione o médico
+                      </option>
+                      {doctors.map((doctor) => (
+                        <option key={doctor.id} value={doctor.id}>
+                          {doctor.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Coluna da Esquerda */}
               <div className="space-y-6">

@@ -36,6 +36,11 @@ const PatientDetailsPage = async ({ params }: PatientDetailsPageProps) => {
       evolutionEntries: {
         orderBy: (entries, { desc }) => [desc(entries.createdAt)],
       },
+      clinic: {
+        with: {
+          doctors: true,
+        },
+      },
     },
   });
 
@@ -47,7 +52,15 @@ const PatientDetailsPage = async ({ params }: PatientDetailsPageProps) => {
   // Aqui você pode adicionar uma verificação se o paciente pertence à clínica do usuário logado
   // if (patientData.clinicId !== session.user.clinic.id) { ... }
 
-  return <PatientDetailsClient initialData={patientData} />;
+  // Adiciona doctorsTable ao objeto retornado
+  return (
+    <PatientDetailsClient
+      initialData={{
+        ...patientData,
+        doctorsTable: patientData.clinic?.doctors ?? [],
+      }}
+    />
+  );
 };
 
 export default PatientDetailsPage;

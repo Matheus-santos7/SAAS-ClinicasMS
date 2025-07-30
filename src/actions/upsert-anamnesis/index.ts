@@ -1,5 +1,3 @@
-// src/actions/anamnesis/index.ts
-
 "use server";
 
 import { revalidatePath } from "next/cache";

@@ -7,6 +7,7 @@ import {
   patientsAnamnesisTable,
   patientsTable,
 } from "@/db/schema";
+import { doctorsTable } from "@/db/schema";
 
 import { AnamnesisForm } from "./AnamnesisForm";
 import { EvolutionTab } from "./EvolutionTab";
@@ -16,6 +17,7 @@ import { PatientHeader } from "./PatientHeader";
 type PatientWithDetails = typeof patientsTable.$inferSelect & {
   anamnesisForms: (typeof patientsAnamnesisTable.$inferSelect)[];
   evolutionEntries: (typeof evolutionTable.$inferSelect)[];
+  doctorsTable: (typeof doctorsTable.$inferSelect)[];
 };
 
 interface PatientDetailsClientProps {
@@ -43,6 +45,7 @@ const PatientDetailsClient = ({ initialData }: PatientDetailsClientProps) => {
           <AnamnesisForm
             patientId={initialData.id}
             anamnesis={currentAnamnesis}
+            doctors={(initialData.doctorsTable ?? []).map(({ id, name }) => ({ id, name }))}
           />
         </TabsContent>
 

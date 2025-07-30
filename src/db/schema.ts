@@ -159,7 +159,6 @@ export const patientsTable = pgTable("patients", {
     .$onUpdate(() => new Date()),
 });
 
-
 // Tabela de Documentos refatorada para ser genérica
 export const documentsTable = pgTable("documents", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -167,9 +166,14 @@ export const documentsTable = pgTable("documents", {
   filePath: text("file_path").notNull(), // Caminho no seu storage (ex: S3, Vercel Blob)
   fileType: text("file_type").notNull(), // ex: 'application/pdf', 'image/jpeg'
   uploadedAt: timestamp("uploaded_at").defaultNow(),
-  
-  anamnesisId: uuid("anamnesis_id").references(() => patientsAnamnesisTable.id, { onDelete: 'cascade' }),
-  evolutionId: uuid("evolution_id").references(() => evolutionTable.id, { onDelete: 'cascade' }),
+
+  anamnesisId: uuid("anamnesis_id").references(
+    () => patientsAnamnesisTable.id,
+    { onDelete: "cascade" },
+  ),
+  evolutionId: uuid("evolution_id").references(() => evolutionTable.id, {
+    onDelete: "cascade",
+  }),
 });
 
 // Tabela de Anamnese simplificada
@@ -221,39 +225,49 @@ export const evolutionTable = pgTable("evolution", {
     .$onUpdate(() => new Date()),
 });
 
-export const patientsTableRelations = relations(patientsTable, ({ one, many }) => ({
-  clinic: one(clinicsTable, {
-    fields: [patientsTable.clinicId],
-    references: [clinicsTable.id],
+export const patientsTableRelations = relations(
+  patientsTable,
+  ({ one, many }) => ({
+    clinic: one(clinicsTable, {
+      fields: [patientsTable.clinicId],
+      references: [clinicsTable.id],
+    }),
+    appointments: many(appointmentsTable),
+    anamnesisForms: many(patientsAnamnesisTable),
+    evolutionEntries: many(evolutionTable),
+    doctors: many(doctorsTable), // Adiciona relação para buscar médicos da clínica do paciente
   }),
-  appointments: many(appointmentsTable),
-  anamnesisForms: many(patientsAnamnesisTable), 
-  evolutionEntries: many(evolutionTable),  
-}));
+);
 
-export const patientsAnamnesisTableRelations = relations(patientsAnamnesisTable, ({ one, many }) => ({
-  patient: one(patientsTable, {
-    fields: [patientsAnamnesisTable.patientId],
-    references: [patientsTable.id],
+export const patientsAnamnesisTableRelations = relations(
+  patientsAnamnesisTable,
+  ({ one, many }) => ({
+    patient: one(patientsTable, {
+      fields: [patientsAnamnesisTable.patientId],
+      references: [patientsTable.id],
+    }),
+    doctor: one(doctorsTable, {
+      fields: [patientsAnamnesisTable.doctorId],
+      references: [doctorsTable.id],
+    }),
+    documents: many(documentsTable, { relationName: "anamnesisDocuments" }),
   }),
-  doctor: one(doctorsTable, {
-    fields: [patientsAnamnesisTable.doctorId],
-    references: [doctorsTable.id],
-  }),
-  documents: many(documentsTable, { relationName: "anamnesisDocuments" }),
-}));
+);
 
-export const evolutionTableRelations = relations(evolutionTable, ({ one, many }) => ({
-  patient: one(patientsTable, {
-    fields: [evolutionTable.patientId],
-    references: [patientsTable.id],
+export const evolutionTableRelations = relations(
+  evolutionTable,
+  ({ one, many }) => ({
+    patient: one(patientsTable, {
+      fields: [evolutionTable.patientId],
+      references: [patientsTable.id],
+    }),
+    doctor: one(doctorsTable, {
+      fields: [evolutionTable.doctorId],
+      references: [doctorsTable.id],
+    }),
+    documents: many(documentsTable, { relationName: "evolutionDocuments" }), // NOVA RELAÇÃO
   }),
-  doctor: one(doctorsTable, {
-    fields: [evolutionTable.doctorId],
-    references: [doctorsTable.id],
-  }),
-  documents: many(documentsTable, { relationName: "evolutionDocuments" }), // NOVA RELAÇÃO
-}));
+);
 
 // Relação da tabela de documentos de volta para seus "pais"
 export const documentsTableRelations = relations(documentsTable, ({ one }) => ({
@@ -268,7 +282,6 @@ export const documentsTableRelations = relations(documentsTable, ({ one }) => ({
     relationName: "evolutionDocuments",
   }),
 }));
-
 
 // Tabela de agendamentos
 export const appointmentsTable = pgTable("appointments", {
