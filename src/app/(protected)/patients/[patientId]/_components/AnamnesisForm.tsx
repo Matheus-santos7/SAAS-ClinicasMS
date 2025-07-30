@@ -59,7 +59,7 @@ interface AnamnesisFormProps {
   anamnesis?: typeof patientsAnamnesisTable.$inferSelect;
 }
 
-export const AnamnesisForm = ({
+export const AnamnesisTab = ({
   patientId,
   doctorId,
   doctors,

@@ -9,8 +9,9 @@ import {
 } from "@/db/schema";
 import { doctorsTable } from "@/db/schema";
 
-import { AnamnesisForm } from "./AnamnesisForm";
-import { EvolutionTab } from "./EvolutionTab";
+import { AnamnesisTab } from "./AnamnesisForm";
+import { EvolutionTab } from "./evolution-tab";
+import { DocumentsTab } from "./DocumentsTab";
 import { PatientHeader } from "./PatientHeader";
 
 // A tipagem que vem do servidor
@@ -42,26 +43,20 @@ const PatientDetailsClient = ({ initialData }: PatientDetailsClientProps) => {
         </TabsList>
 
         <TabsContent value="anamnesis" className="mt-6">
-          <AnamnesisForm
+          <AnamnesisTab
             patientId={initialData.id}
             anamnesis={currentAnamnesis}
-            doctors={(initialData.doctorsTable ?? []).map(({ id, name }) => ({ id, name }))}
+            doctors={initialData.doctorsTable}
           />
         </TabsContent>
-
         <TabsContent value="evolution" className="mt-6">
           <EvolutionTab
             patientId={initialData.id}
             evolutionEntries={initialData.evolutionEntries}
           />
         </TabsContent>
-
         <TabsContent value="documents" className="mt-6">
-          {/* TODO: Criar um gerenciador de documentos aqui */}
-          <p>
-            Área para visualizar todos os documentos do paciente (de anamnese e
-            evolução).
-          </p>
+          <DocumentsTab patientId={initialData.id} />
         </TabsContent>
       </Tabs>
     </div>
