@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,18 +19,47 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { evolutionTable } from "@/db/schema";
-import { EvolutionCard } from "./evolution-card";
 import { EvolutionEntryForm } from "./evolutionEntryForm";
 import { useAction } from "next-safe-action/hooks";
 import { deleteEvolution } from "@/actions/upsert-evolution/delete-evolution";
 import { toast } from "sonner";
+import { create } from "zustand";
 
-type EvolutionEntry = typeof evolutionTable.$inferSelect;
+import { DataTable } from "@/components/ui/data-table";
+import { columns, EvolutionEntryWithDoctor } from "./evolution-table-columns";
+
+// Store para gerenciar o estado dos modais
+type EvolutionStore = {
+  selectedEvolution: EvolutionEntryWithDoctor | null;
+  isFormOpen: boolean;
+  isViewModalOpen: boolean;
+  isDeleteAlertOpen: boolean;
+  handleView: (evolution: EvolutionEntryWithDoctor) => void;
+  handleEdit: (evolution: EvolutionEntryWithDoctor | null) => void;
+  handleDelete: (evolution: EvolutionEntryWithDoctor) => void;
+  closeAll: () => void;
+};
+
+export const useEvolutionStore = create<EvolutionStore>((set) => ({
+  selectedEvolution: null,
+  isFormOpen: false,
+  isViewModalOpen: false,
+  isDeleteAlertOpen: false,
+  handleView: (evolution) => set({ selectedEvolution: evolution, isViewModalOpen: true }),
+  handleEdit: (evolution: EvolutionEntryWithDoctor | null) => set({ selectedEvolution: evolution, isFormOpen: true }),
+  handleDelete: (evolution) => set({ selectedEvolution: evolution, isDeleteAlertOpen: true }),
+  closeAll: () => set({ 
+    isFormOpen: false, 
+    isViewModalOpen: false, 
+    isDeleteAlertOpen: false, 
+    selectedEvolution: null 
+  }),
+}));
+
 
 interface EvolutionTabProps {
   patientId: string;
-  evolutionEntries: EvolutionEntry[];
+  evolutionEntries: EvolutionEntryWithDoctor[];
   doctors: Array<{ id: string; name: string }>;
 }
 
@@ -40,65 +68,29 @@ export const EvolutionTab = ({
   evolutionEntries,
   doctors,
 }: EvolutionTabProps) => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedEvolution, setSelectedEvolution] =
-    useState<EvolutionEntry | null>(null);
+  const {
+    isFormOpen,
+    isDeleteAlertOpen,
+    isViewModalOpen,
+    selectedEvolution,
+    handleEdit,
+    handleView,
+    handleDelete,
+    closeAll,
+  } = useEvolutionStore();
 
   const { execute: executeDelete, isPending: isDeleting } = useAction(
     deleteEvolution,
     {
       onSuccess: (data) => {
-        // Corrige o acesso ao campo de sucesso e mensagem
-        if (
-          data &&
-          typeof data === "object" &&
-          "success" in data &&
-          typeof data.success === "string"
-        ) {
-          toast.success(data.success);
-        } else {
-          toast.success("Evolução excluída com sucesso.");
-        }
-        setIsDeleteAlertOpen(false);
+        toast.success(data?.data?.success || "Evolução excluída com sucesso.");
+        closeAll();
       },
       onError: (error) => {
-        // Corrige o acesso à mensagem de erro
-        const errorMessage =
-          error &&
-          typeof error === "object" &&
-          "error" in error &&
-          error.error &&
-          typeof error.error === "object" &&
-          "serverError" in error.error
-            ? (error.error.serverError as string)
-            : "Erro ao excluir evolução.";
-        toast.error(errorMessage);
+        toast.error(error.error.serverError || "Erro ao excluir evolução.");
       },
     },
   );
-
-  // Handlers para abrir modais
-  const handleAdd = () => {
-    setSelectedEvolution(null);
-    setIsFormOpen(true);
-  };
-
-  const handleEdit = (evolution: EvolutionEntry) => {
-    setSelectedEvolution(evolution);
-    setIsFormOpen(true);
-  };
-
-  const handleView = (evolution: EvolutionEntry) => {
-    setSelectedEvolution(evolution);
-    setIsViewModalOpen(true);
-  };
-
-  const handleDelete = (evolution: EvolutionEntry) => {
-    setSelectedEvolution(evolution);
-    setIsDeleteAlertOpen(true);
-  };
 
   const confirmDelete = () => {
     if (selectedEvolution) {
@@ -110,35 +102,16 @@ export const EvolutionTab = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Quadro de Evolução</h2>
-        <Button onClick={handleAdd}>
+        <Button onClick={() => handleEdit(null)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Adicionar Evolução
         </Button>
       </div>
 
-      {evolutionEntries.length === 0 ? (
-        <div className="border-muted-foreground/30 flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center">
-          <h3 className="text-xl font-semibold">Nenhuma evolução registrada</h3>
-          <p className="text-muted-foreground text-sm">
-            Clique em "Adicionar Evolução" para começar.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {evolutionEntries.map((entry) => (
-            <EvolutionCard
-              key={entry.id}
-              evolution={entry}
-              onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      )}
+      <DataTable columns={columns} data={evolutionEntries} />
 
       {/* Modal/Dialog para Adicionar/Editar */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(isOpen) => !isOpen && closeAll()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -148,14 +121,14 @@ export const EvolutionTab = ({
           <EvolutionEntryForm
             patientId={patientId}
             initialData={selectedEvolution}
-            onSuccess={() => setIsFormOpen(false)}
+            onSuccess={closeAll}
             doctors={doctors}
           />
         </DialogContent>
       </Dialog>
 
       {/* Modal para Visualizar Detalhes */}
-      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+      <Dialog open={isViewModalOpen} onOpenChange={(isOpen) => !isOpen && closeAll()}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Detalhes da Evolução</DialogTitle>
@@ -166,26 +139,30 @@ export const EvolutionTab = ({
                 })}
             </DialogDescription>
           </DialogHeader>
-          <div className="prose dark:prose-invert max-w-none">
-            <h4>Descrição</h4>
-            <p>{selectedEvolution?.description}</p>
-            <h4>Observações</h4>
-            <p>{selectedEvolution?.observations || "Nenhuma observação."}</p>
-            {/* TODO: Renderizar imagens aqui */}
+          <div className="prose dark:prose-invert max-w-none space-y-2 py-4">
+            <div>
+                <h4 className="font-semibold">Médico Responsável</h4>
+                <p>{selectedEvolution?.doctor?.name ?? 'N/A'}</p>
+            </div>
+            <div>
+                <h4 className="font-semibold">Descrição</h4>
+                <p>{selectedEvolution?.description}</p>
+            </div>
+            <div>
+                <h4 className="font-semibold">Observações</h4>
+                <p>{selectedEvolution?.observations || "Nenhuma observação."}</p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Alerta de Confirmação para Deletar */}
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={(isOpen) => !isOpen && closeAll()}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso irá deletar permanentemente
-              o registro de evolução de
-              {selectedEvolution &&
-                ` ${new Date(selectedEvolution.date).toLocaleDateString("pt-BR")}.`}
+              Esta ação não pode ser desfeita. Isso irá deletar permanentemente o registro de evolução.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

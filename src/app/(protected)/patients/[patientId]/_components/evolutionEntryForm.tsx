@@ -23,8 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { upsertEvolution } from "@/actions/upsert-evolution/index"; // Caminho atualizado
-import { upsertEvolutionSchema } from "@/actions/upsert-evolution/schema"; // Schema importado
+import { upsertEvolution } from "@/actions/upsert-evolution/index"; 
+import { upsertEvolutionSchema } from "@/actions/upsert-evolution/schema"; 
 import type { z } from "zod";
 import type { evolutionTable } from "@/db/schema";
 import { useAction } from "next-safe-action/hooks";
@@ -43,21 +43,21 @@ interface EvolutionEntryFormProps {
   patientId: string;
   initialData?: EvolutionEntry | null;
   onSuccess: () => void;
-  doctors: Array<{ id: string; name: string }>;
+  doctors: Array<{ id: string; name: string }>; // Recebe a lista de médicos
 }
 
 export const EvolutionEntryForm = ({
   patientId,
   initialData,
   onSuccess,
-  doctors,
+  doctors, // A lista de médicos agora é uma prop
 }: EvolutionEntryFormProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(upsertEvolutionSchema),
     defaultValues: {
       id: initialData?.id,
       patientId: patientId,
-      doctorId: initialData?.doctorId ?? "",
+      doctorId: initialData?.doctorId ?? "", // Valor inicial para o médico
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       description: initialData?.description ?? "",
       observations: initialData?.observations ?? "",
@@ -66,19 +66,15 @@ export const EvolutionEntryForm = ({
 
   const { execute, isPending } = useAction(upsertEvolution, {
     onSuccess: (data) => {
-      toast.success(
-        typeof data.data === "string"
-          ? data.data
-          : "Evolução salva com sucesso!",
-      );
+      // Ajustado para o formato de retorno do `safeAction`
+      if (data.data?.success) {
+        toast.success(data.data.success);
+      }
       onSuccess();
     },
     onError: (error) => {
       toast.error("Erro ao salvar", {
-        description:
-          typeof error.error?.serverError === "string"
-            ? error.error.serverError
-            : "Ocorreu um erro inesperado.",
+        description: error.error?.serverError ?? "Ocorreu um erro inesperado.",
       });
     },
   });
@@ -92,7 +88,7 @@ export const EvolutionEntryForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Campo de Médico */}
+        {/* Campo de Médico Adicionado */}
         <FormField
           control={form.control}
           name="doctorId"
@@ -104,9 +100,11 @@ export const EvolutionEntryForm = ({
                 value={field.value}
                 required
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o médico" />
-                </SelectTrigger>
+                <FormControl>
+                    <SelectTrigger>
+                    <SelectValue placeholder="Selecione o médico" />
+                    </SelectTrigger>
+                </FormControl>
                 <SelectContent>
                   {doctors.map((doctor) => (
                     <SelectItem key={doctor.id} value={doctor.id}>
@@ -119,6 +117,7 @@ export const EvolutionEntryForm = ({
             </FormItem>
           )}
         />
+        
         {/* Campo de Data */}
         <FormField
           control={form.control}
@@ -141,7 +140,7 @@ export const EvolutionEntryForm = ({
                       ) : (
                         <span>Selecione a data</span>
                       )}
-                      <CalendarIcon className="ml-2 h-4 w-4" />
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
@@ -158,6 +157,7 @@ export const EvolutionEntryForm = ({
             </FormItem>
           )}
         />
+        
         {/* Campo de Descrição */}
         <FormField
           control={form.control}
@@ -176,6 +176,7 @@ export const EvolutionEntryForm = ({
             </FormItem>
           )}
         />
+        
         {/* Campo de Observações */}
         <FormField
           control={form.control}

@@ -4,22 +4,22 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { evolutionTable } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
-// Import the correct function from your auth module
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
 import { upsertEvolutionSchema } from "./schema";
+import { headers } from "next/headers";
 
 export const upsertEvolution = actionClient
   .schema(upsertEvolutionSchema)
   .action(async ({ parsedInput }) => {
-    const { headers } = await import("next/headers");
     const session = await auth.api.getSession({ headers: await headers() });
-    const doctorId = session?.user?.id;
-    if (!doctorId) {
+    
+    // Apenas verifica se há um usuário logado, sem usar o ID dele como doctorId
+    if (!session?.user) {
       throw new Error("Acesso não autorizado.");
     }
 
-    const { id, patientId, ...rest } = parsedInput;
+    const { id, patientId, doctorId, ...rest } = parsedInput;
 
     try {
       if (id) {
@@ -28,12 +28,13 @@ export const upsertEvolution = actionClient
           .update(evolutionTable)
           .set({
             ...rest,
+            doctorId, // Usa o doctorId vindo do formulário
             updatedAt: new Date(),
           })
           .where(
             and(
               eq(evolutionTable.id, id),
-              eq(evolutionTable.doctorId, doctorId),
+              eq(evolutionTable.patientId, patientId), 
             ),
           )
           .returning();
@@ -45,12 +46,10 @@ export const upsertEvolution = actionClient
         }
       } else {
         // Modo de Criação
-        const { date, ...restFields } = rest;
         await db.insert(evolutionTable).values({
-          ...restFields,
+          ...rest,
           patientId,
-          doctorId,
-          date: typeof date === "string" ? new Date(date) : date,
+          doctorId, // Usa o doctorId vindo do formulário
           observations: rest.observations ?? "",
         });
       }
