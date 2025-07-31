@@ -94,21 +94,25 @@ async function seed() {
         name: "João Pereira",
         email: "joao@email.com",
         phone: "(11) 98765-4321",
+        sex: "male",
       },
       {
         name: "Maria Costa",
         email: "maria@email.com",
         phone: "(11) 98765-4322",
+        sex: "female",
       },
       {
         name: "Pedro Santos",
         email: "pedro@email.com",
         phone: "(11) 98765-4323",
+        sex: "male",
       },
       {
         name: "Lucia Ferreira",
         email: "lucia@email.com",
         phone: "(11) 98765-4324",
+        sex: "female",
       },
     ];
 
@@ -117,11 +121,13 @@ async function seed() {
         const [created] = await db
           .insert(patientsTable)
           .values({
-            id: randomUUID(),
             clinicId: clinic.id,
             name: patient.name,
             email: patient.email,
-            phone: patient.phone,
+            phoneNumber: patient.phone,
+            sex: patient.sex as "male" | "female",
+            cpf: undefined,
+            birthDate: undefined,
             createdAt: new Date(),
             updatedAt: new Date(),
           })

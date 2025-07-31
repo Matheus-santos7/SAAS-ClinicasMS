@@ -176,25 +176,6 @@ export const EvolutionEntryForm = ({
             </FormItem>
           )}
         />
-        
-        {/* Campo de Observações */}
-        <FormField
-          control={form.control}
-          name="observations"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Observações</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  placeholder="Observações adicionais (opcional)"
-                  rows={2}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <Button type="submit" disabled={isPending} className="w-full">
           {isPending
             ? "Salvando..."

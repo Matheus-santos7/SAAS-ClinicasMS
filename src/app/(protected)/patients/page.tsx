@@ -11,14 +11,8 @@ import { auth } from "@/lib/auth";
 import PatientsPageClient from "./_components/patients-page-client";
 
 // Tipagem para os parâmetros da URL que vamos receber
-interface PatientsPageProps {
-  searchParams: {
-    page?: string;
-    search?: string;
-  };
-}
-
-const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
+// ...existing code...
+const PatientsPage = async ({ searchParams }: any) => {
   // ... (toda a lógica de autenticação permanece a mesma)
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/authentication");

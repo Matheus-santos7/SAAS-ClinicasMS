@@ -2,7 +2,7 @@
 
 import {
   CalendarDays,
-  Diamond,
+  Wallet,
   Gem,
   LayoutDashboard,
   LogOut,
@@ -54,6 +54,11 @@ const items = [
     title: "Pacientes",
     url: "/patients",
     icon: UsersRound,
+  },
+    {
+    title: "Financeiro",
+    url: "/financial",
+    icon: Wallet ,
   },
 ];
 

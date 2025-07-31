@@ -6,27 +6,22 @@ import { redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
-import { auth } from "@/lib/auth"; // Supondo que você use a mesma autenticação
+import { auth } from "@/lib/auth";
 
 import PatientDetailsClient from "./_components/patient-details-client";
 
-interface PatientDetailsPageProps {
-  params: {
-    patientId: string;
-  };
-}
+// ...existing code...
+const PatientDetailsPage = async ({ params }: any) => {
+  // CORREÇÃO APLICADA AQUI:
+  const { patientId } = params;
 
-const PatientDetailsPage = async ({ params }: PatientDetailsPageProps) => {
-  // Aguarda os params antes de usar suas propriedades
-  const { patientId } = await params;
   const session = await auth.api.getSession({
     headers: await headers(),
-  }); // Adapte se necessário
+  });
   if (!session?.user) {
     redirect("/authentication");
   }
 
-  // Busca o paciente e todos os seus dados relacionados em uma única query
   const patientData = await db.query.patientsTable.findFirst({
     where: eq(patientsTable.id, patientId),
     with: {
@@ -35,6 +30,9 @@ const PatientDetailsPage = async ({ params }: PatientDetailsPageProps) => {
       },
       evolutionEntries: {
         orderBy: (entries, { desc }) => [desc(entries.createdAt)],
+        with: {
+          doctor: true,
+        },
       },
       clinic: {
         with: {
@@ -45,19 +43,25 @@ const PatientDetailsPage = async ({ params }: PatientDetailsPageProps) => {
   });
 
   if (!patientData) {
-    // Se o paciente não for encontrado, talvez redirecionar para uma página 404
     return redirect("/patients");
   }
 
-  // Aqui você pode adicionar uma verificação se o paciente pertence à clínica do usuário logado
-  // if (patientData.clinicId !== session.user.clinic.id) { ... }
-
-  // Adiciona doctorsTable ao objeto retornado
   return (
     <PatientDetailsClient
       initialData={{
         ...patientData,
         doctorsTable: patientData.clinic?.doctors ?? [],
+        evolutionEntries: (patientData.evolutionEntries ?? []).map((e) => ({
+          date: e.date ?? null,
+          id: e.id ?? "",
+          createdAt: e.createdAt ?? null,
+          updatedAt: e.updatedAt ?? null,
+          description: e.description ?? "",
+          patientId: e.patientId ?? "",
+          doctorId: e.doctorId ?? "",
+          observations: e.observations ?? "",
+          doctor: e.doctor?.name ? { name: e.doctor.name } : { name: "" },
+        })),
       }}
     />
   );

@@ -15,9 +15,11 @@ import { DocumentsTab } from "./DocumentsTab";
 import { PatientHeader } from "./PatientHeader";
 
 // A tipagem que vem do servidor
+import { EvolutionEntryWithDoctor } from "./evolution-table-columns";
+
 type PatientWithDetails = typeof patientsTable.$inferSelect & {
   anamnesisForms: (typeof patientsAnamnesisTable.$inferSelect)[];
-  evolutionEntries: (typeof evolutionTable.$inferSelect)[];
+  evolutionEntries: EvolutionEntryWithDoctor[];
   doctorsTable: (typeof doctorsTable.$inferSelect)[];
 };
 

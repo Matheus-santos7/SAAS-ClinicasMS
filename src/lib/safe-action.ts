@@ -21,9 +21,9 @@ type ActionHandler<TInput, TOutput> = (input: {
  * @param handler - Função que processa a action
  * @returns Server Action tipada e validada
  */
-export function createSafeAction<TInput, TOutput>(
-  schema: z.ZodSchema<TInput>,
-  handler: ActionHandler<TInput, TOutput>
+export function createSafeAction<TOutput>(
+  schema: z.ZodTypeAny,
+  handler: ActionHandler<z.infer<typeof schema>, TOutput>,
 ) {
   return async (data: unknown): Promise<ActionResult<TOutput>> => {
     try {
@@ -33,7 +33,7 @@ export function createSafeAction<TInput, TOutput>(
       if (!validationResult.success) {
         // Retorna erros de validação formatados
         const fieldErrors: Record<string, string[]> = {};
-        
+
         validationResult.error.errors.forEach((error) => {
           const field = error.path.join(".");
           if (!fieldErrors[field]) {
@@ -62,11 +62,12 @@ export function createSafeAction<TInput, TOutput>(
     } catch (error) {
       // 4. Captura e formata erros do servidor
       console.error("Erro na Server Action:", error);
-      
+
       return {
         error: {
           message: "Erro interno do servidor",
-          serverError: error instanceof Error ? error.message : "Erro desconhecido",
+          serverError:
+            error instanceof Error ? error.message : "Erro desconhecido",
         },
       };
     }
@@ -77,15 +78,13 @@ export function createSafeAction<TInput, TOutput>(
 export const safeAction = createSafeAction;
 
 // Tipo utilitário para extrair o tipo de input de uma action
-export type SafeActionInput<T> = T extends (
-  input: infer U
-) => unknown
+export type SafeActionInput<T> = T extends (input: infer U) => unknown
   ? U
   : never;
 
 // Tipo utilitário para extrair o tipo de output de uma action
 export type SafeActionOutput<T> = T extends (
-  input: unknown
+  input: unknown,
 ) => Promise<ActionResult<infer U>>
   ? U
   : never;

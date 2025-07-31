@@ -49,15 +49,6 @@ export const columns: ColumnDef<EvolutionEntryWithDoctor>[] = [
       <p className="max-w-[400px] truncate">{row.original.description}</p>
     ),
   },
-  {
-    accessorKey: "observations",
-    header: "Observações",
-    cell: ({ row }) => (
-      <p className="max-w-[300px] truncate">
-        {row.original.observations || "-"}
-      </p>
-    ),
-  },
   // Coluna para documentos (funcionalidade futura)
   {
     id: "documents",

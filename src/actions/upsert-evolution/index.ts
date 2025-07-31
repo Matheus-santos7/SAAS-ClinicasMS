@@ -4,22 +4,22 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { evolutionTable } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
+// Import the correct function from your auth module
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
 import { upsertEvolutionSchema } from "./schema";
-import { headers } from "next/headers";
 
 export const upsertEvolution = actionClient
   .schema(upsertEvolutionSchema)
   .action(async ({ parsedInput }) => {
+    const { headers } = await import("next/headers");
     const session = await auth.api.getSession({ headers: await headers() });
-    
-    // Apenas verifica se há um usuário logado, sem usar o ID dele como doctorId
-    if (!session?.user) {
+    const doctorId = session?.user?.id;
+    if (!doctorId) {
       throw new Error("Acesso não autorizado.");
     }
 
-    const { id, patientId, doctorId, ...rest } = parsedInput;
+    const { id, patientId, ...rest } = parsedInput;
 
     try {
       if (id) {
@@ -28,13 +28,12 @@ export const upsertEvolution = actionClient
           .update(evolutionTable)
           .set({
             ...rest,
-            doctorId, // Usa o doctorId vindo do formulário
             updatedAt: new Date(),
           })
           .where(
             and(
               eq(evolutionTable.id, id),
-              eq(evolutionTable.patientId, patientId), 
+              eq(evolutionTable.doctorId, doctorId),
             ),
           )
           .returning();
@@ -49,7 +48,7 @@ export const upsertEvolution = actionClient
         await db.insert(evolutionTable).values({
           ...rest,
           patientId,
-          doctorId, // Usa o doctorId vindo do formulário
+          doctorId,
           observations: rest.observations ?? "",
         });
       }
