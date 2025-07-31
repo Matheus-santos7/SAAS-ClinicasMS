@@ -32,11 +32,13 @@ type EvolutionEntry = typeof evolutionTable.$inferSelect;
 interface EvolutionTabProps {
   patientId: string;
   evolutionEntries: EvolutionEntry[];
+  doctors: Array<{ id: string; name: string }>;
 }
 
 export const EvolutionTab = ({
   patientId,
   evolutionEntries,
+  doctors,
 }: EvolutionTabProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
@@ -48,10 +50,32 @@ export const EvolutionTab = ({
     deleteEvolution,
     {
       onSuccess: (data) => {
-        toast.success(data.success);
+        // Corrige o acesso ao campo de sucesso e mensagem
+        if (
+          data &&
+          typeof data === "object" &&
+          "success" in data &&
+          typeof data.success === "string"
+        ) {
+          toast.success(data.success);
+        } else {
+          toast.success("Evolução excluída com sucesso.");
+        }
         setIsDeleteAlertOpen(false);
       },
-      onError: (error) => toast.error(error.error.serverError),
+      onError: (error) => {
+        // Corrige o acesso à mensagem de erro
+        const errorMessage =
+          error &&
+          typeof error === "object" &&
+          "error" in error &&
+          error.error &&
+          typeof error.error === "object" &&
+          "serverError" in error.error
+            ? (error.error.serverError as string)
+            : "Erro ao excluir evolução.";
+        toast.error(errorMessage);
+      },
     },
   );
 
@@ -125,6 +149,7 @@ export const EvolutionTab = ({
             patientId={patientId}
             initialData={selectedEvolution}
             onSuccess={() => setIsFormOpen(false)}
+            doctors={doctors}
           />
         </DialogContent>
       </Dialog>

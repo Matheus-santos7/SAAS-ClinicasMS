@@ -3,6 +3,9 @@ import { z } from "zod";
 export const upsertEvolutionSchema = z.object({
   id: z.string().uuid().optional(), // O ID é opcional. Se existir, é uma edição.
   patientId: z.string().uuid(),
+  doctorId: z.string().uuid({
+    required_error: "Selecione o médico responsável.",
+  }),
   date: z.date({
     required_error: "A data da evolução é obrigatória.",
   }),

@@ -4,19 +4,22 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { evolutionTable } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
+// Import the correct function from your auth module
 import { auth } from "@/lib/auth";
-import { createSafeAction } from "next-safe-action";
+import { actionClient } from "@/lib/next-safe-action";
 import { upsertEvolutionSchema } from "./schema";
 
-export const upsertEvolution = createSafeAction(
-  upsertEvolutionSchema,
-  async (data) => {
-    const { userId: doctorId } = auth();
+export const upsertEvolution = actionClient
+  .schema(upsertEvolutionSchema)
+  .action(async ({ parsedInput }) => {
+    const { headers } = await import("next/headers");
+    const session = await auth.api.getSession({ headers: await headers() });
+    const doctorId = session?.user?.id;
     if (!doctorId) {
       throw new Error("Acesso não autorizado.");
     }
 
-    const { id, patientId, ...rest } = data;
+    const { id, patientId, ...rest } = parsedInput;
 
     try {
       if (id) {
@@ -32,7 +35,7 @@ export const upsertEvolution = createSafeAction(
               eq(evolutionTable.id, id),
               eq(evolutionTable.doctorId, doctorId),
             ),
-          ) // Garante que só o dono possa editar
+          )
           .returning();
 
         if (!updatedEvolution) {
@@ -42,10 +45,13 @@ export const upsertEvolution = createSafeAction(
         }
       } else {
         // Modo de Criação
+        const { date, ...restFields } = rest;
         await db.insert(evolutionTable).values({
-          ...rest,
+          ...restFields,
           patientId,
           doctorId,
+          date: typeof date === "string" ? new Date(date) : date,
+          observations: rest.observations ?? "",
         });
       }
 
@@ -54,11 +60,9 @@ export const upsertEvolution = createSafeAction(
         success: `Evolução ${id ? "atualizada" : "criada"} com sucesso!`,
       };
     } catch (error) {
-      // Simplificando o erro para o cliente
       if (error instanceof Error) {
         return { error: error.message };
       }
       return { error: "Ocorreu um erro desconhecido." };
     }
-  },
-);
+  });

@@ -1,46 +1,34 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { evolutionTable } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { createSafeAction } from "next-safe-action";
-import { deleteEvolutionSchema } from "./schema";
+import { actionClient } from "@/lib/next-safe-action";
+import { z } from "zod";
 
-export const deleteEvolution = createSafeAction(
-  deleteEvolutionSchema,
-  async ({ id }) => {
-    const { userId: doctorId } = auth();
-    if (!doctorId) {
-      throw new Error("Acesso não autorizado.");
+export const deleteEvolution = actionClient
+  .schema(z.object({ id: z.string().uuid() }))
+  .action(async ({ parsedInput }) => {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user) {
+      throw new Error("Não autorizado");
     }
-
-    try {
-      // Primeiro, pegamos a evolução para obter o patientId para revalidação
-      const [evolution] = await db
-        .select({ patientId: evolutionTable.patientId })
-        .from(evolutionTable)
-        .where(eq(evolutionTable.id, id));
-
-      if (!evolution) {
-        throw new Error("Registro de evolução não encontrado.");
-      }
-
-      // Deleta o registro
-      await db
-        .delete(evolutionTable)
-        .where(
-          and(eq(evolutionTable.id, id), eq(evolutionTable.doctorId, doctorId)),
-        );
-
-      revalidatePath(`/patients/${evolution.patientId}`);
-      return { success: "Evolução deletada com sucesso!" };
-    } catch (error) {
-      if (error instanceof Error) {
-        return { error: error.message };
-      }
-      return { error: "Não foi possível deletar a evolução." };
+    // Busca evolução
+    const evolution = await db.query.evolutionTable.findFirst({
+      where: eq(evolutionTable.id, parsedInput.id),
+    });
+    if (!evolution) {
+      throw new Error("Evolução não encontrada");
     }
-  },
-);
+    if (evolution.doctorId !== session.user.id) {
+      throw new Error("Acesso negado");
+    }
+    await db
+      .delete(evolutionTable)
+      .where(eq(evolutionTable.id, parsedInput.id));
+    revalidatePath(`/patients/${evolution.patientId}`);
+    return { success: "Evolução deletada com sucesso!" };
+  });

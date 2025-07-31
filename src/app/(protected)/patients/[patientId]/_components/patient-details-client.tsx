@@ -53,6 +53,7 @@ const PatientDetailsClient = ({ initialData }: PatientDetailsClientProps) => {
           <EvolutionTab
             patientId={initialData.id}
             evolutionEntries={initialData.evolutionEntries}
+            doctors={initialData.doctorsTable}
           />
         </TabsContent>
         <TabsContent value="documents" className="mt-6">
