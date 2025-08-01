@@ -1,0 +1,101 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { formatCurrencyInCents } from "@/helpers/currency";
+
+interface FinancialTabProps {
+  patientId: string;
+  doctors: Array<{ id: string; name: string }>;
+  budgets: any[];
+  treatments: any[];
+}
+
+const getStatusBadgeVariant = (status: string) => {
+  switch (status) {
+    case "approved":
+    case "completed":
+      return "default"; // green
+    case "pending":
+    case "ongoing":
+      return "secondary"; // yellow
+    case "rejected":
+    case "canceled":
+      return "destructive"; // red
+    default:
+      return "outline";
+  }
+}
+
+export const FinancialTab = ({ patientId, doctors, budgets, treatments }: FinancialTabProps) => {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Orçamentos</CardTitle>
+              <CardDescription>Orçamentos propostos para o paciente.</CardDescription>
+            </div>
+            <Button size="sm" disabled>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Novo Orçamento
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {budgets.length > 0 ? (
+                <ul className="space-y-3">
+                    {budgets.map(budget => (
+                        <li key={budget.id} className="flex justify-between items-center p-2 rounded-md border">
+                           <div>
+                                <p className="font-medium">{formatCurrencyInCents(budget.totalAmountInCents)}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {new Date(budget.createdAt).toLocaleDateString('pt-BR')} - Dr(a). {budget.doctor.name}
+                                </p>
+                           </div>
+                           <Badge variant={getStatusBadgeVariant(budget.status)}>{budget.status}</Badge>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">Nenhum orçamento encontrado.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+             <div>
+                <CardTitle>Tratamentos</CardTitle>
+                <CardDescription>Tratamentos em andamento ou finalizados.</CardDescription>
+            </div>
+             <Button size="sm" variant="outline" disabled>
+                Registrar Pagamento
+            </Button>
+          </CardHeader>
+          <CardContent>
+             {treatments.length > 0 ? (
+                <ul className="space-y-3">
+                    {treatments.map(treatment => (
+                        <li key={treatment.id} className="flex justify-between items-center p-2 rounded-md border">
+                           <div>
+                                <p className="font-medium">{formatCurrencyInCents(treatment.totalAmountInCents)}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Pago: {formatCurrencyInCents(treatment.amountPaidInCents)}
+                                </p>
+                           </div>
+                           <Badge variant={getStatusBadgeVariant(treatment.status)}>{treatment.status}</Badge>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">Nenhum tratamento encontrado.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};

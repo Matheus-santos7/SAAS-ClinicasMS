@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { patientsTable } from "@/db/schema";
+import { patientsTable, budgetsTable, treatmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import PatientDetailsClient from "./_components/patient-details-client";
@@ -13,7 +13,7 @@ import PatientDetailsClient from "./_components/patient-details-client";
 // ...existing code...
 const PatientDetailsPage = async ({ params }: any) => {
   // CORREÇÃO APLICADA AQUI:
-  const { patientId } = params;
+  const { patientId } = await params;
 
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -46,6 +46,29 @@ const PatientDetailsPage = async ({ params }: any) => {
     return redirect("/patients");
   }
 
+  // Buscar budgets do paciente
+  const budgets = await db.query.budgetsTable.findMany({
+    where: eq(budgetsTable.patientId, patientId),
+    with: {
+      doctor: true,
+      items: true,
+      clinic: true,
+      treatment: true,
+    },
+    orderBy: (budgets: any, { desc }: any) => [desc(budgets.createdAt)],
+  });
+
+  // Buscar treatments do paciente
+  const treatments = await db.query.treatmentsTable.findMany({
+    where: eq(treatmentsTable.patientId, patientId),
+    with: {
+      payments: true,
+      clinic: true,
+      budget: true,
+    },
+    orderBy: (treatments: any, { desc }: any) => [desc(treatments.createdAt)],
+  });
+
   return (
     <PatientDetailsClient
       initialData={{
@@ -62,6 +85,8 @@ const PatientDetailsPage = async ({ params }: any) => {
           observations: e.observations ?? "",
           doctor: e.doctor?.name ? { name: e.doctor.name } : { name: "" },
         })),
+        budgets,
+        treatments,
       }}
     />
   );

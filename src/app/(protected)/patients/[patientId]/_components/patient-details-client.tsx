@@ -3,15 +3,19 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  budgetsTable,
+  doctorsTable,
   evolutionTable,
   patientsAnamnesisTable,
   patientsTable,
+  treatmentsTable,
 } from "@/db/schema";
-import { doctorsTable } from "@/db/schema";
+
 
 import { AnamnesisTab } from "./AnamnesisForm";
-import { EvolutionTab } from "./evolution-tab";
 import { DocumentsTab } from "./DocumentsTab";
+import { EvolutionTab } from "./evolution-tab";
+import { FinancialTab } from "./financialTab";
 import { PatientHeader } from "./PatientHeader";
 
 // A tipagem que vem do servidor
@@ -21,6 +25,8 @@ type PatientWithDetails = typeof patientsTable.$inferSelect & {
   anamnesisForms: (typeof patientsAnamnesisTable.$inferSelect)[];
   evolutionEntries: EvolutionEntryWithDoctor[];
   doctorsTable: (typeof doctorsTable.$inferSelect)[];
+  budgets: (typeof budgetsTable.$inferSelect & { doctor: typeof doctorsTable.$inferSelect | null, items: any[] })[];
+  treatments: (typeof treatmentsTable.$inferSelect & { payments: any[] })[];
 };
 
 interface PatientDetailsClientProps {
@@ -28,7 +34,6 @@ interface PatientDetailsClientProps {
 }
 
 const PatientDetailsClient = ({ initialData }: PatientDetailsClientProps) => {
-  // A anamnese é geralmente uma só, então pegamos a primeira
   const currentAnamnesis = initialData.anamnesisForms[0];
 
   return (
@@ -36,12 +41,11 @@ const PatientDetailsClient = ({ initialData }: PatientDetailsClientProps) => {
       <PatientHeader name={initialData.name} email={initialData.email} />
 
       <Tabs defaultValue="anamnesis" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          {/* A aba de dados pessoais agora é parte da anamnese ou pode ser uma aba separada se preferir */}
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="anamnesis">Anamnese</TabsTrigger>
           <TabsTrigger value="evolution">Quadro de Evolução</TabsTrigger>
-          <TabsTrigger value="documents">Documentos</TabsTrigger>{" "}
-          {/* Aba extra sugerida */}
+          <TabsTrigger value="financial">Financeiro</TabsTrigger>
+          <TabsTrigger value="documents">Documentos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="anamnesis" className="mt-6">
@@ -55,6 +59,14 @@ const PatientDetailsClient = ({ initialData }: PatientDetailsClientProps) => {
           <EvolutionTab
             patientId={initialData.id}
             evolutionEntries={initialData.evolutionEntries}
+            doctors={initialData.doctorsTable}
+          />
+        </TabsContent>
+        <TabsContent value="financial" className="mt-6">
+          <FinancialTab
+            patientId={initialData.id}
+            budgets={initialData.budgets}
+            treatments={initialData.treatments}
             doctors={initialData.doctorsTable}
           />
         </TabsContent>

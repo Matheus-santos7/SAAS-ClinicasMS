@@ -320,3 +320,98 @@ export const appointmentsTableRelations = relations(
     }),
   }),
 );
+
+// src/db/schema.ts
+
+// ... (todo o seu schema existente) ...
+
+// ==================================
+// MÓDULO FINANCEIRO
+// ==================================
+
+export const budgetsTable = pgTable("budgets", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  patientId: uuid("patient_id").notNull().references(() => patientsTable.id, { onDelete: "cascade" }),
+  doctorId: uuid("doctor_id").notNull().references(() => doctorsTable.id, { onDelete: "cascade" }),
+  clinicId: uuid("clinic_id").notNull().references(() => clinicsTable.id, { onDelete: "cascade" }),
+  status: text("status", { enum: ["pending", "approved", "rejected"] }).notNull().default("pending"),
+  totalAmountInCents: integer("total_amount_in_cents").notNull().default(0),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+
+export const budgetItemsTable = pgTable("budget_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  budgetId: uuid("budget_id").notNull().references(() => budgetsTable.id, { onDelete: "cascade" }),
+  procedureName: text("procedure_name").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  priceInCents: integer("price_in_cents").notNull(),
+});
+
+export const treatmentsTable = pgTable("treatments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  budgetId: uuid("budget_id").references(() => budgetsTable.id, { onDelete: "set null" }),
+  patientId: uuid("patient_id").notNull().references(() => patientsTable.id, { onDelete: "cascade" }),
+  clinicId: uuid("clinic_id").notNull().references(() => clinicsTable.id, { onDelete: "cascade" }),
+  totalAmountInCents: integer("total_amount_in_cents").notNull(),
+  amountPaidInCents: integer("amount_paid_in_cents").notNull().default(0),
+  status: text("status", { enum: ["ongoing", "completed", "canceled"] }).notNull().default("ongoing"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+});
+
+export const paymentsTable = pgTable("payments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  treatmentId: uuid("treatment_id").notNull().references(() => treatmentsTable.id, { onDelete: "cascade" }),
+  clinicId: uuid("clinic_id").notNull().references(() => clinicsTable.id, { onDelete: "cascade" }),
+  amountInCents: integer("amount_in_cents").notNull(),
+  paymentMethod: text("payment_method", { enum: ["credit_card", "debit_card", "cash", "pix", "bank_transfer"] }).notNull(),
+  paymentDate: timestamp("payment_date").defaultNow().notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const clinicFinancialTransactionsTable = pgTable("clinic_financial_transactions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id").notNull().references(() => clinicsTable.id, { onDelete: "cascade" }),
+  description: text("description").notNull(),
+  amountInCents: integer("amount_in_cents").notNull(),
+  type: text("type", { enum: ["income", "expense"] }).notNull(),
+  category: text("category").notNull(), // e.g., 'patient_payment', 'salary', 'rent', 'supplies'
+  paymentId: uuid("payment_id").references(() => paymentsTable.id, { onDelete: "set null" }), // Link to patient payment
+  transactionDate: timestamp("transaction_date").defaultNow().notNull(),
+});
+
+
+// --- RELACIONAMENTOS DO MÓDULO FINANCEIRO ---
+
+export const budgetsTableRelations = relations(budgetsTable, ({ one, many }) => ({
+  patient: one(patientsTable, { fields: [budgetsTable.patientId], references: [patientsTable.id] }),
+  doctor: one(doctorsTable, { fields: [budgetsTable.doctorId], references: [doctorsTable.id] }),
+  clinic: one(clinicsTable, { fields: [budgetsTable.clinicId], references: [clinicsTable.id] }),
+  items: many(budgetItemsTable),
+  treatment: one(treatmentsTable, { fields: [budgetsTable.id], references: [treatmentsTable.budgetId] }),
+}));
+
+export const budgetItemsTableRelations = relations(budgetItemsTable, ({ one }) => ({
+  budget: one(budgetsTable, { fields: [budgetItemsTable.budgetId], references: [budgetsTable.id] }),
+}));
+
+export const treatmentsTableRelations = relations(treatmentsTable, ({ one, many }) => ({
+  budget: one(budgetsTable, { fields: [treatmentsTable.budgetId], references: [budgetsTable.id] }),
+  patient: one(patientsTable, { fields: [treatmentsTable.patientId], references: [patientsTable.id] }),
+  clinic: one(clinicsTable, { fields: [treatmentsTable.clinicId], references: [clinicsTable.id] }),
+  payments: many(paymentsTable),
+}));
+
+export const paymentsTableRelations = relations(paymentsTable, ({ one }) => ({
+  treatment: one(treatmentsTable, { fields: [paymentsTable.treatmentId], references: [treatmentsTable.id] }),
+  clinic: one(clinicsTable, { fields: [paymentsTable.clinicId], references: [clinicsTable.id] }),
+  clinicTransaction: one(clinicFinancialTransactionsTable, { fields: [paymentsTable.id], references: [clinicFinancialTransactionsTable.paymentId] }),
+}));
+
+export const clinicFinancialTransactionsTableRelations = relations(clinicFinancialTransactionsTable, ({ one }) => ({
+  clinic: one(clinicsTable, { fields: [clinicFinancialTransactionsTable.clinicId], references: [clinicsTable.id] }),
+  payment: one(paymentsTable, { fields: [clinicFinancialTransactionsTable.paymentId], references: [paymentsTable.id] }),
+}));
