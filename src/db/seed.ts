@@ -1,179 +1,188 @@
+// src/db/seed.ts
+import "dotenv/config";
+
+import { faker } from "@faker-js/faker";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";
+import { eq, sql } from "drizzle-orm";
+
+import { dentalSpecialties } from "@/constants/dental-specialties";
 
 import { db } from ".";
 import {
   appointmentsTable,
-  clinicsTable,
   doctorsTable,
+  evolutionTable,
+  patientsAnamnesisTable,
   patientsTable,
   usersTable,
   usersToClinicsTable,
 } from "./schema";
-import { dentalSpecialties } from "@/constants/dental-specialties";
+
+const getRandomNumber = (min: number, max: number) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
+const getRandomItem = <T>(arr: readonly T[]) =>
+  arr[Math.floor(Math.random() * arr.length)];
 
 async function seed() {
   try {
-    // Criar usuário demo
-    const [user] = await db
-      .insert(usersTable)
-      .values({
-        id: randomUUID(),
-        name: "Usuário Demo",
-        email: "demo@doutordigital.com",
-        emailVerified: true,
-        plan: "essential",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning();
+    console.log("🌱 Começando o processo de seed...");
 
-    // Criar clínica demo
-    const [clinic] = await db
-      .insert(clinicsTable)
-      .values({
-        id: randomUUID(),
-        name: "Clínica Odontológica Demo",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning();
-
-    // Relacionar usuário com clínica
-    await db.insert(usersToClinicsTable).values({
-      userId: user.id,
-      clinicId: clinic.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    // --- Encontrar o usuário e a clínica existentes ---
+    const userEmail = "demo@doutordigital.com";
+    const user = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, userEmail),
     });
 
-    // Criar dentistas demo
-    const dentists = [
-      {
-        name: "Dra. Ana Silva",
-        specialty: "Ortodontia",
-        appointmentPriceInCents: 25000, // R$ 250,00
-      },
-      {
-        name: "Dr. Carlos Santos",
-        specialty: "Implantodontia",
-        appointmentPriceInCents: 35000, // R$ 350,00
-      },
-      {
-        name: "Dra. Marina Oliveira",
-        specialty: "Endodontia",
-        appointmentPriceInCents: 30000, // R$ 300,00
-      },
-    ];
+    if (!user) {
+      throw new Error(
+        `Usuário com e-mail ${userEmail} não encontrado. Por favor, crie-o primeiro através da interface da aplicação.`,
+      );
+    }
 
-    const createdDentists = await Promise.all(
-      dentists.map(async (dentist) => {
-        const [created] = await db
-          .insert(doctorsTable)
-          .values({
-            id: randomUUID(),
-            clinicId: clinic.id,
-            name: dentist.name,
-            specialty: dentist.specialty,
-            appointmentPriceInCents: dentist.appointmentPriceInCents,
-            availableFromWeekDay: 1, // Segunda
-            availableToWeekDay: 5, // Sexta
-            availableFromTime: "09:00:00",
-            availableToTime: "18:00:00",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning();
-        return created;
-      }),
+    const userToClinic = await db.query.usersToClinicsTable.findFirst({
+      where: eq(usersToClinicsTable.userId, user.id),
+      with: {
+        clinic: true,
+      },
+    });
+
+    if (!userToClinic?.clinic) {
+      throw new Error(
+        `Nenhuma clínica encontrada para o usuário ${userEmail}. Por favor, crie-a primeiro através da interface.`,
+      );
+    }
+
+    const clinic = userToClinic.clinic;
+    console.log(
+      `✅ Usuário e clínica "${clinic.name}" encontrados. Populando dados...`,
     );
 
-    // Criar pacientes demo
-    const patients = [
-      {
-        name: "João Pereira",
-        email: "joao@email.com",
-        phone: "(11) 98765-4321",
-        sex: "male",
-      },
-      {
-        name: "Maria Costa",
-        email: "maria@email.com",
-        phone: "(11) 98765-4322",
-        sex: "female",
-      },
-      {
-        name: "Pedro Santos",
-        email: "pedro@email.com",
-        phone: "(11) 98765-4323",
-        sex: "male",
-      },
-      {
-        name: "Lucia Ferreira",
-        email: "lucia@email.com",
-        phone: "(11) 98765-4324",
-        sex: "female",
-      },
-    ];
+    // --- Limpando dados antigos da clínica ---
+    console.log("🗑️ Limpando dados antigos da clínica...");
+    await db
+      .delete(appointmentsTable)
+      .where(eq(appointmentsTable.clinicId, clinic.id));
 
-    const createdPatients = await Promise.all(
-      patients.map(async (patient) => {
-        const [created] = await db
-          .insert(patientsTable)
-          .values({
-            clinicId: clinic.id,
-            name: patient.name,
-            email: patient.email,
-            phoneNumber: patient.phone,
-            sex: patient.sex as "male" | "female",
-            cpf: undefined,
-            birthDate: undefined,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning();
-        return created;
-      }),
+    // CORREÇÃO: Usando o nome correto da coluna do banco de dados ("patient_id")
+    await db.execute(
+      sql`DELETE FROM "patients_anamnesis" WHERE "patient_id" IN (SELECT id FROM patients WHERE clinic_id = ${clinic.id})`,
+    );
+    await db.execute(
+      sql`DELETE FROM "evolution" WHERE "patient_id" IN (SELECT id FROM patients WHERE clinic_id = ${clinic.id})`,
     );
 
-    // Criar alguns agendamentos demo
-    const appointments = [
-      {
-        doctorId: createdDentists[0].id,
-        patientId: createdPatients[0].id,
-        date: dayjs().add(1, "day").hour(10).minute(0).second(0).toDate(),
-        appointmentPriceInCents: createdDentists[0].appointmentPriceInCents,
-      },
-      {
-        doctorId: createdDentists[1].id,
-        patientId: createdPatients[1].id,
-        date: dayjs().add(2, "day").hour(14).minute(30).second(0).toDate(),
-        appointmentPriceInCents: createdDentists[1].appointmentPriceInCents,
-      },
-      {
-        doctorId: createdDentists[2].id,
-        patientId: createdPatients[2].id,
-        date: dayjs().add(3, "day").hour(16).minute(0).second(0).toDate(),
-        appointmentPriceInCents: createdDentists[2].appointmentPriceInCents,
-      },
-    ];
+    await db.delete(patientsTable).where(eq(patientsTable.clinicId, clinic.id));
+    await db.delete(doctorsTable).where(eq(doctorsTable.clinicId, clinic.id));
+    console.log("✅ Dados antigos limpos.");
 
-    await Promise.all(
-      appointments.map(async (appointment) => {
-        await db.insert(appointmentsTable).values({
-          id: randomUUID(),
+    // --- Gerando Dentistas ---
+    const NUM_DENTISTS = 20;
+    const createdDentists = [];
+    console.log(`🦷 Gerando ${NUM_DENTISTS} dentistas...`);
+    for (let i = 0; i < NUM_DENTISTS; i++) {
+      const [dentist] = await db
+        .insert(doctorsTable)
+        .values({
           clinicId: clinic.id,
-          ...appointment,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }),
-    );
+          name: faker.person.fullName(),
+          specialty: getRandomItem(dentalSpecialties),
+          appointmentPriceInCents: getRandomNumber(100, 500) * 100,
+          availableFromWeekDay: 1,
+          availableToWeekDay: 5,
+          availableFromTime: "08:00:00",
+          availableToTime: "18:00:00",
+        })
+        .returning();
+      createdDentists.push(dentist);
+    }
+    console.log(`✅ ${createdDentists.length} dentistas criados.`);
 
-    console.log("✅ Seed concluído com sucesso!");
+    // --- Gerando Pacientes ---
+    const NUM_PATIENTS = 500;
+    const createdPatients = [];
+    console.log(`👤 Gerando ${NUM_PATIENTS} pacientes...`);
+    for (let i = 0; i < NUM_PATIENTS; i++) {
+      const sex = getRandomItem(["male", "female"] as const);
+      const [patient] = await db
+        .insert(patientsTable)
+        .values({
+          clinicId: clinic.id,
+          name: faker.person.fullName({ sex }),
+          email: faker.internet.email().toLowerCase(),
+          phoneNumber: faker.phone.number("##9########"), // <-- CORREÇÃO APLICADA AQUI
+          sex: sex,
+          cpf: `${getRandomNumber(100, 999)}.${getRandomNumber(100, 999)}.${getRandomNumber(100, 999)}-${getRandomNumber(10, 99)}`,
+          birthDate: faker.date.birthdate({ min: 18, max: 80, mode: "age" }),
+        })
+        .returning();
+      createdPatients.push(patient);
+    }
+    console.log(`✅ ${createdPatients.length} pacientes criados.`);
+
+    // --- Gerando Anamnese e Evolução para alguns pacientes ---
+    console.log("📝 Gerando dados de anamnese e evolução...");
+    for (const patient of createdPatients.slice(0, 150)) {
+      // Gera para os primeiros 150 pacientes
+      const randomDoctor = getRandomItem(createdDentists);
+
+      // Criar uma ficha de anamnese
+      await db.insert(patientsAnamnesisTable).values({
+        patientId: patient.id,
+        doctorId: randomDoctor.id,
+        reasonConsultation: faker.lorem.sentence(),
+        hasAllergies: faker.datatype.boolean(),
+        allergies: faker.lorem.words(3),
+        usesMedication: faker.datatype.boolean(),
+        medicationUsage: faker.lorem.words(4),
+        smokes: faker.datatype.boolean(),
+        drinksAlcohol: faker.datatype.boolean(),
+        oralHygiene: "Escova 3x ao dia, usa fio dental.",
+        updatedAt: new Date(),
+      });
+
+      // Criar múltiplas entradas de evolução
+      const numEvolutions = getRandomNumber(1, 5);
+      for (let i = 0; i < numEvolutions; i++) {
+        await db.insert(evolutionTable).values({
+          patientId: patient.id,
+          doctorId: getRandomItem(createdDentists).id,
+          date: faker.date.past({ years: 2 }),
+          description: faker.lorem.paragraph(),
+          observations: faker.lorem.sentence(),
+        });
+      }
+    }
+    console.log("✅ Anamnese e evolução criadas.");
+
+    // --- Gerando Agendamentos ---
+    const NUM_APPOINTMENTS = 2000;
+    console.log(`🗓️ Gerando ${NUM_APPOINTMENTS} agendamentos...`);
+    for (let i = 0; i < NUM_APPOINTMENTS; i++) {
+      const randomDoctor = getRandomItem(createdDentists);
+      const randomPatient = getRandomItem(createdPatients);
+      const appointmentDate = faker.date.between({
+        from: dayjs().subtract(6, "month").toDate(),
+        to: dayjs().add(6, "month").toDate(),
+      });
+      appointmentDate.setHours(getRandomNumber(8, 17));
+      appointmentDate.setMinutes(getRandomItem([0, 30]));
+      appointmentDate.setSeconds(0);
+      await db.insert(appointmentsTable).values({
+        clinicId: clinic.id,
+        doctorId: randomDoctor.id,
+        patientId: randomPatient.id,
+        date: appointmentDate,
+        appointmentPriceInCents: randomDoctor.appointmentPriceInCents,
+      });
+    }
+    console.log(`✅ ${NUM_APPOINTMENTS} agendamentos criados.`);
+
+    console.log("🎉 Processo de seed concluído com sucesso!");
+
     process.exit(0);
   } catch (error) {
-    console.error("❌ Erro ao executar seed:", error);
+    console.error("❌ Erro ao executar o seed:", error);
     process.exit(1);
   }
 }
