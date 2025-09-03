@@ -1,9 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
@@ -50,8 +49,9 @@ export const searchPatients = actionClient
       );
     } else if (searchType === "cpf") {
       const cleanCPF = searchTerm.replace(/\D/g, "");
-      filteredPatients = patients.filter((patient) =>
-        patient.cpf && patient.cpf.replace(/\D/g, "").includes(cleanCPF),
+      filteredPatients = patients.filter(
+        (patient) =>
+          patient.cpf && patient.cpf.replace(/\D/g, "").includes(cleanCPF),
       );
     }
 

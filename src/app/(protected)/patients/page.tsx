@@ -12,7 +12,11 @@ import PatientsPageClient from "./_components/patients-page-client";
 
 // Tipagem para os parâmetros da URL que vamos receber
 // ...existing code...
-const PatientsPage = async ({ searchParams }: any) => {
+const PatientsPage = async ({
+  searchParams,
+}: {
+  searchParams: Record<string, string | string[] | undefined>;
+}) => {
   // ... (toda a lógica de autenticação permanece a mesma)
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/authentication");

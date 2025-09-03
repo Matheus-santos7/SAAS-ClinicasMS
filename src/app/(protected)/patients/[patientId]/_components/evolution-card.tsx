@@ -1,10 +1,12 @@
 "use client";
 
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,8 +17,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
 import type { evolutionTable } from "@/db/schema";
 
 type EvolutionEntry = typeof evolutionTable.$inferSelect;
@@ -28,7 +28,12 @@ interface EvolutionCardProps {
   onDelete: (evolution: EvolutionEntry) => void;
 }
 
-export const EvolutionCard = ({ evolution, onView, onEdit, onDelete }: EvolutionCardProps) => {
+export const EvolutionCard = ({
+  evolution,
+  onView,
+  onEdit,
+  onDelete,
+}: EvolutionCardProps) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between">
@@ -36,7 +41,9 @@ export const EvolutionCard = ({ evolution, onView, onEdit, onDelete }: Evolution
           <CardTitle>Evolução</CardTitle>
           <CardDescription>
             {new Date(evolution.date).toLocaleDateString("pt-BR", {
-              day: '2-digit', month: 'long', year: 'numeric'
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
             })}
           </CardDescription>
         </div>
@@ -54,14 +61,17 @@ export const EvolutionCard = ({ evolution, onView, onEdit, onDelete }: Evolution
               <Edit className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-500" onClick={() => onDelete(evolution)}>
+            <DropdownMenuItem
+              className="text-red-500"
+              onClick={() => onDelete(evolution)}
+            >
               <Trash2 className="mr-2 h-4 w-4" /> Excluir
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>
       <CardContent>
-        <p className="line-clamp-4 text-sm text-muted-foreground">
+        <p className="text-muted-foreground line-clamp-4 text-sm">
           {evolution.description}
         </p>
       </CardContent>

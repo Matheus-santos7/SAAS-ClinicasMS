@@ -5,13 +5,13 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { patientsTable, budgetsTable, treatmentsTable } from "@/db/schema";
+import { budgetsTable, patientsTable, treatmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import PatientDetailsClient from "./_components/patient-details-client";
 
 // ...existing code...
-const PatientDetailsPage = async ({ params }: any) => {
+const PatientDetailsPage = async ({ params }: { params: { patientId: string } }) => {
   // CORREÇÃO APLICADA AQUI:
   const { patientId } = await params;
 
@@ -55,7 +55,7 @@ const PatientDetailsPage = async ({ params }: any) => {
       clinic: true,
       treatment: true,
     },
-    orderBy: (budgets: any, { desc }: any) => [desc(budgets.createdAt)],
+    orderBy: (fields, { desc }) => [desc(fields.createdAt)],
   });
 
   // Buscar treatments do paciente
@@ -66,7 +66,7 @@ const PatientDetailsPage = async ({ params }: any) => {
       clinic: true,
       budget: true,
     },
-    orderBy: (treatments: any, { desc }: any) => [desc(treatments.createdAt)],
+    orderBy: (fields, { desc }) => [desc(fields.createdAt)],
   });
 
   return (

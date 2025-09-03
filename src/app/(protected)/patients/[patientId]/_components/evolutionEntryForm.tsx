@@ -1,9 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
+import { useAction } from "next-safe-action/hooks";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import type { z } from "zod";
+
+import { upsertEvolution } from "@/actions/upsert-evolution/index";
+import { upsertEvolutionSchema } from "@/actions/upsert-evolution/schema";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,15 +26,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { upsertEvolution } from "@/actions/upsert-evolution/index"; 
-import { upsertEvolutionSchema } from "@/actions/upsert-evolution/schema"; 
-import type { z } from "zod";
-import type { evolutionTable } from "@/db/schema";
-import { useAction } from "next-safe-action/hooks";
 import {
   Select,
   SelectContent,
@@ -35,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import type { evolutionTable } from "@/db/schema";
+import { cn } from "@/lib/utils";
 
 type FormValues = z.infer<typeof upsertEvolutionSchema>;
 type EvolutionEntry = typeof evolutionTable.$inferSelect;
@@ -101,9 +102,9 @@ export const EvolutionEntryForm = ({
                 required
               >
                 <FormControl>
-                    <SelectTrigger>
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecione o médico" />
-                    </SelectTrigger>
+                  </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {doctors.map((doctor) => (
@@ -117,7 +118,7 @@ export const EvolutionEntryForm = ({
             </FormItem>
           )}
         />
-        
+
         {/* Campo de Data */}
         <FormField
           control={form.control}
@@ -157,7 +158,7 @@ export const EvolutionEntryForm = ({
             </FormItem>
           )}
         />
-        
+
         {/* Campo de Descrição */}
         <FormField
           control={form.control}

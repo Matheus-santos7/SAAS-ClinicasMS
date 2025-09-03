@@ -4,7 +4,7 @@ interface DocumentsTabProps {
   patientId: string;
 }
 
-export const DocumentsTab = ({ patientId }: DocumentsTabProps) => {
+export const DocumentsTab = ({}: DocumentsTabProps) => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Documentos do Paciente</h2>

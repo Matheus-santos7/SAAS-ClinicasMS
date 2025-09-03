@@ -5,28 +5,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   budgetsTable,
   doctorsTable,
-  evolutionTable,
   patientsAnamnesisTable,
   patientsTable,
   treatmentsTable,
 } from "@/db/schema";
 
-
 import { AnamnesisTab } from "./AnamnesisForm";
 import { DocumentsTab } from "./DocumentsTab";
 import { EvolutionTab } from "./evolution-tab";
-import { FinancialTab } from "./financialTab";
-import { PatientHeader } from "./PatientHeader";
-
 // A tipagem que vem do servidor
 import { EvolutionEntryWithDoctor } from "./evolution-table-columns";
+import { FinancialTab } from "./financialTab";
+import { PatientHeader } from "./PatientHeader";
 
 type PatientWithDetails = typeof patientsTable.$inferSelect & {
   anamnesisForms: (typeof patientsAnamnesisTable.$inferSelect)[];
   evolutionEntries: EvolutionEntryWithDoctor[];
   doctorsTable: (typeof doctorsTable.$inferSelect)[];
-  budgets: (typeof budgetsTable.$inferSelect & { doctor: typeof doctorsTable.$inferSelect | null, items: any[] })[];
-  treatments: (typeof treatmentsTable.$inferSelect & { payments: any[] })[];
+  budgets: (typeof budgetsTable.$inferSelect & {
+    doctor: typeof doctorsTable.$inferSelect | null;
+    items: Record<string, unknown>[];
+  })[];
+  treatments: (typeof treatmentsTable.$inferSelect & { payments: unknown[] })[];
 };
 
 interface PatientDetailsClientProps {
@@ -65,7 +65,13 @@ const PatientDetailsClient = ({ initialData }: PatientDetailsClientProps) => {
         <TabsContent value="financial" className="mt-6">
           <FinancialTab
             patientId={initialData.id}
-            budgets={initialData.budgets}
+            budgets={initialData.budgets.map((budget) => ({
+              id: budget.id,
+              totalAmountInCents: budget.totalAmountInCents,
+              createdAt: budget.createdAt,
+              doctor: { name: budget.doctor?.name ?? "Desconhecido" },
+              status: budget.status,
+            }))}
             treatments={initialData.treatments}
             doctors={initialData.doctorsTable}
           />

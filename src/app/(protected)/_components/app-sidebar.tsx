@@ -2,12 +2,12 @@
 
 import {
   CalendarDays,
-  Wallet,
   Gem,
   LayoutDashboard,
   LogOut,
   Stethoscope,
   UsersRound,
+  Wallet,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,10 +55,10 @@ const items = [
     url: "/patients",
     icon: UsersRound,
   },
-    {
+  {
     title: "Financeiro",
     url: "/financial",
-    icon: Wallet ,
+    icon: Wallet,
   },
 ];
 
