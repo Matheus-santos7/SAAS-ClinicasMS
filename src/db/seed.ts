@@ -2,7 +2,6 @@
 import "dotenv/config";
 
 import { faker } from "@faker-js/faker";
-import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import { eq, sql } from "drizzle-orm";
 
@@ -64,7 +63,6 @@ async function seed() {
       .delete(appointmentsTable)
       .where(eq(appointmentsTable.clinicId, clinic.id));
 
-    // CORREÇÃO: Usando o nome correto da coluna do banco de dados ("patient_id")
     await db.execute(
       sql`DELETE FROM "patients_anamnesis" WHERE "patient_id" IN (SELECT id FROM patients WHERE clinic_id = ${clinic.id})`,
     );
@@ -88,8 +86,8 @@ async function seed() {
           name: faker.person.fullName(),
           specialty: getRandomItem(dentalSpecialties),
           appointmentPriceInCents: getRandomNumber(100, 500) * 100,
-          availableFromWeekDay: 1,
-          availableToWeekDay: 5,
+          availableFromWeekDay: 1, // Segunda-feira
+          availableToWeekDay: 5, // Sexta-feira
           availableFromTime: "08:00:00",
           availableToTime: "18:00:00",
         })
@@ -110,9 +108,12 @@ async function seed() {
           clinicId: clinic.id,
           name: faker.person.fullName({ sex }),
           email: faker.internet.email().toLowerCase(),
-          phoneNumber: faker.phone.number("##9########"), // <-- CORREÇÃO APLICADA AQUI
+          phoneNumber: faker.phone.number({ style: "national" }),
           sex: sex,
-          cpf: `${getRandomNumber(100, 999)}.${getRandomNumber(100, 999)}.${getRandomNumber(100, 999)}-${getRandomNumber(10, 99)}`,
+          cpf: `${getRandomNumber(100, 999)}.${getRandomNumber(
+            100,
+            999,
+          )}.${getRandomNumber(100, 999)}-${getRandomNumber(10, 99)}`,
           birthDate: faker.date.birthdate({ min: 18, max: 80, mode: "age" }),
         })
         .returning();
@@ -120,24 +121,36 @@ async function seed() {
     }
     console.log(`✅ ${createdPatients.length} pacientes criados.`);
 
-    // --- Gerando Anamnese e Evolução para alguns pacientes ---
+    // --- Gerando Anamnese e Evolução para os primeiros 150 pacientes ---
     console.log("📝 Gerando dados de anamnese e evolução...");
     for (const patient of createdPatients.slice(0, 150)) {
-      // Gera para os primeiros 150 pacientes
       const randomDoctor = getRandomItem(createdDentists);
 
-      // Criar uma ficha de anamnese
+      // Criar uma ficha de anamnese mais completa
       await db.insert(patientsAnamnesisTable).values({
         patientId: patient.id,
         doctorId: randomDoctor.id,
         reasonConsultation: faker.lorem.sentence(),
+        systemicDiseases: faker.datatype.boolean() ? faker.lorem.words(3) : "",
+        medicationUsage: faker.datatype.boolean() ? faker.lorem.words(4) : "",
+        allergies: faker.datatype.boolean() ? faker.lorem.words(2) : "",
+        previousSurgeries: faker.datatype.boolean()
+          ? faker.lorem.sentence(2)
+          : "",
+        habits: faker.lorem.words(3),
+        oralHygiene: "Escova 3x ao dia, usa fio dental.",
+        previousDentalProblems: faker.lorem.sentence(3),
+        currentTreatment: "",
+        familyHistory: faker.lorem.sentence(2),
+        mentalConditions: "",
+        observations: faker.lorem.sentence(),
         hasAllergies: faker.datatype.boolean(),
-        allergies: faker.lorem.words(3),
         usesMedication: faker.datatype.boolean(),
-        medicationUsage: faker.lorem.words(4),
+        hadPreviousSurgeries: faker.datatype.boolean(),
         smokes: faker.datatype.boolean(),
         drinksAlcohol: faker.datatype.boolean(),
-        oralHygiene: "Escova 3x ao dia, usa fio dental.",
+        isPregnant: patient.sex === "female" ? faker.datatype.boolean() : false,
+        createdAt: faker.date.past({ years: 2 }),
         updatedAt: new Date(),
       });
 
@@ -168,6 +181,7 @@ async function seed() {
       appointmentDate.setHours(getRandomNumber(8, 17));
       appointmentDate.setMinutes(getRandomItem([0, 30]));
       appointmentDate.setSeconds(0);
+
       await db.insert(appointmentsTable).values({
         clinicId: clinic.id,
         doctorId: randomDoctor.id,

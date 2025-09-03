@@ -1,14 +1,11 @@
 "use client";
 
 import { PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { create } from "zustand";
+
+import { deleteEvolution } from "@/actions/upsert-evolution/delete-evolution";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,14 +16,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EvolutionEntryForm } from "./evolutionEntryForm";
-import { useAction } from "next-safe-action/hooks";
-import { deleteEvolution } from "@/actions/upsert-evolution/delete-evolution";
-import { toast } from "sonner";
-import { create } from "zustand";
-
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { columns, EvolutionEntryWithDoctor } from "./evolution-table-columns";
+import { EvolutionEntryForm } from "./evolutionEntryForm";
 
 // Store para gerenciar o estado dos modais
 type EvolutionStore = {
@@ -45,17 +46,20 @@ export const useEvolutionStore = create<EvolutionStore>((set) => ({
   isFormOpen: false,
   isViewModalOpen: false,
   isDeleteAlertOpen: false,
-  handleView: (evolution) => set({ selectedEvolution: evolution, isViewModalOpen: true }),
-  handleEdit: (evolution: EvolutionEntryWithDoctor | null) => set({ selectedEvolution: evolution, isFormOpen: true }),
-  handleDelete: (evolution) => set({ selectedEvolution: evolution, isDeleteAlertOpen: true }),
-  closeAll: () => set({ 
-    isFormOpen: false, 
-    isViewModalOpen: false, 
-    isDeleteAlertOpen: false, 
-    selectedEvolution: null 
-  }),
+  handleView: (evolution) =>
+    set({ selectedEvolution: evolution, isViewModalOpen: true }),
+  handleEdit: (evolution: EvolutionEntryWithDoctor | null) =>
+    set({ selectedEvolution: evolution, isFormOpen: true }),
+  handleDelete: (evolution) =>
+    set({ selectedEvolution: evolution, isDeleteAlertOpen: true }),
+  closeAll: () =>
+    set({
+      isFormOpen: false,
+      isViewModalOpen: false,
+      isDeleteAlertOpen: false,
+      selectedEvolution: null,
+    }),
 }));
-
 
 interface EvolutionTabProps {
   patientId: string;
@@ -74,8 +78,6 @@ export const EvolutionTab = ({
     isViewModalOpen,
     selectedEvolution,
     handleEdit,
-    handleView,
-    handleDelete,
     closeAll,
   } = useEvolutionStore();
 
@@ -111,7 +113,10 @@ export const EvolutionTab = ({
       <DataTable columns={columns} data={evolutionEntries} />
 
       {/* Modal/Dialog para Adicionar/Editar */}
-      <Dialog open={isFormOpen} onOpenChange={(isOpen) => !isOpen && closeAll()}>
+      <Dialog
+        open={isFormOpen}
+        onOpenChange={(isOpen) => !isOpen && closeAll()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -128,7 +133,10 @@ export const EvolutionTab = ({
       </Dialog>
 
       {/* Modal para Visualizar Detalhes */}
-      <Dialog open={isViewModalOpen} onOpenChange={(isOpen) => !isOpen && closeAll()}>
+      <Dialog
+        open={isViewModalOpen}
+        onOpenChange={(isOpen) => !isOpen && closeAll()}
+      >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Detalhes da Evolução</DialogTitle>
@@ -141,28 +149,32 @@ export const EvolutionTab = ({
           </DialogHeader>
           <div className="prose dark:prose-invert max-w-none space-y-2 py-4">
             <div>
-                <h4 className="font-semibold">Médico Responsável</h4>
-                <p>{selectedEvolution?.doctor?.name ?? 'N/A'}</p>
+              <h4 className="font-semibold">Médico Responsável</h4>
+              <p>{selectedEvolution?.doctor?.name ?? "N/A"}</p>
             </div>
             <div>
-                <h4 className="font-semibold">Descrição</h4>
-                <p>{selectedEvolution?.description}</p>
+              <h4 className="font-semibold">Descrição</h4>
+              <p>{selectedEvolution?.description}</p>
             </div>
             <div>
-                <h4 className="font-semibold">Observações</h4>
-                <p>{selectedEvolution?.observations || "Nenhuma observação."}</p>
+              <h4 className="font-semibold">Observações</h4>
+              <p>{selectedEvolution?.observations || "Nenhuma observação."}</p>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Alerta de Confirmação para Deletar */}
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={(isOpen) => !isOpen && closeAll()}>
+      <AlertDialog
+        open={isDeleteAlertOpen}
+        onOpenChange={(isOpen) => !isOpen && closeAll()}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso irá deletar permanentemente o registro de evolução.
+              Esta ação não pode ser desfeita. Isso irá deletar permanentemente
+              o registro de evolução.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

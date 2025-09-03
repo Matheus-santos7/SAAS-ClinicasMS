@@ -1,16 +1,34 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { formatCurrencyInCents } from "@/helpers/currency";
 
 interface FinancialTabProps {
   patientId: string;
   doctors: Array<{ id: string; name: string }>;
-  budgets: any[];
-  treatments: any[];
+  budgets: Array<{
+    id: string;
+    totalAmountInCents: number;
+    createdAt: string | Date;
+    doctor: { name: string };
+    status: string;
+  }>;
+  treatments: Array<{
+    id: string;
+    totalAmountInCents: number;
+    amountPaidInCents: number;
+    status: string;
+  }>;
 }
 
 const getStatusBadgeVariant = (status: string) => {
@@ -27,9 +45,9 @@ const getStatusBadgeVariant = (status: string) => {
     default:
       return "outline";
   }
-}
+};
 
-export const FinancialTab = ({ patientId, doctors, budgets, treatments }: FinancialTabProps) => {
+export const FinancialTab = ({ budgets, treatments }: FinancialTabProps) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -37,61 +55,85 @@ export const FinancialTab = ({ patientId, doctors, budgets, treatments }: Financ
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Orçamentos</CardTitle>
-              <CardDescription>Orçamentos propostos para o paciente.</CardDescription>
+              <CardDescription>
+                Orçamentos propostos para o paciente.
+              </CardDescription>
             </div>
-            <Button size="sm" disabled>
+            <Button size="sm">
               <PlusCircle className="mr-2 h-4 w-4" />
               Novo Orçamento
             </Button>
           </CardHeader>
           <CardContent>
             {budgets.length > 0 ? (
-                <ul className="space-y-3">
-                    {budgets.map(budget => (
-                        <li key={budget.id} className="flex justify-between items-center p-2 rounded-md border">
-                           <div>
-                                <p className="font-medium">{formatCurrencyInCents(budget.totalAmountInCents)}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    {new Date(budget.createdAt).toLocaleDateString('pt-BR')} - Dr(a). {budget.doctor.name}
-                                </p>
-                           </div>
-                           <Badge variant={getStatusBadgeVariant(budget.status)}>{budget.status}</Badge>
-                        </li>
-                    ))}
-                </ul>
+              <ul className="space-y-3">
+                {budgets.map((budget) => (
+                  <li
+                    key={budget.id}
+                    className="flex items-center justify-between rounded-md border p-2"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {formatCurrencyInCents(budget.totalAmountInCents)}
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        {new Date(budget.createdAt).toLocaleDateString("pt-BR")}{" "}
+                        - Dr(a). {budget.doctor.name}
+                      </p>
+                    </div>
+                    <Badge variant={getStatusBadgeVariant(budget.status)}>
+                      {budget.status}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhum orçamento encontrado.</p>
+              <p className="text-muted-foreground py-4 text-center text-sm">
+                Nenhum orçamento encontrado.
+              </p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-             <div>
-                <CardTitle>Tratamentos</CardTitle>
-                <CardDescription>Tratamentos em andamento ou finalizados.</CardDescription>
+            <div>
+              <CardTitle>Tratamentos</CardTitle>
+              <CardDescription>
+                Tratamentos em andamento ou finalizados.
+              </CardDescription>
             </div>
-             <Button size="sm" variant="outline" disabled>
-                Registrar Pagamento
+            <Button size="sm" variant="outline" disabled>
+              Registrar Pagamento
             </Button>
           </CardHeader>
           <CardContent>
-             {treatments.length > 0 ? (
-                <ul className="space-y-3">
-                    {treatments.map(treatment => (
-                        <li key={treatment.id} className="flex justify-between items-center p-2 rounded-md border">
-                           <div>
-                                <p className="font-medium">{formatCurrencyInCents(treatment.totalAmountInCents)}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    Pago: {formatCurrencyInCents(treatment.amountPaidInCents)}
-                                </p>
-                           </div>
-                           <Badge variant={getStatusBadgeVariant(treatment.status)}>{treatment.status}</Badge>
-                        </li>
-                    ))}
-                </ul>
+            {treatments.length > 0 ? (
+              <ul className="space-y-3">
+                {treatments.map((treatment) => (
+                  <li
+                    key={treatment.id}
+                    className="flex items-center justify-between rounded-md border p-2"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {formatCurrencyInCents(treatment.totalAmountInCents)}
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        Pago:{" "}
+                        {formatCurrencyInCents(treatment.amountPaidInCents)}
+                      </p>
+                    </div>
+                    <Badge variant={getStatusBadgeVariant(treatment.status)}>
+                      {treatment.status}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhum tratamento encontrado.</p>
+              <p className="text-muted-foreground py-4 text-center text-sm">
+                Nenhum tratamento encontrado.
+              </p>
             )}
           </CardContent>
         </Card>
