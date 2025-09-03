@@ -14,6 +14,7 @@ import {
   PageTitle,
 } from "@/components/ui/page-container";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 const FinancialPage = async () => {
   const session = await auth.api.getSession({
@@ -21,10 +22,10 @@ const FinancialPage = async () => {
   });
 
   if (!session?.user) {
-    redirect("/authentication");
+    redirect(ROUTES.LOGIN);
   }
   if (!session.user.clinic) {
-    redirect("/clinic-form");
+    redirect(ROUTES.CLINIC_FORM);
   }
 
   // Futuramente, aqui você buscará os dados financeiros da clínica.

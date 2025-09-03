@@ -21,6 +21,7 @@ import { FormItem, FormLabel } from "@/components/ui/form";
 import { Form, FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { ROUTES } from "@/lib/routes";
 
 const registerSchema = z.object({
   name: z.string().trim().min(1, { message: "Nome é obrigatório" }),
@@ -55,7 +56,7 @@ const SignUpForm = () => {
       },
       {
         onSuccess: () => {
-          router.push("/dashboard");
+          router.push(ROUTES.DASHBOARD);
         },
         onError: (ctx) => {
           if (ctx.error.code === "USER_ALREADY_EXISTS") {

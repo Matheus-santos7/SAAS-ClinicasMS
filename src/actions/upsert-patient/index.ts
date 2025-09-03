@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
+import { ROUTES } from "@/lib/routes";
 
 import { upsertPatientSchema } from "./schema";
 
@@ -36,5 +37,5 @@ export const upsertPatient = actionClient
           ...parsedInput,
         },
       });
-    revalidatePath("/patients");
+    revalidatePath(ROUTES.PATIENTS);
   });

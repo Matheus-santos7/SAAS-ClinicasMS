@@ -21,6 +21,7 @@ import { FormItem, FormLabel } from "@/components/ui/form";
 import { Form, FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { ROUTES } from "@/lib/routes";
 
 const loginSchema = z.object({
   email: z
@@ -52,7 +53,7 @@ const LoginForm = () => {
       },
       {
         onSuccess: () => {
-          router.push("/dashboard");
+          router.push(ROUTES.DASHBOARD);
         },
         onError: () => {
           toast.error("E-mail ou senha inválidos.");
@@ -64,7 +65,7 @@ const LoginForm = () => {
   const handleGoogleLogin = async () => {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/dashboard",
+      callbackURL: ROUTES.DASHBOARD,
       scopes: ["email", "profile"],
     });
   };

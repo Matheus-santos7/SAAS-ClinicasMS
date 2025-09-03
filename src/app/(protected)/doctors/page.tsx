@@ -14,6 +14,7 @@ import {
 import { db } from "@/db";
 import { doctorsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 import AddDoctorButton from "./_components/add-doctor-button";
 import DoctorCard from "./_components/doctor-card";
@@ -23,13 +24,13 @@ const DoctorsPage = async () => {
     headers: await headers(),
   });
   if (!session?.user) {
-    redirect("/authentication");
+    redirect(ROUTES.LOGIN);
   }
   if (!session.user.plan) {
-    redirect("/new-subscription");
+    redirect(ROUTES.SUBSCRIPTION);
   }
   if (!session.user.clinic) {
-    redirect("/clinic-form");
+    redirect(ROUTES.CLINIC_FORM);
   }
   const doctors = await db.query.doctorsTable.findMany({
     where: eq(doctorsTable.clinicId, session.user.clinic.id),
@@ -39,7 +40,9 @@ const DoctorsPage = async () => {
       <PageHeader>
         <PageHeaderContent>
           <PageTitle>Dentistas</PageTitle>
-          <PageDescription>Gerencie os Dentistas da sua clínica</PageDescription>
+          <PageDescription>
+            Gerencie os Dentistas da sua clínica
+          </PageDescription>
         </PageHeaderContent>
         <PageActions>
           <AddDoctorButton />

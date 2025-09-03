@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { doctorsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
+import { ROUTES } from "@/lib/routes";
 
 import { upsertDoctorSchema } from "./schema";
 
@@ -57,5 +58,5 @@ export const upsertDoctor = actionClient
           availableToTime: availableToTimeUTC.format("HH:mm:ss"),
         },
       });
-    revalidatePath("/doctors");
+    revalidatePath(ROUTES.DOCTORS);
   });

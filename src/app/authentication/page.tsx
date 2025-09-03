@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 import LoginForm from "./components/login-form";
 import SignUpForm from "./components/sign-up-form";
@@ -12,7 +13,7 @@ const AuthenticationPage = async () => {
     headers: await headers(),
   });
   if (session?.user) {
-    redirect("/dashboard");
+    redirect(ROUTES.DASHBOARD);
   }
   return (
     <div className="flex h-screen w-screen items-center justify-center">

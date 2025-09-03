@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { appointmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
+import { ROUTES } from "@/lib/routes";
 
 import { getAvailableTimes } from "../get-available-times";
 import { addAppointmentSchema } from "./schema";
@@ -48,6 +49,6 @@ export const addAppointment = actionClient
       date: appointmentDateTime,
     });
 
-    revalidatePath("/appointments");
-    revalidatePath("/dashboard");
+    revalidatePath(ROUTES.APPOINTMENTS);
+    revalidatePath(ROUTES.DASHBOARD);
   });

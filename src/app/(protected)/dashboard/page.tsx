@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/page-container";
 import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 import { appointmentsTableColumns } from "../appointments/_components/table-columns";
 import AppointmentsChart from "./_components/appointments-chart";
@@ -36,18 +37,18 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
     headers: await headers(),
   });
   if (!session?.user) {
-    redirect("/authentication");
+    redirect(ROUTES.LOGIN);
   }
   if (!session.user.clinic) {
-    redirect("/clinic-form");
+    redirect(ROUTES.CLINIC_FORM);
   }
   if (!session.user.plan) {
-    redirect("/new-subscription");
+    redirect(ROUTES.SUBSCRIPTION);
   }
   const { from, to } = await searchParams;
   if (!from || !to) {
     redirect(
-      `/dashboard?from=${dayjs().format("YYYY-MM-DD")}&to=${dayjs().add(1, "month").format("YYYY-MM-DD")}`,
+      `${ROUTES.DASHBOARD}?from=${dayjs().format("YYYY-MM-DD")}&to=${dayjs().add(1, "month").format("YYYY-MM-DD")}`,
     );
   }
   const {

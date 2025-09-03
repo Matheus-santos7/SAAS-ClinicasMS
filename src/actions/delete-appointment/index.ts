@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { appointmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
+import { ROUTES } from "@/lib/routes";
 
 export const deleteAppointment = actionClient
   .schema(
@@ -35,5 +36,5 @@ export const deleteAppointment = actionClient
     await db
       .delete(appointmentsTable)
       .where(eq(appointmentsTable.id, parsedInput.id));
-    revalidatePath("/appointments");
+    revalidatePath(ROUTES.APPOINTMENTS);
   });

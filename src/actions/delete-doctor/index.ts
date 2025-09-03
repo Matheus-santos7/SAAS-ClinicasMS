@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { doctorsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
+import { ROUTES } from "@/lib/routes";
 
 export const deleteDoctor = actionClient
   .schema(
@@ -33,5 +34,5 @@ export const deleteDoctor = actionClient
       throw new Error("Médico não encontrado");
     }
     await db.delete(doctorsTable).where(eq(doctorsTable.id, parsedInput.id));
-    revalidatePath("/doctors");
+    revalidatePath(ROUTES.DOCTORS);
   });

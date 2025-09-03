@@ -33,31 +33,32 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
+import { ROUTES } from "@/lib/routes";
 
 const items = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: ROUTES.DASHBOARD,
     icon: LayoutDashboard,
   },
   {
     title: "Agendamentos",
-    url: "/appointments",
+    url: ROUTES.APPOINTMENTS,
     icon: CalendarDays,
   },
   {
     title: "Dentistas",
-    url: "/doctors",
+    url: ROUTES.DOCTORS,
     icon: Stethoscope,
   },
   {
     title: "Pacientes",
-    url: "/patients",
+    url: ROUTES.PATIENTS,
     icon: UsersRound,
   },
   {
     title: "Financeiro",
-    url: "/financial",
+    url: ROUTES.FINANCIAL,
     icon: Wallet,
   },
 ];
@@ -71,7 +72,7 @@ export function AppSidebar() {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push("/authentication");
+          router.push(ROUTES.LOGIN);
         },
       },
     });
@@ -106,9 +107,9 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === "/subscription"}
+                  isActive={pathname === ROUTES.SUBSCRIPTION}
                 >
-                  <Link href="/subscription">
+                  <Link href={ROUTES.SUBSCRIPTION}>
                     <Gem />
                     <span>Assinatura</span>
                   </Link>

@@ -10,6 +10,7 @@ import {
   PageTitle,
 } from "@/components/ui/page-container";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 import { SubscriptionPlan } from "./_components/subscription-plan";
 
@@ -18,10 +19,10 @@ const SubscriptionPage = async () => {
     headers: await headers(),
   });
   if (!session) {
-    redirect("/login");
+    redirect(ROUTES.LOGIN);
   }
   if (!session.user.clinic) {
-    redirect("/clinic-form");
+    redirect(ROUTES.CLINIC_FORM);
   }
   return (
     <PageContainer>

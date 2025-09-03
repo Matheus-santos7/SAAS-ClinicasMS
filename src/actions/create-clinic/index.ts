@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { clinicsTable, usersToClinicsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 export const createClinic = async (name: string) => {
   const session = await auth.api.getSession({
@@ -19,5 +20,5 @@ export const createClinic = async (name: string) => {
     userId: session.user.id,
     clinicId: clinic.id,
   });
-  redirect("/dashboard");
+  redirect(ROUTES.DASHBOARD);
 };

@@ -15,6 +15,7 @@ import {
 import { db } from "@/db";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 import AddAppointmentButton from "./_components/add-appointment-button";
 import { appointmentsTableColumns } from "./_components/table-columns";
@@ -24,13 +25,13 @@ const AppointmentsPage = async () => {
     headers: await headers(),
   });
   if (!session?.user) {
-    redirect("/authentication");
+    redirect(ROUTES.LOGIN);
   }
   if (!session.user.clinic) {
-    redirect("/clinic-form");
+    redirect(ROUTES.CLINIC_FORM);
   }
   if (!session.user.plan) {
-    redirect("/new-subscription");
+    redirect(ROUTES.SUBSCRIPTION);
   }
   const [patients, doctors, appointments] = await Promise.all([
     db.query.patientsTable.findMany({

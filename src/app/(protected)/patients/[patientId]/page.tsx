@@ -7,11 +7,16 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { budgetsTable, patientsTable, treatmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 import PatientDetailsClient from "./_components/patient-details-client";
 
 // ...existing code...
-const PatientDetailsPage = async ({ params }: { params: { patientId: string } }) => {
+const PatientDetailsPage = async ({
+  params,
+}: {
+  params: { patientId: string };
+}) => {
   // CORREÇÃO APLICADA AQUI:
   const { patientId } = await params;
 
@@ -19,7 +24,7 @@ const PatientDetailsPage = async ({ params }: { params: { patientId: string } })
     headers: await headers(),
   });
   if (!session?.user) {
-    redirect("/authentication");
+    redirect(ROUTES.LOGIN);
   }
 
   const patientData = await db.query.patientsTable.findFirst({
@@ -43,7 +48,7 @@ const PatientDetailsPage = async ({ params }: { params: { patientId: string } })
   });
 
   if (!patientData) {
-    return redirect("/patients");
+    return redirect(ROUTES.PATIENTS);
   }
 
   // Buscar budgets do paciente

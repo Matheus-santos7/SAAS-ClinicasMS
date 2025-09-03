@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { ROUTES } from "@/lib/routes";
 
 import PatientsPageClient from "./_components/patients-page-client";
 
@@ -19,9 +20,9 @@ const PatientsPage = async ({
 }) => {
   // ... (toda a lógica de autenticação permanece a mesma)
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect("/authentication");
-  if (!session.user.clinic) redirect("/clinic-form");
-  if (!session.user.plan) redirect("/new-subscription");
+  if (!session?.user) redirect(ROUTES.LOGIN);
+  if (!session.user.clinic) redirect(ROUTES.CLINIC_FORM);
+  if (!session.user.plan) redirect(ROUTES.SUBSCRIPTION);
 
   // --- LÓGICA DE PAGINAÇÃO E BUSCA ---
 
