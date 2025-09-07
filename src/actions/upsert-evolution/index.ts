@@ -1,3 +1,4 @@
+// src/actions/upsert-evolution/index.ts
 "use server";
 
 import { and, eq } from "drizzle-orm";
@@ -5,8 +6,6 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { evolutionTable } from "@/db/schema";
-// Import the correct function from your auth module
-import { auth } from "@/lib/auth";
 import { actionClient } from "@/lib/next-safe-action";
 
 import { upsertEvolutionSchema } from "./schema";
@@ -14,14 +13,8 @@ import { upsertEvolutionSchema } from "./schema";
 export const upsertEvolution = actionClient
   .schema(upsertEvolutionSchema)
   .action(async ({ parsedInput }) => {
-    const { headers } = await import("next/headers");
-    const session = await auth.api.getSession({ headers: await headers() });
-    const doctorId = session?.user?.id;
-    if (!doctorId) {
-      throw new Error("Acesso não autorizado.");
-    }
-
-    const { id, patientId, ...rest } = parsedInput;
+    const { id, patientId, doctorId, date, description, observations } =
+      parsedInput;
 
     try {
       if (id) {
@@ -29,7 +22,11 @@ export const upsertEvolution = actionClient
         const [updatedEvolution] = await db
           .update(evolutionTable)
           .set({
-            ...rest,
+            patientId,
+            doctorId,
+            date,
+            description,
+            observations: observations ?? "",
             updatedAt: new Date(),
           })
           .where(
@@ -42,16 +39,17 @@ export const upsertEvolution = actionClient
 
         if (!updatedEvolution) {
           throw new Error(
-            "Evolução não encontrada ou você não tem permissão para editar.",
+            "Evolução não encontrada ou o médico selecionado não corresponde.",
           );
         }
       } else {
         // Modo de Criação
         await db.insert(evolutionTable).values({
-          ...rest,
           patientId,
           doctorId,
-          observations: rest.observations ?? "",
+          date,
+          description,
+          observations: observations ?? "",
         });
       }
 

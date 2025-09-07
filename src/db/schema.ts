@@ -163,7 +163,7 @@ export const patientsTable = pgTable("patients", {
     .$onUpdate(() => new Date()),
 });
 
-// Tabela de Documentos refatorada para ser genérica
+// Tabela de Documents 
 export const documentsTable = pgTable("documents", {
   id: uuid("id").defaultRandom().primaryKey(),
   fileName: text("file_name").notNull(),
