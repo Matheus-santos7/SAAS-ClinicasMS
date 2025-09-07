@@ -2,11 +2,11 @@
 
 import dayjs from "dayjs";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 
 import { db } from "@/db";
 import { appointmentsTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { canAccessClinicResource } from "@/helpers/permission";
+import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { actionClient } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
@@ -16,14 +16,16 @@ import { addAppointmentSchema } from "./schema";
 export const addAppointment = actionClient
   .schema(addAppointmentSchema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
-    if (!session?.user.clinic?.id) {
-      throw new Error("Clinic not found");
+    const session = await getSessionOrThrow();
+    const clinicId = getClinicIdOrThrow(session);
+
+    if (
+      !canAccessClinicResource(
+        session?.user.clinic?.id,
+        session?.user.clinic?.id,
+      )
+    ) {
+      throw new Error("Acesso negado à clínica");
     }
     const availableTimes = await getAvailableTimes({
       doctorId: parsedInput.doctorId,
@@ -45,7 +47,7 @@ export const addAppointment = actionClient
 
     await db.insert(appointmentsTable).values({
       ...parsedInput,
-      clinicId: session?.user.clinic?.id,
+      clinicId: clinicId,
       date: appointmentDateTime,
     });
 

@@ -1,12 +1,11 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { z } from "zod";
 
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { actionClient } from "@/lib/next-safe-action";
 
 const schema = z.object({
@@ -17,22 +16,13 @@ const schema = z.object({
 export const searchPatients = actionClient
   .schema(schema)
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      throw new Error("Não autorizado");
-    }
-
-    if (!session.user.clinic) {
-      throw new Error("Clínica não encontrada");
-    }
+    const session = await getSessionOrThrow();
+    const clinicId = getClinicIdOrThrow(session);
 
     const { searchTerm, searchType } = parsedInput;
 
     const patients = await db.query.patientsTable.findMany({
-      where: eq(patientsTable.clinicId, session.user.clinic.id),
+      where: eq(patientsTable.clinicId, clinicId),
     });
 
     // Filtra os pacientes baseado no tipo de busca

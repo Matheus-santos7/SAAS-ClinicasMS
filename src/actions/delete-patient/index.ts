@@ -2,12 +2,12 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { z } from "zod";
 
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { canAccessClinicResource } from "@/helpers/permission";
+import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { actionClient } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
@@ -18,19 +18,15 @@ export const deletePatient = actionClient
     }),
   )
   .action(async ({ parsedInput }) => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+    const session = await getSessionOrThrow();
+    const clinicId = getClinicIdOrThrow(session);
     const patient = await db.query.patientsTable.findFirst({
       where: eq(patientsTable.id, parsedInput.id),
     });
     if (!patient) {
       throw new Error("Paciente não encontrado");
     }
-    if (patient.clinicId !== session.user.clinic?.id) {
+    if (!canAccessClinicResource(patient.clinicId, clinicId)) {
       throw new Error("Paciente não encontrado");
     }
     await db.delete(patientsTable).where(eq(patientsTable.id, parsedInput.id));

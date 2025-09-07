@@ -9,14 +9,13 @@ export default function Loading() {
     <div className="flex h-full min-h-[calc(100vh-100px)] w-full flex-col items-center justify-center bg-background">
       <div className="flex flex-col items-center">
         <Image
-          src="/logo.svg"
+          src="/logo.png"
           alt="Carregando..."
-          width={80}
-          height={20}
+          width={200}
+          height={120}
           priority
           className="animate-heartbeat" // Usando a nova animação
         />
-        <p className="text-muted-foreground mt-4 text-sm">Carregando dados...</p>
       </div>
     </div>
   );
