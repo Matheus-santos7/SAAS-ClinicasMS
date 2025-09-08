@@ -106,7 +106,7 @@ export const AnamnesisTab = ({
     execute({
       ...values,
       patientId: patientId,
-      doctorId: values.doctorId,
+      doctorId: values.doctorId ?? "",
       id: anamnesis?.id,
     });
   };
