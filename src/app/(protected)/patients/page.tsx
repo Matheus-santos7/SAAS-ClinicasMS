@@ -16,7 +16,7 @@ import PatientsPageClient from "./_components/patients-page-client";
 const PatientsPage = async ({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) => {
   // ... (toda a lógica de autenticação permanece a mesma)
   const session = await auth.api.getSession({ headers: await headers() });

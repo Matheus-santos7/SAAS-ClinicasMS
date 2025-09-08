@@ -15,9 +15,8 @@ import PatientDetailsClient from "./_components/patient-details-client";
 const PatientDetailsPage = async ({
   params,
 }: {
-  params: { patientId: string };
+  params: Promise<{ patientId: string }>;
 }) => {
-  // CORREÇÃO APLICADA AQUI:
   const { patientId } = await params;
 
   const session = await auth.api.getSession({
