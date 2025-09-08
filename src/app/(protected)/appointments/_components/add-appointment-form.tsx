@@ -126,7 +126,7 @@ const AddAppointmentForm = ({
         patientId: "",
         doctorId: "",
         appointmentPrice: 0,
-        date: undefined,
+        date: form.getValues("date"), // preserva a data atual
         time: "",
       });
     }
