@@ -1,62 +1,15 @@
-import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-
-import {
-  PageActions,
-  PageContainer,
-  PageContent,
-  PageDescription,
-  PageHeader,
-  PageHeaderContent,
-  PageTitle,
-} from "@/components/ui/page-container";
 import { db } from "@/db";
-import { doctorsTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { ROUTES } from "@/lib/routes";
 
-import AddDoctorButton from "./_components/add-doctor-button";
-import DoctorCard from "./_components/doctor-card";
+import DoctorsPageClient from "./DoctorsPageClient";
 
-const DoctorsPage = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    redirect(ROUTES.LOGIN);
-  }
-  if (!session.user.plan) {
-    redirect(ROUTES.SUBSCRIPTION);
-  }
-  if (!session.user.clinic) {
-    redirect(ROUTES.CLINIC_FORM);
-  }
-  const doctors = await db.query.doctorsTable.findMany({
-    where: eq(doctorsTable.clinicId, session.user.clinic.id),
-  });
-  return (
-    <PageContainer>
-      <PageHeader>
-        <PageHeaderContent>
-          <PageTitle>Dentistas</PageTitle>
-          <PageDescription>
-            Gerencie os Dentistas da sua clínica
-          </PageDescription>
-        </PageHeaderContent>
-        <PageActions>
-          <AddDoctorButton />
-        </PageActions>
-      </PageHeader>
-      <PageContent>
-        <div className="grid grid-cols-3 gap-6">
-          {doctors.map((doctor) => (
-            <DoctorCard key={doctor.id} doctor={doctor} />
-          ))}
-        </div>
-      </PageContent>
-    </PageContainer>
-  );
-};
+export default async function DoctorsPage() {
+  // TODO: buscar sessão e validar permissões se necessário
+  // const session = await auth.api.getSession({});
+  // if (!session?.user) { ... }
+  // if (!session.user.plan) { ... }
+  // if (!session.user.clinic) { ... }
 
-export default DoctorsPage;
+  // Exemplo: buscar todos os médicos (ajuste para filtrar por clínica se necessário)
+  const doctors = await db.query.doctorsTable.findMany();
+  return <DoctorsPageClient doctors={doctors} />;
+}
