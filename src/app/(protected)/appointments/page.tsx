@@ -1,5 +1,5 @@
 // src/app/(protected)/appointments/page.tsx
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -21,9 +21,12 @@ import { ROUTES } from "@/lib/routes";
 
 import AddAppointmentButton from "./_components/appointmentList/add-appointment-button";
 import { appointmentsTableColumns } from "./_components/appointmentList/table-columns";
-import AgendaView from "./_components/calendar/agenda-view"; // Importe o novo componente
+import AgendaView from "./_components/calendar/agenda-view";
+import { DoctorFilter } from "./_components/doctor-filter";
 
-const AppointmentsPage = async () => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AppointmentsPage = async (props: any) => {
+  const searchParams = props.searchParams;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -36,22 +39,36 @@ const AppointmentsPage = async () => {
   if (!session.user.plan) {
     redirect(ROUTES.SUBSCRIPTION);
   }
-  const [patients, doctors, appointments] = await Promise.all([
+  const doctorId = searchParams?.doctorId;
+
+  const [patients, doctors] = await Promise.all([
     db.query.patientsTable.findMany({
       where: eq(patientsTable.clinicId, session.user.clinic.id),
     }),
     db.query.doctorsTable.findMany({
       where: eq(doctorsTable.clinicId, session.user.clinic.id),
-    }),
-    db.query.appointmentsTable.findMany({
-      where: eq(appointmentsTable.clinicId, session.user.clinic.id),
-      with: {
-        patient: true,
-        doctor: true,
-      },
-      orderBy: (appointments, { asc }) => [asc(appointments.date)],
+      orderBy: (doctors, { asc }) => [asc(doctors.name)],
     }),
   ]);
+
+  const whereClause = doctorId
+    ? and(
+        eq(appointmentsTable.clinicId, session.user.clinic.id),
+        eq(appointmentsTable.doctorId, doctorId),
+      )
+    : eq(appointmentsTable.clinicId, session.user.clinic.id);
+
+  const appointmentsRaw = await db.query.appointmentsTable.findMany({
+    where: whereClause,
+    with: {
+      patient: true,
+      doctor: true,
+    },
+    orderBy: (appointments, { asc }) => [asc(appointments.date)],
+  });
+
+  // Use appointmentsRaw directly if 'status' does not exist
+  const appointments = appointmentsRaw;
 
   return (
     <PageContainer>
@@ -67,13 +84,19 @@ const AppointmentsPage = async () => {
         </PageActions>
       </PageHeader>
       <PageContent>
+        <DoctorFilter doctors={doctors} />
         <Tabs defaultValue="agenda">
           <TabsList>
             <TabsTrigger value="agenda">Agenda</TabsTrigger>
             <TabsTrigger value="lista">Lista</TabsTrigger>
           </TabsList>
           <TabsContent value="agenda" className="mt-6">
-            <AgendaView appointments={appointments} />
+            <AgendaView
+              appointments={appointments.map((a) => ({
+                ...a,
+                status: "confirmed",
+              }))}
+            />
           </TabsContent>
           <TabsContent value="lista">
             <DataTable data={appointments} columns={appointmentsTableColumns} />
