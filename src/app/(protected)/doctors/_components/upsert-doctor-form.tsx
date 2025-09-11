@@ -56,6 +56,9 @@ const formSchema = z
     availableToTime: z.string().min(1, {
       message: "Hora de término é obrigatória.",
     }),
+    color: z.string().min(1, {
+      message: "Cor da agenda é obrigatória.",
+    }),
   })
   .refine(
     (data) => {
@@ -399,6 +402,19 @@ const UpsertDoctorForm = ({
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cor da Agenda</FormLabel>
+                <FormControl>
+                  <Input type="color" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

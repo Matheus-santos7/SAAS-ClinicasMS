@@ -1,3 +1,4 @@
+// src/app/(protected)/appointments/page.tsx
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -12,13 +13,15 @@ import {
   PageHeaderContent,
   PageTitle,
 } from "@/components/ui/page-container";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { db } from "@/db";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import AddAppointmentButton from "./_components/add-appointment-button";
-import { appointmentsTableColumns } from "./_components/table-columns";
+import AddAppointmentButton from "./_components/appointmentList/add-appointment-button";
+import { appointmentsTableColumns } from "./_components/appointmentList/table-columns";
+import AgendaView from "./_components/calendar/agenda-view"; // Importe o novo componente
 
 const AppointmentsPage = async () => {
   const session = await auth.api.getSession({
@@ -46,6 +49,7 @@ const AppointmentsPage = async () => {
         patient: true,
         doctor: true,
       },
+      orderBy: (appointments, { asc }) => [asc(appointments.date)],
     }),
   ]);
 
@@ -63,7 +67,18 @@ const AppointmentsPage = async () => {
         </PageActions>
       </PageHeader>
       <PageContent>
-        <DataTable data={appointments} columns={appointmentsTableColumns} />
+        <Tabs defaultValue="agenda">
+          <TabsList>
+            <TabsTrigger value="agenda">Agenda</TabsTrigger>
+            <TabsTrigger value="lista">Lista</TabsTrigger>
+          </TabsList>
+          <TabsContent value="agenda" className="mt-6">
+            <AgendaView appointments={appointments} />
+          </TabsContent>
+          <TabsContent value="lista">
+            <DataTable data={appointments} columns={appointmentsTableColumns} />
+          </TabsContent>
+        </Tabs>
       </PageContent>
     </PageContainer>
   );

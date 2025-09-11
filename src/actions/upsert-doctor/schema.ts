@@ -9,6 +9,7 @@ export const upsertDoctorSchema = z
     specialty: z.string().trim().min(1, {
       message: "Especialidade é obrigatória.",
     }),
+    color: z.string().optional(),
     appointmentPriceInCents: z.number().min(1, {
       message: "Preço da consulta é obrigatório.",
     }),

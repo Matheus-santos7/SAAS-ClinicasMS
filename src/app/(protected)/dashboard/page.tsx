@@ -18,7 +18,7 @@ import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import { appointmentsTableColumns } from "../appointments/_components/table-columns";
+import { appointmentsTableColumns } from "../appointments/_components/appointmentList/table-columns";
 import AppointmentsChart from "./_components/appointments-chart";
 import { DatePicker } from "./_components/date-picker";
 import StatsCards from "./_components/stats-cards";
