@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, ilike } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
@@ -21,29 +21,24 @@ export const searchPatients = actionClient
 
     const { searchTerm, searchType } = parsedInput;
 
+    // Constrói a condição de busca dinamicamente
+    const searchCondition =
+      searchType === "name"
+        ? ilike(patientsTable.name, `%${searchTerm}%`)
+        : searchType === "phone"
+          ? ilike(
+              patientsTable.phoneNumber,
+              `%${searchTerm.replace(/\D/g, "")}%`,
+            )
+          : searchType === "cpf"
+            ? ilike(patientsTable.cpf, `%${searchTerm.replace(/\D/g, "")}%`)
+            : undefined;
+
+    // Executa a busca no banco de dados já com o filtro
     const patients = await db.query.patientsTable.findMany({
-      where: eq(patientsTable.clinicId, clinicId),
+      where: and(eq(patientsTable.clinicId, clinicId), searchCondition),
+      limit: 50, // Opcional: Limita o número de resultados para evitar sobrecarga
     });
 
-    // Filtra os pacientes baseado no tipo de busca
-    let filteredPatients = patients;
-
-    if (searchType === "name") {
-      filteredPatients = patients.filter((patient) =>
-        patient.name.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-    } else if (searchType === "phone") {
-      const cleanPhone = searchTerm.replace(/\D/g, "");
-      filteredPatients = patients.filter((patient) =>
-        patient.phoneNumber.replace(/\D/g, "").includes(cleanPhone),
-      );
-    } else if (searchType === "cpf") {
-      const cleanCPF = searchTerm.replace(/\D/g, "");
-      filteredPatients = patients.filter(
-        (patient) =>
-          patient.cpf && patient.cpf.replace(/\D/g, "").includes(cleanCPF),
-      );
-    }
-
-    return { data: filteredPatients };
+    return { data: patients };
   });
