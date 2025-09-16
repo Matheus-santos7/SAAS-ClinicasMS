@@ -9,8 +9,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
-import { upsertEvolution } from "@/actions/upsert-evolution/index";
-import { upsertEvolutionSchema } from "@/actions/upsert-evolution/schema";
+import { upsertEvolution } from "@/actions/patients/upsert-evolution/index";
+import { upsertEvolutionSchema } from "@/actions/patients/upsert-evolution/schema";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {

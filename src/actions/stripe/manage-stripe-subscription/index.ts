@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { auth } from "@/lib/auth";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 
-export const manageStripeSubscription = actionClient
+export const manageStripeSubscription = protectedAction
   .schema(z.string())
   .action(async ({ parsedInput: userEmail }) => {
     const session = await auth.api.getSession({ headers: await headers() });

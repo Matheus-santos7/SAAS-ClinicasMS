@@ -4,8 +4,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 
-import { createStripeCheckout } from "@/actions/create-stripe-checkout";
-import { manageStripeSubscription } from "@/actions/manage-stripe-subscription";
+import { createStripeCheckout } from "@/actions/stripe/create-stripe-checkout";
+import { manageStripeSubscription } from "@/actions/stripe/manage-stripe-subscription";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

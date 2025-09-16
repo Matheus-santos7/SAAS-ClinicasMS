@@ -6,11 +6,11 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { evolutionTable } from "@/db/schema";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 
 import { upsertEvolutionSchema } from "./schema";
 
-export const upsertEvolution = actionClient
+export const upsertEvolution = protectedAction
   .schema(upsertEvolutionSchema)
   .action(async ({ parsedInput }) => {
     const { id, patientId, doctorId, date, description, observations } =

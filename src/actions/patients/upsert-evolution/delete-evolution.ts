@@ -6,9 +6,9 @@ import { z } from "zod";
 
 import { db } from "@/db";
 import { evolutionTable } from "@/db/schema";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 
-export const deleteEvolution = actionClient
+export const deleteEvolution = protectedAction
   .schema(z.object({ id: z.string().uuid() }))
   .action(async ({ parsedInput }) => {
     // Busca evolução

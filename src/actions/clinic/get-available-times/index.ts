@@ -11,12 +11,12 @@ import { db } from "@/db";
 import { appointmentsTable, doctorsTable } from "@/db/schema";
 import { generateTimeSlots } from "@/helpers/time";
 import { auth } from "@/lib/auth";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export const getAvailableTimes = actionClient
+export const getAvailableTimes = protectedAction
   .schema(
     z.object({
       doctorId: z.string(),

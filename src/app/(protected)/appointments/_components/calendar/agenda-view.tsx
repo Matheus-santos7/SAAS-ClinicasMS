@@ -11,7 +11,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { Calendar, dayjsLocalizer, Event as RBCEvent } from "react-big-calendar";
 import { toast } from "sonner";
 
-import { updateAppointmentDate } from "@/actions/update-appointment-date";
+import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date";
 import { Badge } from "@/components/ui/badge";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 

@@ -7,7 +7,7 @@ import {
   budgetToTreatment,
   deleteBudget,
   upsertBudget,
-} from "@/actions/budget";
+} from "@/actions/patients/budget";
 import { BudgetModal } from "@/components/budget/BudgetModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

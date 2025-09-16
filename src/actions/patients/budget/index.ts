@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { budgetItemsTable, budgetsTable } from "@/db/schema";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 
 import {
   budgetDeleteSchema,
@@ -13,7 +13,7 @@ import {
   budgetToTreatmentSchema,
 } from "./schema";
 
-export const upsertBudget = actionClient
+export const upsertBudget = protectedAction
   .schema(budgetSchema)
   .action(async ({ parsedInput }) => {
     const {
@@ -71,7 +71,7 @@ export const upsertBudget = actionClient
     return { success: "Orçamento salvo!" };
   });
 
-export const deleteBudget = actionClient
+export const deleteBudget = protectedAction
   .schema(budgetDeleteSchema)
   .action(async ({ parsedInput }) => {
     const { id } = parsedInput;
@@ -84,7 +84,7 @@ export const deleteBudget = actionClient
     return { success: "Orçamento removido!" };
   });
 
-export const budgetToTreatment = actionClient
+export const budgetToTreatment = protectedAction
   .schema(budgetToTreatmentSchema)
   .action(async ({ parsedInput }) => {
     const { id } = parsedInput;

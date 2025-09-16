@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { upsertAnamnesis } from "@/actions/upsert-anamnesis"; // Corrigido o caminho da action
+import { upsertAnamnesis } from "@/actions/patients/upsert-anamnesis"; // Corrigido o caminho da action
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";

@@ -6,12 +6,12 @@ import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
 import { canAccessClinicResource } from "@/helpers/permission";
 import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
 import { upsertPatientSchema } from "./schema";
 
-export const upsertPatient = actionClient
+export const upsertPatient = protectedAction
   .schema(upsertPatientSchema)
   .action(async ({ parsedInput }) => {
     const session = await getSessionOrThrow();

@@ -5,7 +5,7 @@ import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 import { create } from "zustand";
 
-import { deleteEvolution } from "@/actions/upsert-evolution/delete-evolution";
+import { deleteEvolution } from "@/actions/patients/upsert-evolution/delete-evolution";
 import {
   AlertDialog,
   AlertDialogAction,

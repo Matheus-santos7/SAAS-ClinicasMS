@@ -26,7 +26,7 @@ import { DoctorFilter } from "./_components/doctor-filter";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const AppointmentsPage = async (props: any) => {
-  const searchParams = props.searchParams;
+  const searchParams = await props.searchParams;
   const session = await auth.api.getSession({
     headers: await headers(),
   });

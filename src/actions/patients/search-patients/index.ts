@@ -6,14 +6,14 @@ import { z } from "zod";
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
 import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 
 const schema = z.object({
   searchTerm: z.string().trim().min(1),
   searchType: z.enum(["name", "phone", "cpf"]),
 });
 
-export const searchPatients = actionClient
+export const searchPatients = protectedAction
   .schema(schema)
   .action(async ({ parsedInput }) => {
     const session = await getSessionOrThrow();

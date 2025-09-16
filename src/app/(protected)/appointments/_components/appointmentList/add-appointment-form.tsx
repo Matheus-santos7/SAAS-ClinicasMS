@@ -13,8 +13,8 @@ import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { addAppointment } from "@/actions/add-appointment";
-import { getAvailableTimes } from "@/actions/get-available-times";
+import { addAppointment } from "@/actions/appointment/add-appointment";
+import { getAvailableTimes } from "@/actions/clinic/get-available-times";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -143,10 +143,7 @@ const AddAppointmentForm = ({
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    createAppointmentAction.execute({
-      ...values,
-      appointmentPriceInCents: values.appointmentPrice * 100,
-    });
+    createAppointmentAction.execute(values);
   };
 
   const isDateAvailable = (date: Date) => {

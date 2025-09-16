@@ -7,11 +7,11 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { patientsAnamnesisTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 
 import { upsertAnamnesisSchema } from "./schema";
 
-export const upsertAnamnesis = actionClient
+export const upsertAnamnesis = protectedAction
   .schema(upsertAnamnesisSchema)
   .action(async ({ parsedInput }) => {
     const session = await auth.api.getSession({ headers: await headers() });

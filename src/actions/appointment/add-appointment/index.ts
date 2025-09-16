@@ -7,15 +7,15 @@ import { db } from "@/db";
 import { appointmentsTable } from "@/db/schema";
 import { canAccessClinicResource } from "@/helpers/permission";
 import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
-import { getAvailableTimes } from "../get-available-times";
-import { addAppointmentSchema } from "./schema";
+import { getAvailableTimes } from "../../clinic/get-available-times";
+import { type AddAppointmentSchema, addAppointmentSchema } from "./schema";
 
-export const addAppointment = actionClient
+export const addAppointment = protectedAction
   .schema(addAppointmentSchema)
-  .action(async ({ parsedInput }) => {
+  .action(async ({ parsedInput }: { parsedInput: AddAppointmentSchema }) => {
     const session = await getSessionOrThrow();
     const clinicId = getClinicIdOrThrow(session);
 
@@ -35,7 +35,8 @@ export const addAppointment = actionClient
       throw new Error("No available times");
     }
     const isTimeAvailable = availableTimes.data?.some(
-      (time) => time.value === parsedInput.time && time.available,
+      (time: { value: string; available: boolean }) =>
+        time.value === parsedInput.time && time.available,
     );
     if (!isTimeAvailable) {
       throw new Error("Time not available");
@@ -45,10 +46,21 @@ export const addAppointment = actionClient
       .set("minute", parseInt(parsedInput.time.split(":")[1]))
       .toDate();
 
+    // Buscar o preço do médico
+    const doctor = await db.query.doctorsTable.findFirst({
+      where: (doctors, { eq }) => eq(doctors.id, parsedInput.doctorId),
+    });
+
+    if (!doctor) {
+      throw new Error("Médico não encontrado");
+    }
+
     await db.insert(appointmentsTable).values({
-      ...parsedInput,
+      patientId: parsedInput.patientId,
+      doctorId: parsedInput.doctorId,
       clinicId: clinicId,
       date: appointmentDateTime,
+      appointmentPriceInCents: doctor.appointmentPriceInCents,
     });
 
     revalidatePath(ROUTES.APPOINTMENTS);

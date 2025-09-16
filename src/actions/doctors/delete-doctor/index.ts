@@ -8,10 +8,10 @@ import { db } from "@/db";
 import { doctorsTable } from "@/db/schema";
 import { canAccessClinicResource } from "@/helpers/permission";
 import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
-import { actionClient } from "@/lib/next-safe-action";
+import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
-export const deleteDoctor = actionClient
+export const deleteDoctor = protectedAction
   .schema(
     z.object({
       id: z.string().uuid(),
