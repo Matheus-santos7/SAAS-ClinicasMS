@@ -4,6 +4,7 @@ import { and, count, eq, ilike, or } from "drizzle-orm"; // Adicione and, count,
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { APP_CONFIG } from "@/constants/config";
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
@@ -30,7 +31,7 @@ const PatientsPage = async ({
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const search = params.search || "";
-  const itemsPerPage = 4; // Defina quantos itens por página você quer
+  const itemsPerPage = APP_CONFIG.PAGINATION.PATIENTS_PER_PAGE;
 
   // Cria a condição de busca (WHERE)
   const whereCondition = and(

@@ -2,10 +2,10 @@
 
 import { loadStripe } from "@stripe/stripe-js";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 
 import { createStripeCheckout } from "@/actions/create-stripe-checkout";
+import { manageStripeSubscription } from "@/actions/manage-stripe-subscription";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -21,7 +21,6 @@ export function SubscriptionPlan({
   className,
   userEmail,
 }: SubscriptionPlanProps) {
-  const router = useRouter();
   const createStripeCheckoutAction = useAction(createStripeCheckout, {
     onSuccess: async ({ data }) => {
       if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
@@ -41,6 +40,8 @@ export function SubscriptionPlan({
       });
     },
   });
+
+  const manageSubscriptionAction = useAction(manageStripeSubscription);
   const features = [
     "Cadastro de até 3 Dentistas",
     "Agendamentos ilimitados",
@@ -55,9 +56,7 @@ export function SubscriptionPlan({
   };
 
   const handleManagePlanClick = () => {
-    router.push(
-      `${process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL}?prefilled_email=${userEmail}`,
-    );
+    manageSubscriptionAction.execute(userEmail);
   };
 
   return (
@@ -97,10 +96,18 @@ export function SubscriptionPlan({
             className="w-full"
             variant="outline"
             onClick={active ? handleManagePlanClick : handleSubscribeClick}
-            disabled={createStripeCheckoutAction.isExecuting}
+            disabled={
+              createStripeCheckoutAction.isExecuting ||
+              manageSubscriptionAction.isExecuting
+            }
           >
             {createStripeCheckoutAction.isExecuting ? (
               <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            ) : manageSubscriptionAction.isExecuting ? (
+              <>
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                Redirecionando...
+              </>
             ) : active ? (
               "Gerenciar assinatura"
             ) : (
