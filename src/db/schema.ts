@@ -292,6 +292,7 @@ export const documentsTableRelations = relations(documentsTable, ({ one }) => ({
 export const appointmentsTable = pgTable("appointments", {
   id: uuid("id").defaultRandom().primaryKey(),
   date: timestamp("date").notNull(),
+  endDate: timestamp("endDate").notNull(),
   appointmentPriceInCents: integer("appointment_price_in_cents").notNull(),
   clinicId: uuid("clinic_id")
     .notNull()

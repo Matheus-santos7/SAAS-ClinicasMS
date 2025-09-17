@@ -227,6 +227,7 @@ async function populateClinicData(clinic: { id: string; name: string }) {
       doctorId: randomDoctor.id,
       patientId: randomPatient.id,
       date: appointmentDate,
+      endDate: dayjs(appointmentDate).add(30, "minutes").toDate(),
       appointmentPriceInCents: randomDoctor.appointmentPriceInCents,
     });
   }

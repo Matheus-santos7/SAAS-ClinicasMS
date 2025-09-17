@@ -45,6 +45,9 @@ export const addAppointment = protectedAction
       .set("hour", parseInt(parsedInput.time.split(":")[0]))
       .set("minute", parseInt(parsedInput.time.split(":")[1]))
       .toDate();
+    
+    const appointmentEndDate = dayjs(appointmentDateTime).add(30, "minutes").toDate();
+
 
     // Buscar o preço do médico
     const doctor = await db.query.doctorsTable.findFirst({
@@ -60,6 +63,7 @@ export const addAppointment = protectedAction
       doctorId: parsedInput.doctorId,
       clinicId: clinicId,
       date: appointmentDateTime,
+      endDate: appointmentEndDate, 
       appointmentPriceInCents: doctor.appointmentPriceInCents,
     });
 
