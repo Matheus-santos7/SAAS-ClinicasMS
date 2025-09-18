@@ -121,6 +121,8 @@ const AppointmentsPage = async ({
                 ...a,
                 status: "confirmed",
               }))}
+              patients={patients}
+              doctors={doctors}
             />
           </TabsContent>
 
