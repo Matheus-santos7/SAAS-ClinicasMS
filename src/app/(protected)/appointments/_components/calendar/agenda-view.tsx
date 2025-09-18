@@ -2,10 +2,11 @@
 "use client";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import "./agenda-view.css"; // Continuamos a usar o nosso CSS customizado
-import "dayjs/locale/pt-br"; // Importe a localização para o Dayjs
+import "./agenda-view.css";
+import "dayjs/locale/pt-br";
 
 import dayjs from "dayjs";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import {
@@ -22,23 +23,19 @@ import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 import { AppointmentDetailsModal } from "./appointment-details-modal";
 import { useAppointmentStore } from "./appointment-store";
 
-dayjs.locale("pt-br"); // Configure o Dayjs para usar português
+dayjs.locale("pt-br");
 const localizer = dayjsLocalizer(dayjs);
 
 export type AppointmentWithRelations = typeof appointmentsTable.$inferSelect & {
   patient: typeof patientsTable.$inferSelect;
   doctor: typeof doctorsTable.$inferSelect;
-  status: string; // Add this line if 'status' is not present in appointmentsTable
+  status: string;
 };
 
 interface AgendaViewProps {
   appointments: AppointmentWithRelations[];
 }
 
-// Componente customizado para renderizar o evento
-
-// Componente customizado para renderizar o evento
-// Define the type for the event prop expected by CustomEvent
 type CustomEventProps = {
   event: {
     resource: {
@@ -78,7 +75,7 @@ export default function AgendaView({ appointments }: AgendaViewProps) {
       appointments.map((appointment) => ({
         title: `${appointment.patient.name} - Dr(a). ${appointment.doctor.name}`,
         start: dayjs(appointment.date).toDate(),
-        end: dayjs(appointment.date).add(30, "minute").toDate(),
+        end: dayjs(appointment.endDate).toDate(),
         resource: {
           appointment,
         },
@@ -86,10 +83,11 @@ export default function AgendaView({ appointments }: AgendaViewProps) {
     [appointments],
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const eventPropGetter = useCallback((event: any) => {
-    const backgroundColor =
-      event.resource?.appointment?.doctor?.color || "#3174ad";
+  const eventPropGetter = useCallback((event: RBCEvent) => {
+    const resource = event.resource as {
+      appointment: AppointmentWithRelations;
+    };
+    const backgroundColor = resource.appointment.doctor?.color || "#3174ad";
     return {
       style: {
         backgroundColor,
@@ -141,7 +139,6 @@ export default function AgendaView({ appointments }: AgendaViewProps) {
       };
       const appointmentId = resource.appointment.id;
 
-      // Usamos a mesma action, mas passamos apenas o que mudou
       const promise = updateAppointmentDate({
         id: appointmentId,
         endDate: args.end,
@@ -176,30 +173,12 @@ export default function AgendaView({ appointments }: AgendaViewProps) {
   return (
     <>
       <AppointmentDetailsModal />
-      <div className="bg-card relative h-[75vh] max-w-full overflow-x-auto rounded-lg border p-4 sm:p-2 md:p-4">
+      {/* -- Início da Mudança -- */}
+      <div className="bg-card relative h-[80vh] max-w-full overflow-x-auto rounded-lg border p-4 sm:p-2 md:p-4">
+      {/* -- Fim da Mudança -- */}
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
-            <svg
-              className="h-8 w-8 animate-spin text-yellow-400"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-label="Carregando"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.41 1.41M6.34 17.66l-1.41 1.41M17.66 17.66l-1.41-1.41M6.34 6.34L4.93 7.75"
-              />
-            </svg>
+            <Loader2 className="h-8 w-8 animate-spin text-yellow-400" />
           </div>
         )}
         <Calendar

@@ -67,7 +67,6 @@ const AppointmentsPage = async (props: any) => {
     orderBy: (appointments, { asc }) => [asc(appointments.date)],
   });
 
-  // Use appointmentsRaw directly if 'status' does not exist
   const appointments = appointmentsRaw;
 
   return (
@@ -84,12 +83,14 @@ const AppointmentsPage = async (props: any) => {
         </PageActions>
       </PageHeader>
       <PageContent>
-        <DoctorFilter doctors={doctors} />
         <Tabs defaultValue="agenda">
-          <TabsList>
-            <TabsTrigger value="agenda">Agenda</TabsTrigger>
-            <TabsTrigger value="lista">Lista</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between gap-4">
+            <DoctorFilter doctors={doctors} />
+            <TabsList>
+              <TabsTrigger value="agenda">Agenda</TabsTrigger>
+              <TabsTrigger value="lista">Lista</TabsTrigger>
+            </TabsList>
+          </div>
           <TabsContent value="agenda" className="mt-6">
             <AgendaView
               appointments={appointments.map((a) => ({
