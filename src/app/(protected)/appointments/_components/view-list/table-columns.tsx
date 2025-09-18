@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { appointmentsTable } from "@/db/schema";
+import { formatCurrencyInCents } from "@/helpers/currency";
 
 import AppointmentsTableActions from "./table-actions";
 
@@ -33,10 +34,6 @@ export const appointmentsTableColumns: ColumnDef<AppointmentWithRelations>[] = [
     id: "doctor",
     accessorKey: "doctor.name",
     header: "Médico",
-    cell: (params) => {
-      const appointment = params.row.original;
-      return `${appointment.doctor.name}`;
-    },
   },
   {
     id: "date",
@@ -60,11 +57,7 @@ export const appointmentsTableColumns: ColumnDef<AppointmentWithRelations>[] = [
     header: "Valor",
     cell: (params) => {
       const appointment = params.row.original;
-      const price = appointment.appointmentPriceInCents / 100;
-      return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(price);
+      return formatCurrencyInCents(appointment.appointmentPriceInCents);
     },
   },
   {

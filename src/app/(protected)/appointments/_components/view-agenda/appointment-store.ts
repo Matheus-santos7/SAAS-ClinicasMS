@@ -1,7 +1,6 @@
-// src/app/(protected)/appointments/_components/calendar/appointment-store.ts
 import { create } from "zustand";
 
-import { AppointmentWithRelations } from "./agenda-view";
+import { AppointmentWithRelations } from ".";
 
 type AppointmentState = {
   selectedAppointment: AppointmentWithRelations | null;
@@ -13,6 +12,7 @@ type AppointmentState = {
 export const useAppointmentStore = create<AppointmentState>((set) => ({
   selectedAppointment: null,
   isModalOpen: false,
-  openModal: (appointment) => set({ selectedAppointment: appointment, isModalOpen: true }),
+  openModal: (appointment) =>
+    set({ selectedAppointment: appointment, isModalOpen: true }),
   closeModal: () => set({ selectedAppointment: null, isModalOpen: false }),
 }));

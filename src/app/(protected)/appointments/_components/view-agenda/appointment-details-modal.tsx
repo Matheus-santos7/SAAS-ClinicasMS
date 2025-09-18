@@ -1,4 +1,3 @@
-// src/app/(protected)/appointments/_components/calendar/appointment-details-modal.tsx
 "use client";
 
 import {
@@ -35,7 +34,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { formatCurrencyInCents } from "@/helpers/currency";
 
-import { useAppointmentStore } from "./appointment-store"; // Criaremos este arquivo a seguir
+import { useAppointmentStore } from "./appointment-store";
 
 export const AppointmentDetailsModal = () => {
   const { isModalOpen, selectedAppointment, closeModal } =

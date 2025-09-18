@@ -1,8 +1,7 @@
-// src/app/(protected)/appointments/_components/calendar/agenda-view.tsx
 "use client";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import "./agenda-view.css";
+import "./style.css";
 import "dayjs/locale/pt-br";
 
 import dayjs from "dayjs";
@@ -173,9 +172,7 @@ export default function AgendaView({ appointments }: AgendaViewProps) {
   return (
     <>
       <AppointmentDetailsModal />
-      {/* -- Início da Mudança -- */}
       <div className="bg-card relative h-[80vh] max-w-full overflow-x-auto rounded-lg border p-4 sm:p-2 md:p-4">
-      {/* -- Fim da Mudança -- */}
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
             <Loader2 className="h-8 w-8 animate-spin text-yellow-400" />
@@ -209,7 +206,7 @@ export default function AgendaView({ appointments }: AgendaViewProps) {
           selectable
           resizable
           components={{
-            event: CustomEvent,
+            event: CustomEvent as React.ComponentType<CustomEventProps>,
           }}
         />
       </div>

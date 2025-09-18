@@ -33,7 +33,7 @@ export function DoctorFilter({ doctors }: DoctorFilterProps) {
   };
 
   return (
-    <div className="mb-4 max-w-xs">
+    <div className="max-w-xs">
       <Select
         onValueChange={handleSelectDoctor}
         defaultValue={searchParams.get("doctorId")?.toString() || "all"}

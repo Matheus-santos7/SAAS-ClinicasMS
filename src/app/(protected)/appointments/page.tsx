@@ -1,9 +1,9 @@
 // src/app/(protected)/appointments/page.tsx
-import { and, eq } from "drizzle-orm";
+import dayjs from "dayjs";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { DataTable } from "@/components/ui/data-table";
 import {
   PageActions,
   PageContainer,
@@ -19,27 +19,36 @@ import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import AddAppointmentButton from "./_components/appointmentList/add-appointment-button";
-import { appointmentsTableColumns } from "./_components/appointmentList/table-columns";
-import AgendaView from "./_components/calendar/agenda-view";
+// Importações atualizadas para a nova estrutura
+import AddAppointmentButton from "./_components/add-appointment-button";
 import { DoctorFilter } from "./_components/doctor-filter";
+import AgendaView from "./_components/view-agenda";
+import { AppointmentListView } from "./_components/view-list";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const AppointmentsPage = async (props: any) => {
-  const searchParams = await props.searchParams;
+const AppointmentsPage = async ({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    doctorId?: string;
+    from?: string;
+    to?: string;
+  }>;
+}) => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session?.user) {
-    redirect(ROUTES.LOGIN);
-  }
-  if (!session.user.clinic) {
-    redirect(ROUTES.CLINIC_FORM);
-  }
-  if (!session.user.plan) {
-    redirect(ROUTES.SUBSCRIPTION);
-  }
-  const doctorId = searchParams?.doctorId;
+
+  if (!session?.user) redirect(ROUTES.LOGIN);
+  if (!session.user.clinic) redirect(ROUTES.CLINIC_FORM);
+  if (!session.user.plan) redirect(ROUTES.SUBSCRIPTION);
+
+  const { doctorId, from, to } = (
+    searchParams ? await searchParams : ({} as Record<string, never>)
+  ) as {
+    doctorId?: string;
+    from?: string;
+    to?: string;
+  };
 
   const [patients, doctors] = await Promise.all([
     db.query.patientsTable.findMany({
@@ -51,23 +60,37 @@ const AppointmentsPage = async (props: any) => {
     }),
   ]);
 
-  const whereClause = doctorId
-    ? and(
-        eq(appointmentsTable.clinicId, session.user.clinic.id),
-        eq(appointmentsTable.doctorId, doctorId),
-      )
-    : eq(appointmentsTable.clinicId, session.user.clinic.id);
+  // --- LÓGICA DE BUSCA DE DADOS SEPARADA ---
 
-  const appointmentsRaw = await db.query.appointmentsTable.findMany({
-    where: whereClause,
-    with: {
-      patient: true,
-      doctor: true,
-    },
+  // 1. Busca para a AGENDA (sem filtro de data)
+  const agendaConditions = [
+    eq(appointmentsTable.clinicId, session.user.clinic.id),
+    doctorId ? eq(appointmentsTable.doctorId, doctorId) : undefined,
+  ].filter((c): c is NonNullable<typeof c> => c !== undefined);
+
+  const appointmentsForAgenda = await db.query.appointmentsTable.findMany({
+    where: and(...agendaConditions),
+    with: { patient: true, doctor: true },
     orderBy: (appointments, { asc }) => [asc(appointments.date)],
   });
 
-  const appointments = appointmentsRaw;
+  // 2. Busca para a LISTA (com filtro de data)
+  const listConditions = [
+    eq(appointmentsTable.clinicId, session.user.clinic.id),
+    doctorId ? eq(appointmentsTable.doctorId, doctorId) : undefined,
+    from
+      ? gte(appointmentsTable.date, dayjs(from).startOf("day").toDate())
+      : undefined,
+    to
+      ? lte(appointmentsTable.date, dayjs(to).endOf("day").toDate())
+      : undefined,
+  ].filter((c): c is NonNullable<typeof c> => c !== undefined);
+
+  const appointmentsForList = await db.query.appointmentsTable.findMany({
+    where: and(...listConditions),
+    with: { patient: true, doctor: true },
+    orderBy: (appointments, { asc }) => [asc(appointments.date)],
+  });
 
   return (
     <PageContainer>
@@ -91,16 +114,18 @@ const AppointmentsPage = async (props: any) => {
               <TabsTrigger value="lista">Lista</TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent value="agenda" className="mt-6">
+
+          <TabsContent value="agenda">
             <AgendaView
-              appointments={appointments.map((a) => ({
+              appointments={appointmentsForAgenda.map((a) => ({
                 ...a,
                 status: "confirmed",
               }))}
             />
           </TabsContent>
+
           <TabsContent value="lista">
-            <DataTable data={appointments} columns={appointmentsTableColumns} />
+            <AppointmentListView appointments={appointmentsForList} />
           </TabsContent>
         </Tabs>
       </PageContent>
