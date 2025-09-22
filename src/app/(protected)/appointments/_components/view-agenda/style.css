@@ -89,3 +89,11 @@
     0.5
   ) !important; /* Cor para seleção de horário */
 }
+
+.rbc-calendar {
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  font-family: inherit;
+  color: var(--foreground);
+  background-color: var(--card);
+}

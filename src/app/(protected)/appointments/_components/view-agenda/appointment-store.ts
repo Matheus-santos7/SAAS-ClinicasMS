@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { AppointmentWithRelations } from ".";
+import type { AppointmentWithRelations } from "@/types";
 
 // Armazena as informações do slot de horário selecionado pelo usuário
 export type NewAppointmentSlot = {

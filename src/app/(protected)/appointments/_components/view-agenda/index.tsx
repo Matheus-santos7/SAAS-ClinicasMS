@@ -6,6 +6,7 @@ import "dayjs/locale/pt-br";
 
 import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
+import { useAction } from "next-safe-action/hooks"; // Importar hook
 import React, { useCallback, useMemo } from "react";
 import {
   Calendar,
@@ -14,9 +15,10 @@ import {
 } from "react-big-calendar";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
+import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date"; // Importar action
 import { Dialog } from "@/components/ui/dialog";
-import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
+import { doctorsTable, patientsTable } from "@/db/schema";
+import { AppointmentWithRelations } from "@/types"; // Usar tipo centralizado
 
 import AddAppointmentForm from "../add-appointment-form";
 import { AppointmentDetailsModal } from "./appointment-details-modal";
@@ -25,11 +27,7 @@ import { useAppointmentStore } from "./appointment-store";
 dayjs.locale("pt-br");
 const localizer = dayjsLocalizer(dayjs);
 
-export type AppointmentWithRelations = typeof appointmentsTable.$inferSelect & {
-  patient: typeof patientsTable.$inferSelect;
-  doctor: typeof doctorsTable.$inferSelect;
-  status: string;
-};
+// ... (componente CustomEvent permanece o mesmo)
 
 interface AgendaViewProps {
   appointments: AppointmentWithRelations[];
@@ -52,12 +50,7 @@ const CustomEvent = (props: CustomEventProps) => {
     <div className="flex h-full flex-col overflow-hidden p-1 text-white">
       <div className="flex items-center gap-2">
         <p className="truncate font-semibold">{appointment.patient.name}</p>
-        <Badge
-          variant={appointment.status === "confirmed" ? "default" : "secondary"}
-          className="text-xs"
-        >
-          {appointment.status === "confirmed" ? "Confirmado" : "Pendente"}
-        </Badge>
+        {/* Badge removido pois não há campo status no schema */}
       </div>
       <p className="hidden truncate text-xs sm:block">
         Dr(a). {appointment.doctor.name}
@@ -74,8 +67,23 @@ export default function AgendaView({
   const searchParams = useSearchParams();
   const { openModal, openNewModal, isNewModalOpen, closeNewModal } =
     useAppointmentStore();
-
   const doctorId = searchParams.get("doctorId");
+
+  const { execute: executeUpdate } = useAction(updateAppointmentDate, {
+    onSuccess: (data) => toast.success(data.data.success),
+    onError: (error) =>
+      toast.error(error.error?.serverError || "Falha ao reagendar."),
+  });
+
+  const handleEventDrop = useCallback(
+    ({ event, start, end }: { event: RBCEvent; start: Date; end: Date }) => {
+      const resource = event.resource as {
+        appointment: AppointmentWithRelations;
+      };
+      executeUpdate({ id: resource.appointment.id, date: start, endDate: end });
+    },
+    [executeUpdate],
+  );
 
   const events = useMemo(
     () =>
@@ -83,9 +91,7 @@ export default function AgendaView({
         title: `${appointment.patient.name} - Dr(a). ${appointment.doctor.name}`,
         start: dayjs(appointment.date).toDate(),
         end: dayjs(appointment.endDate).toDate(),
-        resource: {
-          appointment,
-        },
+        resource: { appointment },
       })),
     [appointments],
   );
@@ -108,15 +114,6 @@ export default function AgendaView({
     };
   }, []);
 
-  // Se necessário, implemente a atualização de evento via server action aqui
-  const handleEventDrop = useCallback(async () => {
-    /* no-op */
-  }, []);
-
-  const handleEventResize = useCallback(async () => {
-    /* no-op */
-  }, []);
-
   const handleSelectEvent = useCallback(
     (event: RBCEvent) => {
       const resource = event.resource as {
@@ -127,7 +124,6 @@ export default function AgendaView({
     [openModal],
   );
 
-  // --- Início: Nova função para criar agendamento ---
   const handleSelectSlot = useCallback(
     ({ start, end }: { start: Date; end: Date }) => {
       if (!doctorId || doctorId === "all") {
@@ -138,13 +134,10 @@ export default function AgendaView({
     },
     [openNewModal, doctorId],
   );
-  // --- Fim: Nova função ---
 
   return (
     <>
       <AppointmentDetailsModal />
-
-      {/* Passamos o estado e a função de fechar para o formulário de adição */}
       <Dialog
         open={isNewModalOpen}
         onOpenChange={(open) => !open && closeNewModal()}
@@ -156,7 +149,6 @@ export default function AgendaView({
           onSuccess={closeNewModal}
         />
       </Dialog>
-
       <div className="bg-card relative h-[80vh] max-w-full overflow-x-auto rounded-lg border p-4 sm:p-2 md:p-4">
         <Calendar
           localizer={localizer}
@@ -180,14 +172,16 @@ export default function AgendaView({
             noEventsInRange: "Não há agendamentos neste período.",
           }}
           eventPropGetter={eventPropGetter}
-          onEventDrop={handleEventDrop}
-          onEventResize={handleEventResize}
           onSelectEvent={handleSelectEvent}
-          selectable // Permite a seleção de slots
-          onSelectSlot={handleSelectSlot} // Callback para quando um slot é selecionado
+          selectable
+          onSelectSlot={handleSelectSlot}
+          onEventDrop={handleEventDrop} // <-- Habilitado
+          resizable // <-- Habilitado
+          onEventResize={handleEventDrop} // Reutiliza a mesma lógica
           components={{
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            event: CustomEvent as unknown as React.ComponentType<any>,
+            event: CustomEvent as React.ComponentType<{
+              event: { resource: { appointment: AppointmentWithRelations } };
+            }>,
           }}
         />
       </div>

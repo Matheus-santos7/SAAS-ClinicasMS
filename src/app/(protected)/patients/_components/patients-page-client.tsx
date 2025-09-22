@@ -18,14 +18,14 @@ import {
   PageHeaderContent,
   PageTitle, // ... imports do PageContainer ...
 } from "@/components/ui/page-container";
-import { patientsTable } from "@/db/schema";
+import type { Patient } from "@/types";
 
 import { DataTablePagination } from "./data-table-pagination"; // Nosso novo componente de paginação
 import { patientsTableColumns } from "./table-columns";
 import UpsertPatientForm from "./upsert-patient-form";
 
 interface PatientsPageClientProps {
-  initialPatients: (typeof patientsTable.$inferSelect)[];
+  initialPatients: Patient[];
   pageCount: number; // Recebe a contagem de páginas
 }
 
@@ -38,17 +38,16 @@ const PatientsPageClient = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Função "debounced" para atualizar a busca na URL
   const handleSearch = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("page", "1"); // Sempre volte para a página 1 ao buscar
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.set("page", "1");
     if (term) {
       params.set("search", term);
     } else {
       params.delete("search");
     }
     router.replace(`${pathname}?${params.toString()}`);
-  }, 300); // 300ms de espera
+  }, 300);
 
   return (
     <>

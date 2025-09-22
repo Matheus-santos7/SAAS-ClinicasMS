@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { appointmentsTable } from "@/db/schema";
-import { getSessionOrThrow } from "@/helpers/session";
+import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
@@ -14,40 +14,25 @@ import { updateAppointmentDateSchema } from "./schema";
 export const updateAppointmentDate = protectedAction
   .schema(updateAppointmentDateSchema)
   .action(async ({ parsedInput }) => {
-    const { id, date, endDate } = parsedInput;
     const session = await getSessionOrThrow();
-    const user = session.user;
+    const clinicId = getClinicIdOrThrow(session);
 
-    if (!user?.clinic?.id) {
-      throw new Error("Usuário sem clínica associada.");
-    }
+    const { id, date, endDate } = parsedInput;
 
-    // Objeto dinâmico para a atualização
     const updateData: { date?: Date; endDate?: Date } = {};
-    if (date) {
-      updateData.date = date;
-    }
-    if (endDate) {
-      updateData.endDate = endDate;
-    }
+    if (date) updateData.date = date;
+    if (endDate) updateData.endDate = endDate;
 
-    try {
-      await db
-        .update(appointmentsTable)
-        .set(updateData)
-        .where(
-          and(
-            eq(appointmentsTable.id, id),
-            eq(appointmentsTable.clinicId, user.clinic.id),
-          ),
-        );
+    await db
+      .update(appointmentsTable)
+      .set(updateData)
+      .where(
+        and(
+          eq(appointmentsTable.id, id),
+          eq(appointmentsTable.clinicId, clinicId),
+        ),
+      );
 
-      revalidatePath(ROUTES.APPOINTMENTS);
-
-      return {
-        success: "Agendamento atualizado com sucesso!",
-      };
-    } catch {
-      throw new Error("Não foi possível atualizar o agendamento.");
-    }
+    revalidatePath(ROUTES.APPOINTMENTS);
+    return { success: "Agendamento atualizado com sucesso!" };
   });

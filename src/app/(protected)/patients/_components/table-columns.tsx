@@ -2,11 +2,9 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { patientsTable } from "@/db/schema";
+import type { Patient } from "@/types";
 
 import PatientsTableActions from "./table-actions";
-
-type Patient = typeof patientsTable.$inferSelect;
 
 export const patientsTableColumns: ColumnDef<Patient>[] = [
   {

@@ -12,23 +12,23 @@ import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
 export const deletePatient = protectedAction
-  .schema(
-    z.object({
-      id: z.string().uuid(),
-    }),
-  )
+  .schema(z.object({ id: z.string().uuid() }))
   .action(async ({ parsedInput }) => {
     const session = await getSessionOrThrow();
     const clinicId = getClinicIdOrThrow(session);
+
     const patient = await db.query.patientsTable.findFirst({
       where: eq(patientsTable.id, parsedInput.id),
     });
+
     if (!patient) {
       throw new Error("Paciente não encontrado");
     }
+
     if (!canAccessClinicResource(patient.clinicId, clinicId)) {
-      throw new Error("Paciente não encontrado");
+      throw new Error("Acesso negado a este recurso.");
     }
+
     await db.delete(patientsTable).where(eq(patientsTable.id, parsedInput.id));
     revalidatePath(ROUTES.PATIENTS);
   });

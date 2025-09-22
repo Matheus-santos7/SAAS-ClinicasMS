@@ -26,12 +26,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { patientsTable } from "@/db/schema";
+import type { Patient } from "@/types";
 
 import UpsertPatientForm from "./upsert-patient-form";
 
 interface PatientsTableActionsProps {
-  patient: typeof patientsTable.$inferSelect;
+  patient: Patient;
 }
 
 const PatientsTableActions = ({ patient }: PatientsTableActionsProps) => {
