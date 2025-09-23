@@ -34,3 +34,31 @@ export function getClinicIdOrThrow(session: Session) {
   return clinicId;
 }
 
+/**
+ * Valida se um recurso pertence à clínica do usuário.
+ * CRÍTICO: Esta função previne vulnerabilidades IDOR (Insecure Direct Object Reference).
+ * @param resourceClinicId - ID da clínica do recurso que está sendo acessado.
+ * @param userClinicId - ID da clínica do usuário autenticado.
+ * @returns true se o usuário pode acessar o recurso, false caso contrário.
+ */
+export function canAccessClinicResource(
+  resourceClinicId: string | undefined | null,
+  userClinicId: string,
+): boolean {
+  return resourceClinicId === userClinicId;
+}
+
+/**
+ * Valida acesso a recurso e lança erro se não autorizado.
+ * @param resourceClinicId - ID da clínica do recurso.
+ * @param userClinicId - ID da clínica do usuário.
+ * @throws Error se o acesso for negado.
+ */
+export function validateClinicResourceAccess(
+  resourceClinicId: string | undefined | null,
+  userClinicId: string,
+): void {
+  if (!canAccessClinicResource(resourceClinicId, userClinicId)) {
+    throw new Error("Acesso negado. Este registro pertence a outra clínica.");
+  }
+}

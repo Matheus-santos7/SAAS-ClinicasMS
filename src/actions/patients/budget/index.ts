@@ -4,7 +4,12 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { budgetItemsTable, budgetsTable } from "@/db/schema";
+import { budgetItemsTable, budgetsTable, patientsTable } from "@/db/schema";
+import {
+  getClinicIdOrThrow,
+  getSessionOrThrow,
+  validateClinicResourceAccess,
+} from "@/helpers/session";
 import { protectedAction } from "@/lib/next-safe-action";
 
 import {
@@ -16,6 +21,9 @@ import {
 export const upsertBudget = protectedAction
   .schema(budgetSchema)
   .action(async ({ parsedInput }) => {
+    const session = await getSessionOrThrow();
+    const userClinicId = getClinicIdOrThrow(session);
+
     const {
       id,
       patientId,
@@ -25,6 +33,42 @@ export const upsertBudget = protectedAction
       total,
       observations,
     } = parsedInput;
+
+    // VALIDAÇÃO DE SEGURANÇA: Verifica se o paciente pertence à clínica do usuário
+    const patient = await db.query.patientsTable.findFirst({
+      where: eq(patientsTable.id, patientId),
+      columns: {
+        clinicId: true,
+      },
+    });
+
+    if (!patient) {
+      return { error: "Paciente não encontrado" };
+    }
+
+    validateClinicResourceAccess(patient.clinicId, userClinicId);
+
+    // Se estamos editando, valida se o orçamento existente pertence à clínica
+    if (id) {
+      const existingBudget = await db.query.budgetsTable.findFirst({
+        where: eq(budgetsTable.id, id),
+        with: {
+          patient: {
+            columns: {
+              clinicId: true,
+            },
+          },
+        },
+      });
+
+      if (existingBudget) {
+        validateClinicResourceAccess(
+          existingBudget.patient.clinicId,
+          userClinicId,
+        );
+      }
+    }
+
     // Calcula total em centavos
     const totalAmountInCents = Math.round(total * 100);
     let budgetId: string;
@@ -74,11 +118,29 @@ export const upsertBudget = protectedAction
 export const deleteBudget = protectedAction
   .schema(budgetDeleteSchema)
   .action(async ({ parsedInput }) => {
+    const session = await getSessionOrThrow();
+    const clinicId = getClinicIdOrThrow(session);
+
     const { id } = parsedInput;
+
+    // VALIDAÇÃO DE SEGURANÇA: Busca o orçamento com o paciente para validar clinicId
     const budget = await db.query.budgetsTable.findFirst({
       where: eq(budgetsTable.id, id),
+      with: {
+        patient: {
+          columns: {
+            clinicId: true,
+          },
+        },
+      },
     });
-    if (!budget) throw new Error("Orçamento não encontrado");
+
+    if (!budget) {
+      return { error: "Orçamento não encontrado" };
+    }
+
+    validateClinicResourceAccess(budget.patient.clinicId, clinicId);
+
     await db.delete(budgetsTable).where(eq(budgetsTable.id, id));
     revalidatePath(`/patients/${budget.patientId}`);
     return { success: "Orçamento removido!" };
@@ -87,11 +149,29 @@ export const deleteBudget = protectedAction
 export const budgetToTreatment = protectedAction
   .schema(budgetToTreatmentSchema)
   .action(async ({ parsedInput }) => {
+    const session = await getSessionOrThrow();
+    const clinicId = getClinicIdOrThrow(session);
+
     const { id } = parsedInput;
+
+    // VALIDAÇÃO DE SEGURANÇA: Busca o orçamento com o paciente para validar clinicId
     const budget = await db.query.budgetsTable.findFirst({
       where: eq(budgetsTable.id, id),
+      with: {
+        patient: {
+          columns: {
+            clinicId: true,
+          },
+        },
+      },
     });
-    if (!budget) throw new Error("Orçamento não encontrado");
+
+    if (!budget) {
+      return { error: "Orçamento não encontrado" };
+    }
+
+    validateClinicResourceAccess(budget.patient.clinicId, clinicId);
+
     // Aqui você pode criar o tratamento usando os dados do orçamento e dos itens
     // await db.insert(treatmentsTable).values({ ... }); // Adapte conforme seu modelo de tratamento
     await db
