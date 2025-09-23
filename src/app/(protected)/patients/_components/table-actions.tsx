@@ -4,7 +4,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { deletePatient } from "@/actions/patients/delete-patient";
+import { deletePatient } from "@/actions/patients/patient/delete-patient";
 import {
   AlertDialog,
   AlertDialogAction,

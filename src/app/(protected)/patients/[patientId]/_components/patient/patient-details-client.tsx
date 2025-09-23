@@ -4,10 +4,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PatientWithDetails } from "@/types";
 
-import { AnamnesisTab } from "./AnamnesisForm";
-import { DocumentsTab } from "./DocumentsTab";
-import { EvolutionTab } from "./evolution-tab";
-import { FinancialTab } from "./financialTab";
+import { AnamnesisTab } from "../anamnese/AnamnesisForm";
+import { DocumentsTab } from "../documention/DocumentsTab";
+import { EvolutionTab } from "../evolution/evolution-tab";
+import { FinancialTab } from "../financial/financialTab";
 import { PatientHeader } from "./PatientHeader";
 
 interface PatientDetailsClientProps {

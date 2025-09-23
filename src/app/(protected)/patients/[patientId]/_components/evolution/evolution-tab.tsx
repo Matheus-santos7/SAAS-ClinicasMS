@@ -4,7 +4,7 @@ import { PlusCircle } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 
-import { deleteEvolution } from "@/actions/patients/upsert-evolution/delete-evolution";
+import { deleteEvolution } from "@/actions/patients/evolution/delete-evolution";
 import {
   AlertDialog,
   AlertDialogAction,

@@ -9,7 +9,7 @@ import { budgetsTable, patientsTable, treatmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import PatientDetailsClient from "./_components/patient-details-client";
+import PatientDetailsClient from "./_components/patient/patient-details-client";
 
 // ...existing code...
 const PatientDetailsPage = async ({

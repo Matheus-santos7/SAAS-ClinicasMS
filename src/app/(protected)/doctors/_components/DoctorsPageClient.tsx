@@ -15,8 +15,8 @@ import {
   PageTitle,
 } from "@/components/ui/page-container";
 
-import DoctorCard from "./_components/doctor-card";
-import UpsertDoctorForm from "./_components/upsert-doctor-form";
+import DoctorCard from "./doctor-card";
+import UpsertDoctorForm from "./upsert-doctor-form";
 
 interface DoctorsPageClientProps {
   doctors: (typeof import("@/db/schema").doctorsTable.$inferSelect)[];
@@ -52,9 +52,7 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
         </PageContent>
       </PageContainer>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <UpsertDoctorForm
-          isOpen={isDialogOpen}
-        />
+        <UpsertDoctorForm isOpen={isDialogOpen} />
       </Dialog>
     </>
   );

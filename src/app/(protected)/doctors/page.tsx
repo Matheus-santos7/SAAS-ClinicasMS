@@ -5,7 +5,7 @@ import { getDoctors } from "@/data/doctors";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import DoctorsPageClient from "./DoctorsPageClient";
+import DoctorsPageClient from "./_components/DoctorsPageClient";
 
 export default async function DoctorsPage() {
   // Autenticação e validações
