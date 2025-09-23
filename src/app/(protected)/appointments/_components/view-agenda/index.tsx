@@ -17,11 +17,11 @@ import { toast } from "sonner";
 
 import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date"; // Importar action
 import { Dialog } from "@/components/ui/dialog";
+import { useAppointmentStore } from "@/stores";
 import { AppointmentWithRelations, Doctor, Patient } from "@/types"; // Usar tipo centralizado
 
 import AddAppointmentForm from "../add-appointment-form";
 import { AppointmentDetailsModal } from "./appointment-details-modal";
-import { useAppointmentStore } from "./appointment-store";
 
 dayjs.locale("pt-br");
 const localizer = dayjsLocalizer(dayjs);

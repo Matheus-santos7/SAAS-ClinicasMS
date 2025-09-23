@@ -18,10 +18,10 @@ import { toast } from "sonner";
 
 import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date";
 // import removido: doctorsTable, patientsTable
+import { useAppointmentStore } from "@/stores";
 import type { AppointmentWithRelations } from "@/types";
 
 import { AppointmentDetailsModal } from "../view-agenda/appointment-details-modal";
-import { useAppointmentStore } from "../view-agenda/appointment-store";
 
 dayjs.locale("pt-br"); // Configure o Dayjs para usar português
 const localizer = dayjsLocalizer(dayjs);

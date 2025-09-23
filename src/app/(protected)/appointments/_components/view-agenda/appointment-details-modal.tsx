@@ -33,8 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrencyInCents } from "@/helpers/currency";
-
-import { useAppointmentStore } from "./appointment-store";
+import { useAppointmentStore } from "@/stores";
 
 export const AppointmentDetailsModal = () => {
   const { isModalOpen, selectedAppointment, closeModal } =

@@ -3,7 +3,6 @@
 import { PlusCircle } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
-import { create } from "zustand";
 
 import { deleteEvolution } from "@/actions/patients/upsert-evolution/delete-evolution";
 import {
@@ -25,42 +24,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useEvolutionStore } from "@/stores";
 import { EvolutionEntryWithDoctor } from "@/types";
 
 import { columns } from "./evolution-table-columns";
 import { EvolutionEntryForm } from "./evolutionEntryForm";
-
-// Store para gerenciar o estado dos modais
-type EvolutionStore = {
-  selectedEvolution: EvolutionEntryWithDoctor | null;
-  isFormOpen: boolean;
-  isViewModalOpen: boolean;
-  isDeleteAlertOpen: boolean;
-  handleView: (evolution: EvolutionEntryWithDoctor) => void;
-  handleEdit: (evolution: EvolutionEntryWithDoctor | null) => void;
-  handleDelete: (evolution: EvolutionEntryWithDoctor) => void;
-  closeAll: () => void;
-};
-
-export const useEvolutionStore = create<EvolutionStore>((set) => ({
-  selectedEvolution: null,
-  isFormOpen: false,
-  isViewModalOpen: false,
-  isDeleteAlertOpen: false,
-  handleView: (evolution) =>
-    set({ selectedEvolution: evolution, isViewModalOpen: true }),
-  handleEdit: (evolution: EvolutionEntryWithDoctor | null) =>
-    set({ selectedEvolution: evolution, isFormOpen: true }),
-  handleDelete: (evolution) =>
-    set({ selectedEvolution: evolution, isDeleteAlertOpen: true }),
-  closeAll: () =>
-    set({
-      isFormOpen: false,
-      isViewModalOpen: false,
-      isDeleteAlertOpen: false,
-      selectedEvolution: null,
-    }),
-}));
 
 interface EvolutionTabProps {
   patientId: string;

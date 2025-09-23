@@ -20,9 +20,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
+import { useAppointmentStore } from "@/stores";
 import { Doctor, Patient } from "@/types";
-
-import { useAppointmentStore } from "./view-agenda/appointment-store"; // Importação atualizada
 
 const formSchema = z.object({
   patientId: z.string().min(1, {
