@@ -1,6 +1,5 @@
 // src/app/(protected)/appointments/page.tsx
 import dayjs from "dayjs";
-import { and, eq, gte, lte } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -14,8 +13,12 @@ import {
   PageTitle,
 } from "@/components/ui/page-container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { db } from "@/db";
-import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
+import {
+  getAppointmentsForAgenda,
+  getAppointmentsForList,
+} from "@/data/appointments";
+import { getDoctors } from "@/data/doctors";
+import { getPatients } from "@/data/patients";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
@@ -50,47 +53,30 @@ const AppointmentsPage = async ({
     to?: string;
   };
 
-  const [patients, doctors] = await Promise.all([
-    db.query.patientsTable.findMany({
-      where: eq(patientsTable.clinicId, session.user.clinic.id),
-    }),
-    db.query.doctorsTable.findMany({
-      where: eq(doctorsTable.clinicId, session.user.clinic.id),
-      orderBy: (doctors, { asc }) => [asc(doctors.name)],
-    }),
+  // Busca pacientes e médicos usando as funções centralizadas
+  const [patientsData, doctorsData] = await Promise.all([
+    getPatients(session.user.clinic.id), // Pega todos os pacientes sem paginação para seleção
+    getDoctors(session.user.clinic.id), // Pega todos os médicos da clínica
   ]);
 
-  // --- LÓGICA DE BUSCA DE DADOS SEPARADA ---
+  const patients = patientsData.patients;
+  const doctors = doctorsData.doctors;
+
+  // --- LÓGICA DE BUSCA DE DADOS USANDO FUNÇÕES CENTRALIZADAS ---
 
   // 1. Busca para a AGENDA (sem filtro de data)
-  const agendaConditions = [
-    eq(appointmentsTable.clinicId, session.user.clinic.id),
-    doctorId ? eq(appointmentsTable.doctorId, doctorId) : undefined,
-  ].filter((c): c is NonNullable<typeof c> => c !== undefined);
-
-  const appointmentsForAgenda = await db.query.appointmentsTable.findMany({
-    where: and(...agendaConditions),
-    with: { patient: true, doctor: true },
-    orderBy: (appointments, { asc }) => [asc(appointments.date)],
-  });
+  const appointmentsForAgenda = await getAppointmentsForAgenda(
+    session.user.clinic.id,
+    doctorId,
+  );
 
   // 2. Busca para a LISTA (com filtro de data)
-  const listConditions = [
-    eq(appointmentsTable.clinicId, session.user.clinic.id),
-    doctorId ? eq(appointmentsTable.doctorId, doctorId) : undefined,
-    from
-      ? gte(appointmentsTable.date, dayjs(from).startOf("day").toDate())
-      : undefined,
-    to
-      ? lte(appointmentsTable.date, dayjs(to).endOf("day").toDate())
-      : undefined,
-  ].filter((c): c is NonNullable<typeof c> => c !== undefined);
-
-  const appointmentsForList = await db.query.appointmentsTable.findMany({
-    where: and(...listConditions),
-    with: { patient: true, doctor: true },
-    orderBy: (appointments, { asc }) => [asc(appointments.date)],
-  });
+  const appointmentsForList = await getAppointmentsForList(
+    session.user.clinic.id,
+    doctorId,
+    from ? dayjs(from).startOf("day").toDate() : undefined,
+    to ? dayjs(to).endOf("day").toDate() : undefined,
+  );
 
   return (
     <PageContainer>
