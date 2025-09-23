@@ -1,8 +1,8 @@
-# 🏥 Doutor Agenda
+# 🏥 SynClinic
 
 ## 📋 **Visão Geral do Projeto**
 
-O **Doutor Agenda** é um **sistema de gestão médica/odontológica** completo, desenvolvido em **Next.js 15** com **TypeScript**. É uma aplicação web para clínicas gerenciarem pacientes, médicos, agendamentos e prontuários médicos.
+O **SynClinic** é um **sistema de gestão médica/odontológica** completo, desenvolvido em **Next.js 15** com **TypeScript**. É uma aplicação web para clínicas gerenciarem pacientes, médicos, agendamentos e prontuários médicos.
 
 ## 🏗️ **Arquitetura e Stack Tecnológica**
 
@@ -214,4 +214,4 @@ npm run dev
 
 ---
 
-**Doutor Agenda** - Sistema completo e profissional para gestão de clínicas médicas/odontológicas! 🦷✨
+**SynClinic** - Sistema completo e profissional para gestão de clínicas médicas/odontológicas! 🦷✨
