@@ -6,15 +6,9 @@ import { ptBR } from "date-fns/locale";
 import { ArrowUpDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { evolutionTable } from "@/db/schema";
-import { doctorsTable } from "@/db/schema";
+import { EvolutionEntryWithDoctor } from "@/types";
 
 import { EvolutionTableActions } from "./evolution-table-actions";
-
-// Define o tipo para a entrada da tabela, incluindo a relação com o médico
-export type EvolutionEntryWithDoctor = typeof evolutionTable.$inferSelect & {
-  doctor: Pick<typeof doctorsTable.$inferSelect, "name"> | null;
-};
 
 export const columns: ColumnDef<EvolutionEntryWithDoctor>[] = [
   {

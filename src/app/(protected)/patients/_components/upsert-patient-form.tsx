@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { patientsTable } from "@/db/schema";
+import { Patient } from "@/types";
 
 const formSchema = z.object({
   name: z.string().trim().min(1, {
@@ -53,7 +53,7 @@ const formSchema = z.object({
 
 interface UpsertPatientFormProps {
   isOpen: boolean;
-  patient?: typeof patientsTable.$inferSelect;
+  patient?: Patient;
   onSuccess?: () => void;
 }
 
@@ -91,7 +91,7 @@ const UpsertPatientForm = ({
               phoneNumber: "",
               cpf: "",
               sex: undefined,
-            }
+            },
       );
     }
   }, [isOpen, form, patient]);

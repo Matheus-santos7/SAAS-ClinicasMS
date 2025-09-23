@@ -2,32 +2,13 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  budgetsTable,
-  doctorsTable,
-  patientsAnamnesisTable,
-  patientsTable,
-  treatmentsTable,
-} from "@/db/schema";
+import { PatientWithDetails } from "@/types";
 
 import { AnamnesisTab } from "./AnamnesisForm";
 import { DocumentsTab } from "./DocumentsTab";
 import { EvolutionTab } from "./evolution-tab";
-// A tipagem que vem do servidor
-import { EvolutionEntryWithDoctor } from "./evolution-table-columns";
 import { FinancialTab } from "./financialTab";
 import { PatientHeader } from "./PatientHeader";
-
-type PatientWithDetails = typeof patientsTable.$inferSelect & {
-  anamnesisForms: (typeof patientsAnamnesisTable.$inferSelect)[];
-  evolutionEntries: EvolutionEntryWithDoctor[];
-  doctorsTable: (typeof doctorsTable.$inferSelect)[];
-  budgets: (typeof budgetsTable.$inferSelect & {
-    doctor: typeof doctorsTable.$inferSelect | null;
-    items: Record<string, unknown>[];
-  })[];
-  treatments: (typeof treatmentsTable.$inferSelect & { payments: unknown[] })[];
-};
 
 interface PatientDetailsClientProps {
   initialData: PatientWithDetails;

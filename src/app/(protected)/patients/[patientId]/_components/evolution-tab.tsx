@@ -25,8 +25,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EvolutionEntryWithDoctor } from "@/types";
 
-import { columns, EvolutionEntryWithDoctor } from "./evolution-table-columns";
+import { columns } from "./evolution-table-columns";
 import { EvolutionEntryForm } from "./evolutionEntryForm";
 
 // Store para gerenciar o estado dos modais

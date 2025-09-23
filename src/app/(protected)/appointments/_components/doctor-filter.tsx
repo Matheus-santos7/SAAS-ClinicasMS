@@ -9,9 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { doctorsTable } from "@/db/schema";
-
-type Doctor = typeof doctorsTable.$inferSelect;
+import { Doctor } from "@/types";
 
 interface DoctorFilterProps {
   doctors: Doctor[];

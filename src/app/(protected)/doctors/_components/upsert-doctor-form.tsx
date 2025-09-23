@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { doctorsTable } from "@/db/schema";
+import { Doctor } from "@/types";
 
 import { medicalSpecialties } from "../_constants";
 
@@ -73,7 +73,7 @@ const formSchema = z
 
 interface UpsertDoctorFormProps {
   isOpen: boolean;
-  doctor?: typeof doctorsTable.$inferSelect;
+  doctor?: Doctor;
   onSuccess?: () => void;
 }
 

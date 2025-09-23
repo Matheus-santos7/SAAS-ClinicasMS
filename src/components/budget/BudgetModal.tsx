@@ -3,10 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-
-type Procedure = { name: string; value: number; quantity: number };
-type Doctor = { id: string; name: string };
-type Clinic = { id: string; name: string };
+import { ClinicBasic, DoctorBasic, Procedure } from "@/types";
 
 interface BudgetModalProps {
   open: boolean;
@@ -19,8 +16,8 @@ interface BudgetModalProps {
     total: number;
     observations: string;
   }) => void;
-  doctors: Doctor[];
-  clinics: Clinic[];
+  doctors: DoctorBasic[];
+  clinics: ClinicBasic[];
   patientId: string;
   initial?: {
     doctorId?: string;

@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { doctorsTable, patientsTable } from "@/db/schema";
+import { Doctor, Patient } from "@/types";
 
 import { useAppointmentStore } from "./view-agenda/appointment-store"; // Importação atualizada
 
@@ -41,8 +41,8 @@ const formSchema = z.object({
 
 interface AddAppointmentFormProps {
   isOpen: boolean;
-  patients: (typeof patientsTable.$inferSelect)[];
-  doctors: (typeof doctorsTable.$inferSelect)[];
+  patients: Patient[];
+  doctors: Doctor[];
   onSuccess?: () => void;
 }
 

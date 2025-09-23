@@ -17,8 +17,7 @@ import { toast } from "sonner";
 
 import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date"; // Importar action
 import { Dialog } from "@/components/ui/dialog";
-import { doctorsTable, patientsTable } from "@/db/schema";
-import { AppointmentWithRelations } from "@/types"; // Usar tipo centralizado
+import { AppointmentWithRelations, Doctor, Patient } from "@/types"; // Usar tipo centralizado
 
 import AddAppointmentForm from "../add-appointment-form";
 import { AppointmentDetailsModal } from "./appointment-details-modal";
@@ -31,8 +30,8 @@ const localizer = dayjsLocalizer(dayjs);
 
 interface AgendaViewProps {
   appointments: AppointmentWithRelations[];
-  patients: (typeof patientsTable.$inferSelect)[];
-  doctors: (typeof doctorsTable.$inferSelect)[];
+  patients: Patient[];
+  doctors: Doctor[];
 }
 
 type CustomEventProps = {

@@ -1,16 +1,10 @@
 "use client";
 
 import { DataTable } from "@/components/ui/data-table";
-import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
+import { AppointmentWithRelations } from "@/types";
 
 import { DateRangeFilter } from "./date-range-filter";
 import { appointmentsTableColumns } from "./table-columns";
-
-// Tipo para os dados recebidos
-type AppointmentWithRelations = typeof appointmentsTable.$inferSelect & {
-  patient: typeof patientsTable.$inferSelect;
-  doctor: typeof doctorsTable.$inferSelect;
-};
 
 interface AppointmentListProps {
   appointments: AppointmentWithRelations[];

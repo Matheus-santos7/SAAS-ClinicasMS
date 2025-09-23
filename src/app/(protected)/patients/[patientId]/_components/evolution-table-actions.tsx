@@ -10,9 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EvolutionEntryWithDoctor } from "@/types";
 
 import { useEvolutionStore } from "./evolution-tab"; // Criaremos este store
-import { EvolutionEntryWithDoctor } from "./evolution-table-columns";
 
 interface EvolutionTableActionsProps {
   evolution: EvolutionEntryWithDoctor;
