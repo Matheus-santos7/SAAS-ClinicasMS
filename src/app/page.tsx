@@ -38,12 +38,12 @@ export default function Home() {
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="mx-auto max-w-4xl">
           <h1 className="text-foreground mb-6 text-5xl leading-tight font-bold md:text-6xl">
-            Transforme a gestão da sua
-            <span className="text-primary block">clínica médica</span>
+              Eleve o nível da sua gestão. 
+            <span className="text-primary block">SynClinic.</span>
           </h1>
           <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl leading-relaxed">
-            Sistema completo para gerenciar pacientes, agendamentos, prontuários
-            eletrônicos e muito mais. Tudo em uma plataforma moderna e segura.
+              Diga adeus às planilhas e à papelada. Nossa plataforma integra tudo o que você precisa para gerenciar pacientes
+               e agendamentos de forma inteligente, segura e 100% online.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link href={ROUTES.LOGIN}>
