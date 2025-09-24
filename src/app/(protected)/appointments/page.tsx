@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import {
   PageActions,

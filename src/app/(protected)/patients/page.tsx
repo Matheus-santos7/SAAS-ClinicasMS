@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { getPatients } from "@/data/patients";
 import { auth } from "@/lib/auth";

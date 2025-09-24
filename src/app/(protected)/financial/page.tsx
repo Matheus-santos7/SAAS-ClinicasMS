@@ -2,7 +2,7 @@ import { DollarSign } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

@@ -1,6 +1,6 @@
 // app/patients/[patientId]/page.tsx
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
