@@ -38,6 +38,11 @@ const PatientsPageClient = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const handleSuccess = () => {
+    setIsDialogOpen(false);
+    router.refresh(); // Atualiza a página para mostrar o novo paciente
+  };
+
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
     params.set("page", "1");
@@ -96,7 +101,10 @@ const PatientsPageClient = ({
         </PageContent>
       </PageContainer>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <UpsertPatientForm isOpen={isDialogOpen} />
+        <UpsertPatientForm 
+          isOpen={isDialogOpen} 
+          onSuccess={handleSuccess}
+        />
       </Dialog>
     </>
   );

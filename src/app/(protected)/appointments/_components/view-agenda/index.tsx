@@ -17,6 +17,10 @@ import { toast } from "sonner";
 
 import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date"; // Importar action
 import { Dialog } from "@/components/ui/dialog";
+import {
+  getAppointmentStyle,
+  getValidDoctorColor,
+} from "@/helpers/doctor-colors";
 import { useAppointmentStore } from "@/stores";
 import { AppointmentWithRelations, Doctor, Patient } from "@/types"; // Usar tipo centralizado
 
@@ -99,15 +103,12 @@ export default function AgendaView({
     const resource = event.resource as {
       appointment: AppointmentWithRelations;
     };
-    const backgroundColor = resource.appointment.doctor?.color || "#3174ad";
+    const doctorColor = getValidDoctorColor(resource.appointment.doctor?.color);
+
     return {
       style: {
-        backgroundColor,
-        borderRadius: "5px",
-        borderColor: "transparent",
+        ...getAppointmentStyle(doctorColor),
         opacity: 0.9,
-        color: "white",
-        border: "0px",
         display: "block",
       },
     };

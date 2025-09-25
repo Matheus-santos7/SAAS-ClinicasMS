@@ -97,3 +97,23 @@
   color: var(--foreground);
   background-color: var(--card);
 }
+
+/* Estilos para eventos com cores dos médicos */
+.rbc-event {
+  transition: all 0.2s ease-in-out !important;
+}
+
+.rbc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.rbc-event-content {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Garantir que o texto seja sempre branco nos eventos */
+.rbc-event .rbc-event-label,
+.rbc-event .rbc-event-content {
+  color: white !important;
+}

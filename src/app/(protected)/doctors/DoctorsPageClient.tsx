@@ -1,7 +1,6 @@
 "use client";
 
 import { UserPlus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { AddResourceButton } from "@/app/(protected)/_components/AddResourceButton";
@@ -16,8 +15,8 @@ import {
   PageTitle,
 } from "@/components/ui/page-container";
 
-import DoctorCard from "./doctor-card";
-import UpsertDoctorForm from "./upsert-doctor-form";
+import DoctorCard from "./_components/doctor-card";
+import UpsertDoctorForm from "./_components/upsert-doctor-form";
 
 interface DoctorsPageClientProps {
   doctors: (typeof import("@/db/schema").doctorsTable.$inferSelect)[];
@@ -25,12 +24,6 @@ interface DoctorsPageClientProps {
 
 export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter();
-
-  const handleSuccess = () => {
-    setIsDialogOpen(false);
-    router.refresh(); // Atualiza a página para mostrar o novo médico
-  };
 
   return (
     <>
@@ -59,9 +52,8 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
         </PageContent>
       </PageContainer>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <UpsertDoctorForm 
-          isOpen={isDialogOpen} 
-          onSuccess={handleSuccess}
+        <UpsertDoctorForm
+          isOpen={isDialogOpen}
         />
       </Dialog>
     </>

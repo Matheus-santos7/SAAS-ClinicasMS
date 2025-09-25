@@ -98,7 +98,12 @@ const UpsertPatientForm = ({
 
   const upsertPatientAction = useAction(upsertPatient, {
     onSuccess: () => {
-      toast.success("Paciente salvo com sucesso.");
+      toast.success(
+        patient
+          ? "Paciente atualizado com sucesso."
+          : "Paciente adicionado com sucesso.",
+      );
+      form.reset(); // Limpa o formulário após sucesso
       onSuccess?.();
     },
     onError: () => {

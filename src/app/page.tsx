@@ -29,7 +29,7 @@ export default function Home() {
             <span className="text-primary text-2xl font-bold">SynClinic</span>
           </div>
           <Link href={ROUTES.LOGIN}>
-            <Button variant="outline">Fazer Login</Button>
+            <Button size="lg">Fazer Login</Button>
           </Link>
         </nav>
       </header>
@@ -38,7 +38,7 @@ export default function Home() {
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="mx-auto max-w-4xl">
           <h1 className="text-foreground mb-6 text-5xl leading-tight font-bold md:text-6xl">
-              Eleve o nível da sua gestão. 
+              Eleve o nível da sua gestão:
             <span className="text-primary block">SynClinic.</span>
           </h1>
           <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl leading-relaxed">

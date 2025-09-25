@@ -103,3 +103,16 @@ export type PatientSex = "male" | "female";
 
 // Para dias da semana
 export type WeekDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+// Para componente de seleção de cor
+export type ColorSelectProps = {
+  color: string;
+  onSelectColor: (color: string) => void;
+};
+
+// Cores predefinidas para médicos
+export type DoctorColor = {
+  value: string;
+  name: string;
+  hex: string;
+};
