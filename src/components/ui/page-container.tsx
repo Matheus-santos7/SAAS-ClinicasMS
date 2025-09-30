@@ -16,16 +16,24 @@ export const PageHeaderContent = ({
   return <div className="w-full space-y-1">{children}</div>;
 };
 
-export const PageTitle = ({ children }: { children: React.ReactNode }) => {
-  return <h1 className="text-2xl font-bold">{children}</h1>;
+export const PageTitle = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return <h1 className={`text-2xl font-bold${className ? ` ${className}` : ''}`}>{children}</h1>;
 };
 
 export const PageDescription = ({
   children,
+  className,
 }: {
   children: React.ReactNode;
+  className?: string;
 }) => {
-  return <p className="text-muted-foreground text-sm">{children}</p>;
+  return <p className={`text-muted-foreground text-sm${className ? ` ${className}` : ''}`}>{children}</p>;
 };
 
 export const PageActions = ({ children }: { children: React.ReactNode }) => {

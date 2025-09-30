@@ -34,9 +34,9 @@ import {
 import { Doctor } from "@/types";
 
 import { medicalSpecialties } from "../../_constants";
-import ColorSelect from "./_components/colorSelect";
-import DaySelect from "./_components/daySelect";
-import TimeSelect from "./_components/timeSelect";
+import ColorSelect from "./colorSelect";
+import DaySelect from "./daySelect";
+import TimeSelect from "./timeSelect";
 
 const formSchema = z
   .object({
@@ -117,7 +117,11 @@ const UpsertDoctorForm = ({
 
   const upsertDoctorAction = useAction(upsertDoctor, {
     onSuccess: () => {
-      toast.success(doctor ? "Médico atualizado com sucesso." : "Médico adicionado com sucesso.");
+      toast.success(
+        doctor
+          ? "Médico atualizado com sucesso."
+          : "Médico adicionado com sucesso.",
+      );
       form.reset(); // Limpa o formulário após sucesso
       onSuccess?.();
     },
@@ -137,17 +141,22 @@ const UpsertDoctorForm = ({
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
-        <DialogTitle>{doctor ? doctor.name : "Adicionar médico"}</DialogTitle>
-        <DialogDescription>
+        <DialogTitle className="text-lg sm:text-xl">
+          {doctor ? `Editar ${doctor.name}` : "Adicionar médico"}
+        </DialogTitle>
+        <DialogDescription className="text-sm">
           {doctor
             ? "Edite as informações desse médico."
-            : "Adicione um novo médico."}
+            : "Preencha os dados do novo médico."}
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4 sm:space-y-6"
+        >
           <FormField
             control={form.control}
             name="name"
@@ -215,13 +224,17 @@ const UpsertDoctorForm = ({
           <DaySelect />
           <TimeSelect />
           <ColorSelect />
-          <DialogFooter>
-            <Button type="submit" disabled={upsertDoctorAction.isPending}>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button
+              type="submit"
+              disabled={upsertDoctorAction.isPending}
+              className="w-full sm:w-auto"
+            >
               {upsertDoctorAction.isPending
                 ? "Salvando..."
                 : doctor
-                  ? "Salvar"
-                  : "Adicionar"}
+                  ? "Salvar alterações"
+                  : "Adicionar médico"}
             </Button>
           </DialogFooter>
         </form>

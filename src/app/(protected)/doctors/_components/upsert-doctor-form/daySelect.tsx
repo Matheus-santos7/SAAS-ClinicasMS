@@ -18,7 +18,7 @@ import {
 const DaySelect = () => {
   const form = useFormContext();
   return (
-    <div className="flex gap-4">
+    <div className="flex flex-col gap-4 sm:flex-row">
       <FormField
         control={form.control}
         name="availableFromWeekDay"
