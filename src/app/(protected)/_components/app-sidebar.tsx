@@ -65,8 +65,19 @@ const items = [
 
 export function AppSidebar() {
   const router = useRouter();
-  const session = authClient.useSession();
   const pathname = usePathname();
+
+  let session;
+  try {
+    session = authClient.useSession();
+  } catch (error) {
+    console.error("Error using session:", error);
+    session = { data: null };
+  }
+
+  if (!session || !session.data) {
+    return null;
+  }
 
   const handleSignOut = async () => {
     await authClient.signOut({
@@ -80,7 +91,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b p-4">
-        <Image src="/logo.png" alt="Agenda" width={200} height={120}/>
+        <Image src="/logo.png" alt="Agenda" width={200} height={120} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
