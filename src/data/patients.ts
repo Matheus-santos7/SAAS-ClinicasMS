@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, or } from "drizzle-orm";
+import { and, count, eq, ilike, isNull, or } from "drizzle-orm";
 
 import { APP_CONFIG } from "@/constants/config";
 import { db } from "@/db";
@@ -13,6 +13,7 @@ export async function getPatients(
 
   const whereCondition = and(
     eq(patientsTable.clinicId, clinicId),
+    isNull(patientsTable.deletedAt), // Filtrar apenas registros não deletados
     search
       ? or(
           ilike(patientsTable.name, `%${search}%`),
@@ -54,6 +55,7 @@ export async function getPatientById(patientId: string, clinicId: string) {
     where: and(
       eq(patientsTable.id, patientId),
       eq(patientsTable.clinicId, clinicId),
+      isNull(patientsTable.deletedAt), // Filtrar apenas registros não deletados
     ),
   });
 

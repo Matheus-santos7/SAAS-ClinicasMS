@@ -29,6 +29,9 @@ export const deletePatient = protectedAction
       throw new Error("Acesso negado a este recurso.");
     }
 
-    await db.delete(patientsTable).where(eq(patientsTable.id, parsedInput.id));
+    await db
+      .update(patientsTable)
+      .set({ deletedAt: new Date() })
+      .where(eq(patientsTable.id, parsedInput.id));
     revalidatePath(ROUTES.PATIENTS);
   });

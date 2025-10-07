@@ -4,8 +4,7 @@ import { faker } from "@faker-js/faker";
 import dayjs from "dayjs";
 import { eq, sql } from "drizzle-orm";
 
-import { dentalSpecialties } from "@/constants/dental-specialties";
-
+import { dentalSpecialties } from "../constants/dental-specialties";
 import { db } from ".";
 import {
   appointmentsTable,
@@ -14,6 +13,7 @@ import {
   evolutionTable,
   patientsAnamnesisTable,
   patientsTable,
+  transactionCategoriesTable,
   usersTable,
   usersToClinicsTable,
 } from "./schema";
@@ -30,7 +30,7 @@ async function seed() {
     // --- Dados das clínicas ---
     const clinicsData = [
       { name: "Odontologia Fraguas", code: "FRAGUAS" },
-      { name: "Odontologia Santos", code: "SANTOS" }
+      { name: "Odontologia Santos", code: "SANTOS" },
     ];
 
     // --- Encontrar ou criar usuário demo ---
@@ -41,15 +41,18 @@ async function seed() {
 
     if (!user) {
       console.log(`👤 Criando usuário demo: ${userEmail}`);
-      [user] = await db.insert(usersTable).values({
-        id: faker.string.uuid(),
-        email: userEmail,
-        name: "Usuário Demo",
-        image: "",
-        emailVerified: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }).returning();
+      [user] = await db
+        .insert(usersTable)
+        .values({
+          id: faker.string.uuid(),
+          email: userEmail,
+          name: "Usuário Demo",
+          image: "",
+          emailVerified: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
     }
 
     console.log(`✅ Usuário ${userEmail} encontrado/criado.`);
@@ -57,7 +60,7 @@ async function seed() {
     // --- Processar cada clínica ---
     for (const clinicData of clinicsData) {
       console.log(`\n🏥 Processando clínica: ${clinicData.name}`);
-      
+
       // Encontrar ou criar clínica
       let clinic = await db.query.clinicsTable.findFirst({
         where: eq(clinicsTable.name, clinicData.name),
@@ -65,9 +68,12 @@ async function seed() {
 
       if (!clinic) {
         console.log(`🏗️ Criando clínica: ${clinicData.name}`);
-        [clinic] = await db.insert(clinicsTable).values({
-          name: clinicData.name,
-        }).returning();
+        [clinic] = await db
+          .insert(clinicsTable)
+          .values({
+            name: clinicData.name,
+          })
+          .returning();
       }
 
       // Associar usuário à clínica se não estiver associado
@@ -86,12 +92,68 @@ async function seed() {
       await populateClinicData(clinic);
     }
 
-    console.log("\n🎉 Processo de seed concluído com sucesso para todas as clínicas!");
+    console.log(
+      "\n🎉 Processo de seed concluído com sucesso para todas as clínicas!",
+    );
     process.exit(0);
   } catch (error) {
     console.error("❌ Erro ao executar o seed:", error);
     process.exit(1);
   }
+}
+
+async function populateTransactionCategories(clinicId: string) {
+  console.log("📊 Populando categorias de transação...");
+
+  // Verificar se já existem categorias para esta clínica
+  const existingCategories =
+    await db.query.transactionCategoriesTable.findFirst({
+      where: eq(transactionCategoriesTable.clinicId, clinicId),
+    });
+
+  if (existingCategories) {
+    console.log("✅ Categorias de transação já existem para esta clínica.");
+    return;
+  }
+
+  // Categorias de RECEITA (income)
+  const incomeCategories = [
+    "Receita de Consultas",
+    "Receita de Tratamentos",
+    "Receita de Procedimentos",
+  ];
+
+  // Categorias de DESPESA (expense)
+  const expenseCategories = [
+    "Salários e Encargos",
+    "Materiais de Consumo",
+    "Equipamentos e Manutenção",
+    "Aluguel e Utilidades",
+    "Marketing e Publicidade",
+    "Impostos e Taxas",
+  ];
+
+  // Inserir categorias de receita
+  for (const category of incomeCategories) {
+    await db.insert(transactionCategoriesTable).values({
+      clinicId,
+      name: category,
+      type: "income",
+    });
+  }
+
+  // Inserir categorias de despesa
+  for (const category of expenseCategories) {
+    await db.insert(transactionCategoriesTable).values({
+      clinicId,
+      name: category,
+      type: "expense",
+    });
+  }
+
+  console.log(
+    `✅ ${incomeCategories.length + expenseCategories.length} categorias de transação criadas.`,
+  );
 }
 
 async function populateClinicData(clinic: { id: string; name: string }) {
@@ -112,7 +174,13 @@ async function populateClinicData(clinic: { id: string; name: string }) {
 
   await db.delete(patientsTable).where(eq(patientsTable.clinicId, clinic.id));
   await db.delete(doctorsTable).where(eq(doctorsTable.clinicId, clinic.id));
+  await db
+    .delete(transactionCategoriesTable)
+    .where(eq(transactionCategoriesTable.clinicId, clinic.id));
   console.log("✅ Dados antigos limpos.");
+
+  // --- Populando categorias de transação ---
+  await populateTransactionCategories(clinic.id);
 
   // --- Gerando Dentistas ---
   const NUM_DENTISTS = 15; // Reduzido para dividir entre as clínicas
@@ -134,7 +202,9 @@ async function populateClinicData(clinic: { id: string; name: string }) {
       .returning();
     createdDentists.push(dentist);
   }
-  console.log(`✅ ${createdDentists.length} dentistas criados para ${clinic.name}.`);
+  console.log(
+    `✅ ${createdDentists.length} dentistas criados para ${clinic.name}.`,
+  );
 
   // --- Gerando Pacientes ---
   const NUM_PATIENTS = 300; // Reduzido para dividir entre as clínicas
@@ -159,7 +229,9 @@ async function populateClinicData(clinic: { id: string; name: string }) {
       .returning();
     createdPatients.push(patient);
   }
-  console.log(`✅ ${createdPatients.length} pacientes criados para ${clinic.name}.`);
+  console.log(
+    `✅ ${createdPatients.length} pacientes criados para ${clinic.name}.`,
+  );
 
   // --- Gerando Anamnese e Evolução para os primeiros 100 pacientes ---
   console.log(`📝 Gerando dados de anamnese e evolução para ${clinic.name}...`);
@@ -210,7 +282,9 @@ async function populateClinicData(clinic: { id: string; name: string }) {
 
   // --- Gerando Agendamentos ---
   const NUM_APPOINTMENTS = 1000; // Reduzido para dividir entre as clínicas
-  console.log(`🗓️ Gerando ${NUM_APPOINTMENTS} agendamentos para ${clinic.name}...`);
+  console.log(
+    `🗓️ Gerando ${NUM_APPOINTMENTS} agendamentos para ${clinic.name}...`,
+  );
   for (let i = 0; i < NUM_APPOINTMENTS; i++) {
     const randomDoctor = getRandomItem(createdDentists);
     const randomPatient = getRandomItem(createdPatients);
@@ -231,7 +305,9 @@ async function populateClinicData(clinic: { id: string; name: string }) {
       appointmentPriceInCents: randomDoctor.appointmentPriceInCents,
     });
   }
-  console.log(`✅ ${NUM_APPOINTMENTS} agendamentos criados para ${clinic.name}.`);
+  console.log(
+    `✅ ${NUM_APPOINTMENTS} agendamentos criados para ${clinic.name}.`,
+  );
   console.log(`🎉 Dados da clínica ${clinic.name} populados com sucesso!`);
 }
 

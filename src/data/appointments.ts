@@ -1,4 +1,4 @@
-import { and, count, eq, gte, lte } from "drizzle-orm";
+import { and, count, eq, gte, isNull, lte } from "drizzle-orm";
 
 import { APP_CONFIG } from "@/constants/config";
 import { db } from "@/db";
@@ -13,7 +13,10 @@ export async function getAppointments(
 ) {
   const itemsPerPage = APP_CONFIG.PAGINATION.APPOINTMENTS_PER_PAGE;
 
-  const whereConditions = [eq(appointmentsTable.clinicId, clinicId)];
+  const whereConditions = [
+    eq(appointmentsTable.clinicId, clinicId),
+    isNull(appointmentsTable.deletedAt), // Filtrar apenas registros não deletados
+  ];
 
   // Filtro por data
   if (from) {
@@ -57,6 +60,7 @@ export async function getAppointmentById(
     where: and(
       eq(appointmentsTable.id, appointmentId),
       eq(appointmentsTable.clinicId, clinicId),
+      isNull(appointmentsTable.deletedAt), // Filtrar apenas registros não deletados
     ),
     with: {
       patient: true,
@@ -75,6 +79,7 @@ export async function getAppointmentsByDateRange(
   const appointments = await db.query.appointmentsTable.findMany({
     where: and(
       eq(appointmentsTable.clinicId, clinicId),
+      isNull(appointmentsTable.deletedAt), // Filtrar apenas registros não deletados
       gte(appointmentsTable.date, from),
       lte(appointmentsTable.date, to),
     ),
@@ -92,7 +97,10 @@ export async function getAppointmentsForAgenda(
   clinicId: string,
   doctorId?: string,
 ) {
-  const whereConditions = [eq(appointmentsTable.clinicId, clinicId)];
+  const whereConditions = [
+    eq(appointmentsTable.clinicId, clinicId),
+    isNull(appointmentsTable.deletedAt), // Filtrar apenas registros não deletados
+  ];
 
   if (doctorId) {
     whereConditions.push(eq(appointmentsTable.doctorId, doctorId));
@@ -113,7 +121,10 @@ export async function getAppointmentsForList(
   from?: Date,
   to?: Date,
 ) {
-  const whereConditions = [eq(appointmentsTable.clinicId, clinicId)];
+  const whereConditions = [
+    eq(appointmentsTable.clinicId, clinicId),
+    isNull(appointmentsTable.deletedAt), // Filtrar apenas registros não deletados
+  ];
 
   if (doctorId) {
     whereConditions.push(eq(appointmentsTable.doctorId, doctorId));
