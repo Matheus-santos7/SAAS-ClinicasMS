@@ -4,7 +4,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PatientWithDetails } from "@/types";
 
-import { AnamnesisTab } from "../anamnese/AnamnesisForm";
+import { AnamnesisTab } from "../AnamnesisForm";
 import { DocumentsTab } from "../DocumentsTab";
 import { EvolutionTab } from "../evolution/evolution-tab";
 import { FinancialTab } from "../financialTab";

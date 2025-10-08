@@ -109,6 +109,7 @@ export const upsertBudget = protectedAction
         procedureName: item.name,
         quantity: item.quantity ?? 1,
         priceInCents: Math.round(item.value * 100),
+        finalPriceInCents: Math.round(item.value * 100), // Adicionando campo obrigatório
       });
     }
     revalidatePath(`/patients/${patientId}`);
