@@ -51,9 +51,12 @@ const AddAppointmentForm = ({
   doctors: _doctors, // eslint-disable-line @typescript-eslint/no-unused-vars
   onSuccess,
 }: AddAppointmentFormProps) => {
-  const { newAppointmentSlot } = useAppointmentStore();
+  const { getNewAppointmentSlot } = useAppointmentStore();
   const searchParams = useSearchParams();
   const doctorIdFromUrl = searchParams.get("doctorId");
+
+  // ✅ SIMPLIFICADO: Usa getter unificado
+  const newAppointmentSlot = getNewAppointmentSlot();
 
   // Caso seja necessário popular selects: buscar pacientes/médicos na página e passar como props.
 

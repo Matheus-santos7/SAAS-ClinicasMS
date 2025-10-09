@@ -36,7 +36,7 @@ import { formatCurrencyInCents } from "@/helpers/currency";
 import { useAppointmentStore } from "@/stores";
 
 export const AppointmentDetailsModal = () => {
-  const { isModalOpen, selectedAppointment, closeModal } =
+  const { isModalOpen, getSelectedAppointment, closeModal, isViewModal } =
     useAppointmentStore();
 
   const { execute: executeDelete, isPending: isDeleting } = useAction(
@@ -53,12 +53,16 @@ export const AppointmentDetailsModal = () => {
   );
 
   const handleDelete = () => {
+    const selectedAppointment = getSelectedAppointment();
     if (selectedAppointment) {
       executeDelete({ id: selectedAppointment.id });
     }
   };
 
-  if (!selectedAppointment) {
+  // ✅ SIMPLIFICADO: Usa getter para verificar se é modal de visualização
+  const selectedAppointment = getSelectedAppointment();
+
+  if (!isModalOpen || !isViewModal() || !selectedAppointment) {
     return null;
   }
 

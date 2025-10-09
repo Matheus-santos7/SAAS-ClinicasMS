@@ -61,7 +61,7 @@ const CustomEvent = (props: CustomEventProps) => {
 export default function AgendaView({ appointments }: AgendaViewProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { openModal } = useAppointmentStore();
+  const { openViewModal } = useAppointmentStore();
 
   const events = useMemo(
     () =>
@@ -141,9 +141,9 @@ export default function AgendaView({ appointments }: AgendaViewProps) {
       const resource = event.resource as {
         appointment: AppointmentWithRelations;
       };
-      openModal(resource.appointment);
+      openViewModal(resource.appointment);
     },
-    [openModal],
+    [openViewModal],
   );
 
   return (

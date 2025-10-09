@@ -16,6 +16,12 @@ interface Params {
   };
 }
 
+interface DailyAppointmentResult {
+  date: string;
+  appointments: string;
+  revenue: string;
+}
+
 export const getDashboard = async ({ from, to, session }: Params) => {
   const chartStartDate = dayjs().subtract(10, "days").startOf("day").toDate();
   const chartEndDate = dayjs().add(10, "days").endOf("day").toDate();
@@ -27,7 +33,7 @@ export const getDashboard = async ({ from, to, session }: Params) => {
     topDoctors,
     topSpecialties,
     todayAppointments,
-    dailyAppointmentsData,
+    dailyAppointmentsResult,
   ] = await Promise.all([
     db
       .select({
@@ -113,26 +119,45 @@ export const getDashboard = async ({ from, to, session }: Params) => {
         doctor: true,
       },
     }),
-    db
-      .select({
-        date: sql<string>`DATE(${appointmentsTable.date})`.as("date"),
-        appointments: count(appointmentsTable.id),
-        revenue:
-          sql<number>`COALESCE(SUM(${appointmentsTable.appointmentPriceInCents}), 0)`.as(
-            "revenue",
-          ),
-      })
-      .from(appointmentsTable)
-      .where(
-        and(
-          eq(appointmentsTable.clinicId, session.user.clinic.id),
-          gte(appointmentsTable.date, chartStartDate),
-          lte(appointmentsTable.date, chartEndDate),
-        ),
+    // ✅ OTIMIZAÇÃO: Query SQL otimizada usando generate_series do PostgreSQL
+    //
+    // ANTES: Buscava apenas dias com agendamentos + processamento no frontend para preencher gaps
+    // AGORA: generate_series cria todos os 21 dias (10 antes + hoje + 10 depois) automaticamente
+    //
+    // BENEFÍCIOS:
+    // 1. Transfere processamento do frontend para o banco (mais eficiente)
+    // 2. Elimina lógica de "preenchimento de gaps" no appointments-chart.tsx
+    // 3. Reduz tráfego de rede (dados já vêm estruturados)
+    // 4. Aproveita otimizações nativas do PostgreSQL para séries de datas
+    db.execute(sql`
+      WITH date_series AS (
+        SELECT generate_series(
+          ${chartStartDate}::date,
+          ${chartEndDate}::date,
+          '1 day'::interval
+        )::date AS date
       )
-      .groupBy(sql`DATE(${appointmentsTable.date})`)
-      .orderBy(sql`DATE(${appointmentsTable.date})`),
+      SELECT 
+        ds.date::text AS date,
+        COALESCE(COUNT(a.id), 0)::int AS appointments,
+        COALESCE(SUM(a.appointment_price_in_cents), 0)::bigint AS revenue
+      FROM date_series ds
+      LEFT JOIN ${appointmentsTable} a ON DATE(a.date) = ds.date
+        AND a.clinic_id = ${session.user.clinic.id}
+      GROUP BY ds.date
+      ORDER BY ds.date
+    `),
   ]);
+
+  // Processar resultado da query otimizada
+  const dailyAppointmentsData = (
+    dailyAppointmentsResult.rows as unknown as DailyAppointmentResult[]
+  ).map((row) => ({
+    date: row.date,
+    appointments: Number(row.appointments),
+    revenue: Number(row.revenue),
+  }));
+
   return {
     totalRevenue,
     totalAppointments,

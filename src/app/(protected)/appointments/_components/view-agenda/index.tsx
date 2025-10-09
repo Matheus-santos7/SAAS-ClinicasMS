@@ -68,8 +68,13 @@ export default function AgendaView({
   doctors,
 }: AgendaViewProps) {
   const searchParams = useSearchParams();
-  const { openModal, openNewModal, isNewModalOpen, closeNewModal } =
-    useAppointmentStore();
+  const {
+    openViewModal,
+    openCreateModal,
+    isModalOpen,
+    closeModal,
+    isCreateModal,
+  } = useAppointmentStore();
   const doctorId = searchParams.get("doctorId");
 
   const { execute: executeUpdate } = useAction(updateAppointmentDate, {
@@ -119,9 +124,9 @@ export default function AgendaView({
       const resource = event.resource as {
         appointment: AppointmentWithRelations;
       };
-      openModal(resource.appointment);
+      openViewModal(resource.appointment);
     },
-    [openModal],
+    [openViewModal],
   );
 
   const handleSelectSlot = useCallback(
@@ -130,23 +135,23 @@ export default function AgendaView({
         toast.error("Por favor, selecione um dentista para agendar.");
         return;
       }
-      openNewModal({ start, end });
+      openCreateModal({ start, end });
     },
-    [openNewModal, doctorId],
+    [openCreateModal, doctorId],
   );
 
   return (
     <>
       <AppointmentDetailsModal />
       <Dialog
-        open={isNewModalOpen}
-        onOpenChange={(open) => !open && closeNewModal()}
+        open={isModalOpen && isCreateModal()}
+        onOpenChange={(open) => !open && closeModal()}
       >
         <AddAppointmentForm
-          isOpen={isNewModalOpen}
+          isOpen={isModalOpen && isCreateModal()}
           patients={patients}
           doctors={doctors}
-          onSuccess={closeNewModal}
+          onSuccess={closeModal}
         />
       </Dialog>
       <div className="bg-card relative h-[80vh] max-w-full overflow-x-auto rounded-lg border p-4 sm:p-2 md:p-4">

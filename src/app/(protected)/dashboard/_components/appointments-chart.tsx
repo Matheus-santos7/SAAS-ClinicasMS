@@ -30,22 +30,22 @@ interface AppointmentsChartProps {
 const AppointmentsChart = ({
   dailyAppointmentsData,
 }: AppointmentsChartProps) => {
-  // Gerar 21 dias: 10 antes + hoje + 10 depois
-  const chartDays = Array.from({ length: 21 }).map((_, i) =>
-    dayjs()
-      .subtract(10 - i, "days")
-      .format("YYYY-MM-DD"),
-  );
-
-  const chartData = chartDays.map((date) => {
-    const dataForDay = dailyAppointmentsData.find((item) => item.date === date);
-    return {
-      date: dayjs(date).format("DD/MM"),
-      fullDate: date,
-      appointments: dataForDay?.appointments || 0,
-      revenue: Number(dataForDay?.revenue || 0),
-    };
-  });
+  // ✅ SIMPLIFICADO: Dados já vêm processados do backend com todos os 21 dias
+  //
+  // ANTES: Gerava array de 21 dias no frontend + fazia find() para cada dia
+  // AGORA: Backend já retorna todos os dias com valores 0 quando necessário
+  //
+  // BENEFÍCIOS:
+  // 1. Elimina Array.from({ length: 21 }) e loop de geração de datas
+  // 2. Remove lógica de find() para buscar dados de cada dia
+  // 3. Reduz processamento e complexidade no frontend
+  // 4. Dados chegam prontos, apenas formatamos para exibição
+  const chartData = dailyAppointmentsData.map((item) => ({
+    date: dayjs(item.date).format("DD/MM"),
+    fullDate: item.date,
+    appointments: item.appointments,
+    revenue: Number(item.revenue || 0),
+  }));
 
   const chartConfig = {
     appointments: {
