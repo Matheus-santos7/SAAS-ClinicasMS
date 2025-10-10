@@ -23,7 +23,11 @@ export const PageTitle = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  return <h1 className={`text-2xl font-bold${className ? ` ${className}` : ''}`}>{children}</h1>;
+  return (
+    <h1 className={`text-2xl font-bold${className ? ` ${className}` : ""}`}>
+      {children}
+    </h1>
+  );
 };
 
 export const PageDescription = ({
@@ -33,11 +37,29 @@ export const PageDescription = ({
   children: React.ReactNode;
   className?: string;
 }) => {
-  return <p className={`text-muted-foreground text-sm${className ? ` ${className}` : ''}`}>{children}</p>;
+  return (
+    <p
+      className={`text-muted-foreground text-sm${className ? ` ${className}` : ""}`}
+    >
+      {children}
+    </p>
+  );
 };
 
-export const PageActions = ({ children }: { children: React.ReactNode }) => {
-  return <div className="flex items-center gap-2">{children}</div>;
+export const PageActions = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <div
+      className={`flex items-center gap-2${className ? ` ${className}` : ""}`}
+    >
+      {children}
+    </div>
+  );
 };
 
 export const PageContent = ({ children }: { children: React.ReactNode }) => {

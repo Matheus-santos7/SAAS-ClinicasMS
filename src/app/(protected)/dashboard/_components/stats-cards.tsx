@@ -5,7 +5,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { formatCurrencyInCents } from "@/helpers/currency";
 
 interface StatsCardsProps {
@@ -45,22 +45,24 @@ const StatsCards = ({
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <Card key={stat.title} className="gap-2">
-            <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
-              <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-                <Icon className="text-primary h-4 w-4" />
+          <Card key={stat.title} className="p-3 sm:p-6">
+            <div className="flex items-center justify-between space-y-0">
+              <div className="flex flex-col space-y-1 sm:space-y-2">
+                <CardTitle className="text-muted-foreground truncate text-xs font-medium sm:text-sm">
+                  {stat.title}
+                </CardTitle>
+                <div className="text-lg font-bold sm:text-2xl">
+                  {stat.value}
+                </div>
               </div>
-              <CardTitle className="text-muted-foreground text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-            </CardContent>
+              <div className="bg-primary/10 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10">
+                <Icon className="text-primary h-3.5 w-3.5 sm:h-5 sm:w-5" />
+              </div>
+            </div>
           </Card>
         );
       })}

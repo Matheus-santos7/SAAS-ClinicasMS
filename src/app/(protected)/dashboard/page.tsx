@@ -76,46 +76,59 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 
   return (
     <PageContainer>
+      {/* Header responsivo */}
       <PageHeader>
         <PageHeaderContent>
           <PageTitle>Dashboard</PageTitle>
-          <PageDescription>
+          <PageDescription className="hidden sm:block">
             Tenha uma visão geral da sua clínica.
           </PageDescription>
         </PageHeaderContent>
-        <PageActions>
+        <PageActions className="w-full sm:w-auto">
           <DatePicker />
         </PageActions>
       </PageHeader>
+
       <PageContent>
+        {/* Stats Cards - Sempre visível */}
         <StatsCards
           totalRevenue={totalRevenue.total ? Number(totalRevenue.total) : null}
           totalAppointments={totalAppointments.total}
           totalPatients={totalPatients.total}
           totalDoctors={totalDoctors.total}
         />
-        <div className="grid grid-cols-[2.25fr_1fr] gap-4">
-          <AppointmentsChart dailyAppointmentsData={dailyAppointmentsData} />
-          <TopDoctors doctors={topDoctors} />
-        </div>
-        <div className="grid grid-cols-[2.25fr_1fr] gap-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Calendar className="text-muted-foreground" />
-                <CardTitle className="text-base">
-                  Agendamentos de hoje
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                columns={appointmentsTableColumns}
-                data={todayAppointments}
-              />
-            </CardContent>
-          </Card>
-          <TopSpecialties topSpecialties={topSpecialties} />
+
+        {/* Agendamentos de hoje - Sempre visível */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Calendar className="text-muted-foreground hidden sm:block" />
+              <CardTitle className="text-sm sm:text-base">
+                Agendamentos de hoje
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <DataTable
+              columns={appointmentsTableColumns}
+              data={todayAppointments}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Conteúdo apenas para desktop */}
+        <div className="hidden space-y-6 lg:block">
+          {/* Gráfico + Top Doctors */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
+            <AppointmentsChart dailyAppointmentsData={dailyAppointmentsData} />
+            <TopDoctors doctors={topDoctors} />
+          </div>
+
+          {/* Top Especialidades */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
+            <div></div> {/* Espaço vazio para manter o layout */}
+            <TopSpecialties topSpecialties={topSpecialties} />
+          </div>
         </div>
       </PageContent>
     </PageContainer>

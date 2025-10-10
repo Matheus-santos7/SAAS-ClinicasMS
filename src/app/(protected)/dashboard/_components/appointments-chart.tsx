@@ -30,16 +30,6 @@ interface AppointmentsChartProps {
 const AppointmentsChart = ({
   dailyAppointmentsData,
 }: AppointmentsChartProps) => {
-  // ✅ SIMPLIFICADO: Dados já vêm processados do backend com todos os 21 dias
-  //
-  // ANTES: Gerava array de 21 dias no frontend + fazia find() para cada dia
-  // AGORA: Backend já retorna todos os dias com valores 0 quando necessário
-  //
-  // BENEFÍCIOS:
-  // 1. Elimina Array.from({ length: 21 }) e loop de geração de datas
-  // 2. Remove lógica de find() para buscar dados de cada dia
-  // 3. Reduz processamento e complexidade no frontend
-  // 4. Dados chegam prontos, apenas formatamos para exibição
   const chartData = dailyAppointmentsData.map((item) => ({
     date: dayjs(item.date).format("DD/MM"),
     fullDate: item.date,
@@ -61,14 +51,21 @@ const AppointmentsChart = ({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
-        <DollarSign />
-        <CardTitle>Agendamentos e Faturamento</CardTitle>
+        <DollarSign className="hidden sm:block" />
+        <CardTitle className="text-sm sm:text-base">
+          Agendamentos e Faturamento
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[200px]">
+      <CardContent className="px-2 sm:px-6">
+        <ChartContainer config={chartConfig} className="min-h-[200px] sm:min-h-[300px]">
           <AreaChart
             data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            margin={{ 
+              top: 10, 
+              right: 10, 
+              left: 0, 
+              bottom: 5 
+            }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
@@ -76,12 +73,15 @@ const AppointmentsChart = ({
               tickLine={false}
               tickMargin={10}
               axisLine={false}
+              className="text-xs"
             />
             <YAxis
               yAxisId="left"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              className="text-xs"
+              width={40}
             />
             <YAxis
               yAxisId="right"
@@ -89,6 +89,8 @@ const AppointmentsChart = ({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              className="text-xs hidden sm:block"
+              width={60}
               tickFormatter={(value) => formatCurrencyInCents(value)}
             />
             <ChartTooltip
@@ -99,10 +101,10 @@ const AppointmentsChart = ({
                       return (
                         <>
                           <div className="h-3 w-3 rounded bg-[#10B981]" />
-                          <span className="text-muted-foreground">
+                          <span className="text-muted-foreground text-xs sm:text-sm">
                             Faturamento:
                           </span>
-                          <span className="font-semibold">
+                          <span className="font-semibold text-xs sm:text-sm">
                             {formatCurrencyInCents(Number(value))}
                           </span>
                         </>
@@ -111,10 +113,10 @@ const AppointmentsChart = ({
                     return (
                       <>
                         <div className="h-3 w-3 rounded bg-[#0B68F7]" />
-                        <span className="text-muted-foreground">
+                        <span className="text-muted-foreground text-xs sm:text-sm">
                           Agendamentos:
                         </span>
-                        <span className="font-semibold">{value}</span>
+                        <span className="font-semibold text-xs sm:text-sm">{value}</span>
                       </>
                     );
                   }}

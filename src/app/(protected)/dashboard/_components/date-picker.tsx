@@ -27,62 +27,64 @@ export function DatePicker({
     "to",
     parseAsIsoDate.withDefault(addMonths(new Date(), 1)),
   );
+  
   const handleDateSelect = (dateRange: DateRange | undefined) => {
     if (dateRange?.from) {
-      setFrom(dateRange.from, {
-        shallow: false,
-      });
+      setFrom(dateRange.from, { shallow: false });
     }
     if (dateRange?.to) {
-      setTo(dateRange.to, {
-        shallow: false,
-      });
+      setTo(dateRange.to, { shallow: false });
     }
   };
-  const date = {
-    from,
-    to,
-  };
+  
+  const date = { from, to };
+  
+  // Detecta se é mobile
+  const [isMobile, setIsMobile] = React.useState(false);
+  
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id="date"
-            variant={"outline"}
+            variant="outline"
             className={cn(
-              "justify-start text-left font-normal",
+              "w-full sm:w-auto justify-start text-left font-normal text-xs sm:text-sm",
               !date && "text-muted-foreground",
             )}
           >
-            <CalendarIcon />
+            <CalendarIcon className="h-4 w-4" />
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "LLL dd, y", {
-                    locale: ptBR,
-                  })}{" "}
+                  {format(date.from, "dd/MM/yy", { locale: ptBR })}{" "}
                   -{" "}
-                  {format(date.to, "LLL dd, y", {
-                    locale: ptBR,
-                  })}
+                  {format(date.to, "dd/MM/yy", { locale: ptBR })}
                 </>
               ) : (
-                format(date.from, "LLL dd, y")
+                format(date.from, "dd/MM/yy")
               )
             ) : (
-              <span>Pick a date</span>
+              <span>Selecione</span>
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="end">
           <Calendar
             initialFocus
             mode="range"
             defaultMonth={date?.from}
             selected={date}
             onSelect={handleDateSelect}
-            numberOfMonths={2}
+            numberOfMonths={isMobile ? 1 : 2}
             locale={ptBR}
           />
         </PopoverContent>
