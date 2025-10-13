@@ -11,8 +11,6 @@ import {
   PageContainer,
   PageContent,
   PageDescription,
-  PageHeader,
-  PageHeaderContent,
   PageTitle,
 } from "@/components/ui/page-container";
 import { getDashboard } from "@/data/get-dashboard";
