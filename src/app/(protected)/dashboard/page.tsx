@@ -19,12 +19,14 @@ import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import AppointmentsChart from "./_components/appointments-chart";
+import {
+  AppointmentsChartWrapper,
+  StatsCardsWrapper,
+  TopDoctorsWrapper,
+  TopSpecialtiesWrapper,
+} from "./_components/dashboard-wrappers";
 import { DatePicker } from "./_components/date-picker";
-import StatsCards from "./_components/stats-cards";
 import { TodayAppointmentsTable } from "./_components/today-appointments-table";
-import TopDoctors from "./_components/top-doctors";
-import TopSpecialties from "./_components/top-specialties";
 
 interface DashboardPageProps {
   searchParams: Promise<{
@@ -75,22 +77,28 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 
   return (
     <PageContainer>
-      {/* Header responsivo */}
-      <PageHeader>
-        <PageHeaderContent>
-          <PageTitle>Dashboard</PageTitle>
-          <PageDescription className="hidden sm:block">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        {/* Título + Descrição */}
+        <div>
+          <PageTitle className="text-2xl font-semibold sm:text-3xl">
+            Dashboard
+          </PageTitle>
+          <PageDescription className="text-muted-foreground mt-1 text-sm sm:text-base">
             Tenha uma visão geral da sua clínica.
           </PageDescription>
-        </PageHeaderContent>
-        <PageActions className="w-full sm:w-auto">
-          <DatePicker />
-        </PageActions>
-      </PageHeader>
+        </div>
+
+        {/* DatePicker posicionado no canto direito, mesmo no mobile */}
+        <div className="mt-2 flex justify-end sm:mt-0">
+          <PageActions className="w-fit">
+            <DatePicker />
+          </PageActions>
+        </div>
+      </div>
 
       <PageContent>
         {/* Stats Cards - Sempre visível */}
-        <StatsCards
+        <StatsCardsWrapper
           totalRevenue={totalRevenue.total ? Number(totalRevenue.total) : null}
           totalAppointments={totalAppointments.total}
           totalPatients={totalPatients.total}
@@ -116,14 +124,16 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
         <div className="hidden space-y-6 lg:block">
           {/* Gráfico + Top Doctors */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
-            <AppointmentsChart dailyAppointmentsData={dailyAppointmentsData} />
-            <TopDoctors doctors={topDoctors} />
+            <AppointmentsChartWrapper
+              dailyAppointmentsData={dailyAppointmentsData}
+            />
+            <TopDoctorsWrapper doctors={topDoctors} />
           </div>
 
           {/* Top Especialidades */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
             <div></div> {/* Espaço vazio para manter o layout */}
-            <TopSpecialties topSpecialties={topSpecialties} />
+            <TopSpecialtiesWrapper topSpecialties={topSpecialties} />
           </div>
         </div>
       </PageContent>
