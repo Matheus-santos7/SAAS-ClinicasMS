@@ -63,7 +63,7 @@ const clinicModules = [
     icon: CalendarDays,
     url: ROUTES.APPOINTMENTS,
     subItems: [
-      { title: "Agenda Geral", url: "/appointments/calendar" },
+      { title: "Agenda Geral", url: "/appointments" },
       { title: "Novo Agendamento", url: "/appointments/new" },
       { title: "Consultas do Dia", url: "/appointments/today" },
       { title: "Agendamentos Pendentes", url: "/appointments/pending" },
