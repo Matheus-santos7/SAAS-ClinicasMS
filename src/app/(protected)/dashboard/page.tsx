@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/data-table";
 import {
   PageActions,
   PageContainer,
@@ -20,10 +19,10 @@ import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import { appointmentsTableColumns } from "../appointments/_components/view-list/table-columns";
 import AppointmentsChart from "./_components/appointments-chart";
 import { DatePicker } from "./_components/date-picker";
 import StatsCards from "./_components/stats-cards";
+import { TodayAppointmentsTable } from "./_components/today-appointments-table";
 import TopDoctors from "./_components/top-doctors";
 import TopSpecialties from "./_components/top-specialties";
 
@@ -108,11 +107,8 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <DataTable
-              columns={appointmentsTableColumns}
-              data={todayAppointments}
-            />
+          <CardContent>
+            <TodayAppointmentsTable appointments={todayAppointments} />
           </CardContent>
         </Card>
 

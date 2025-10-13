@@ -4,6 +4,8 @@ import { and, count, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
 import { db } from "@/db";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 
+import { getTodayAppointmentsWithDayjs } from "./appointments";
+
 interface Params {
   from: string;
   to: string;
@@ -108,18 +110,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
       )
       .groupBy(doctorsTable.specialty)
       .orderBy(desc(count(appointmentsTable.id))),
-    db.query.appointmentsTable.findMany({
-      where: and(
-        eq(appointmentsTable.clinicId, session.user.clinic.id),
-        gte(appointmentsTable.date, new Date()),
-        lte(appointmentsTable.date, new Date()),
-      ),
-      with: {
-        patient: true,
-        doctor: true,
-      },
-    }),
-    // ✅ OTIMIZAÇÃO: Query SQL otimizada usando generate_series do PostgreSQL
+    getTodayAppointmentsWithDayjs(session.user.clinic.id),
+    // OTIMIZAÇÃO: Query SQL otimizada usando generate_series do PostgreSQL
     //
     // ANTES: Buscava apenas dias com agendamentos + processamento no frontend para preencher gaps
     // AGORA: generate_series cria todos os 21 dias (10 antes + hoje + 10 depois) automaticamente

@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { and, count, eq, gte, isNull, lte } from "drizzle-orm";
 
 import { APP_CONFIG } from "@/constants/config";
@@ -141,6 +142,79 @@ export async function getAppointmentsForList(
   const appointments = await db.query.appointmentsTable.findMany({
     where: and(...whereConditions),
     with: { patient: true, doctor: true },
+    orderBy: (appointments, { asc }) => [asc(appointments.date)],
+  });
+
+  return appointments;
+}
+
+/**
+ * Busca apenas os agendamentos do dia atual
+ * @param clinicId - ID da clínica
+ * @returns Lista de agendamentos do dia atual com dados do paciente e médico
+ */
+export async function getTodayAppointments(clinicId: string) {
+  const today = new Date();
+
+  // Define o início do dia (00:00:00)
+  const startOfDay = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+
+  // Define o fim do dia (23:59:59.999)
+  const endOfDay = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+
+  const whereConditions = [
+    eq(appointmentsTable.clinicId, clinicId),
+    isNull(appointmentsTable.deletedAt), // Filtrar apenas registros não deletados
+    gte(appointmentsTable.date, startOfDay),
+    lte(appointmentsTable.date, endOfDay),
+  ];
+
+  const appointments = await db.query.appointmentsTable.findMany({
+    where: and(...whereConditions),
+    with: {
+      patient: true,
+      doctor: true,
+    },
+    orderBy: (appointments, { asc }) => [asc(appointments.date)],
+  });
+
+  return appointments;
+}
+
+/**
+ * Versão alternativa usando dayjs para buscar agendamentos do dia atual
+ * @param clinicId - ID da clínica
+ * @returns Lista de agendamentos do dia atual com dados do paciente e médico
+ */
+export async function getTodayAppointmentsWithDayjs(clinicId: string) {
+  const startOfDay = dayjs().startOf("day").toDate();
+  const endOfDay = dayjs().endOf("day").toDate();
+
+  const whereConditions = [
+    eq(appointmentsTable.clinicId, clinicId),
+    isNull(appointmentsTable.deletedAt),
+    gte(appointmentsTable.date, startOfDay),
+    lte(appointmentsTable.date, endOfDay),
+  ];
+
+  const appointments = await db.query.appointmentsTable.findMany({
+    where: and(...whereConditions),
+    with: {
+      patient: true,
+      doctor: true,
+    },
     orderBy: (appointments, { asc }) => [asc(appointments.date)],
   });
 
