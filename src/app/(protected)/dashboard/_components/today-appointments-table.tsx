@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { AppointmentWithRelations } from "@/types";
 
-import { appointmentsTableColumns } from "../../appointments/_components/view-list/table-columns";
+import { appointmentsTableColumns } from "../../appointments/view-list/table-columns";
 
 interface TodayAppointmentsTableProps {
   appointments: AppointmentWithRelations[];

@@ -24,7 +24,7 @@ import {
 import { useAppointmentStore } from "@/stores";
 import { AppointmentWithRelations, Doctor, Patient } from "@/types"; // Usar tipo centralizado
 
-import AddAppointmentForm from "../add-appointment-form";
+import AddAppointmentForm from "../_components/add-appointment-form";
 import { AppointmentDetailsModal } from "./appointment-details-modal";
 
 dayjs.locale("pt-br");

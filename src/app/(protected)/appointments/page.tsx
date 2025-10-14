@@ -27,8 +27,8 @@ import { ROUTES } from "@/lib/routes";
 // Importações atualizadas para a nova estrutura
 import AddAppointmentButton from "./_components/add-appointment-button";
 import { DoctorFilter } from "./_components/doctor-filter";
-import AgendaView from "./_components/view-agenda";
-import { AppointmentListView } from "./_components/view-list";
+import AgendaView from "./view-agenda";
+import { AppointmentListView } from "./view-list";
 
 const AppointmentsPage = async ({
   searchParams,
