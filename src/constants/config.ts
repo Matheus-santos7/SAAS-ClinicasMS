@@ -4,5 +4,9 @@ export const APP_CONFIG = {
     DOCTORS_PER_PAGE: 10,
     APPOINTMENTS_PER_PAGE: 10,
   },
+  AGENDA: {
+    DEFAULT_START_HOUR: 7, // 07:00
+    DEFAULT_END_HOUR: 21, // 21:00
+  },
   // Outras configurações da aplicação
 };

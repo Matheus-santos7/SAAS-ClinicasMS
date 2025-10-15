@@ -71,28 +71,28 @@ export function DateRangeFilter({
   return (
     <div className={cn("flex items-center justify-end gap-2", className)}>
       <Button
-        variant="outline"
+        variant="default"
         size="sm"
         onClick={() => setDatePreset(new Date(), new Date())}
       >
         Hoje
       </Button>
       <Button
-        variant="outline"
+        variant="default"
         size="sm"
         onClick={() => setDatePreset(subDays(new Date(), 1), subDays(new Date(), 1))}
       >
         Ontem
       </Button>
       <Button
-        variant="outline"
+        variant="default"
         size="sm"
         onClick={() => setDatePreset(subDays(new Date(), 7), new Date())}
       >
         Últimos 7 dias
       </Button>
       <Button
-        variant="outline"
+        variant="default"
         size="sm"
         onClick={() => setDatePreset(subDays(new Date(), 30), new Date())}
       >
@@ -103,7 +103,7 @@ export function DateRangeFilter({
         <PopoverTrigger asChild>
           <Button
             id="date"
-            variant={"outline"}
+            variant={"default"}
             size="sm"
             className={cn(
               "w-[280px] justify-start text-left font-normal",

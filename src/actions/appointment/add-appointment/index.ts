@@ -36,18 +36,29 @@ export const addAppointment = protectedAction
     }
     const isTimeAvailable = availableTimes.data?.some(
       (time: { value: string; available: boolean }) =>
-        time.value === parsedInput.time && time.available,
+        time.value === parsedInput.startTime && time.available,
     );
     if (!isTimeAvailable) {
       throw new Error("Time not available");
     }
-    const appointmentDateTime = dayjs(parsedInput.date)
-      .set("hour", parseInt(parsedInput.time.split(":")[0]))
-      .set("minute", parseInt(parsedInput.time.split(":")[1]))
-      .toDate();
-    
-    const appointmentEndDate = dayjs(appointmentDateTime).add(30, "minutes").toDate();
+    const [startHour, startMinute] = parsedInput.startTime
+      .split(":")
+      .map((v) => parseInt(v, 10));
+    const [endHour, endMinute] = parsedInput.endTime
+      .split(":")
+      .map((v) => parseInt(v, 10));
 
+    const appointmentDateTime = dayjs(parsedInput.date)
+      .set("hour", startHour)
+      .set("minute", startMinute)
+      .set("second", 0)
+      .toDate();
+
+    const appointmentEndDate = dayjs(parsedInput.date)
+      .set("hour", endHour)
+      .set("minute", endMinute)
+      .set("second", 0)
+      .toDate();
 
     // Buscar o preço do médico
     const doctor = await db.query.doctorsTable.findFirst({
@@ -63,7 +74,7 @@ export const addAppointment = protectedAction
       doctorId: parsedInput.doctorId,
       clinicId: clinicId,
       date: appointmentDateTime,
-      endDate: appointmentEndDate, 
+      endDate: appointmentEndDate,
       appointmentPriceInCents: doctor.appointmentPriceInCents,
     });
 

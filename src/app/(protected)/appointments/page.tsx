@@ -24,7 +24,6 @@ import { getPatients } from "@/data/patients";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-// Importações atualizadas para a nova estrutura
 import AddAppointmentButton from "./_components/add-appointment-button";
 import { DoctorFilter } from "./_components/doctor-filter";
 import AgendaView from "./view-agenda";
@@ -47,80 +46,72 @@ const AppointmentsPage = async ({
   if (!session.user.clinic) redirect(ROUTES.CLINIC_FORM);
   if (!session.user.plan) redirect(ROUTES.SUBSCRIPTION);
 
-  const { doctorId, from, to } = (
-    searchParams ? await searchParams : ({} as Record<string, never>)
-  ) as {
-    doctorId?: string;
-    from?: string;
-    to?: string;
-  };
+  const { doctorId, from, to } = (await searchParams) ?? {};
 
-  // Busca pacientes e médicos usando as funções centralizadas
-  const [patientsData, doctorsData] = await Promise.all([
-    getPatients(session.user.clinic.id), // Pega todos os pacientes sem paginação para seleção
-    getDoctors(session.user.clinic.id), // Pega todos os médicos da clínica
-  ]);
+  try {
+    const [
+      patientsData,
+      doctorsData,
+      appointmentsForAgenda,
+      appointmentsForList,
+    ] = await Promise.all([
+      getPatients(session.user.clinic.id),
+      getDoctors(session.user.clinic.id),
+      getAppointmentsForAgenda(session.user.clinic.id, doctorId),
+      getAppointmentsForList(
+        session.user.clinic.id,
+        doctorId,
+        from ? dayjs(from).startOf("day").toDate() : undefined,
+        to ? dayjs(to).endOf("day").toDate() : undefined,
+      ),
+    ]);
 
-  const patients = patientsData.patients;
-  const doctors = doctorsData.doctors;
+    const patients = patientsData.patients;
+    const doctors = doctorsData.doctors;
 
-  // --- LÓGICA DE BUSCA DE DADOS USANDO FUNÇÕES CENTRALIZADAS ---
+    if (!patients.length || !doctors.length) {
+      return <div>Nenhum paciente ou médico disponível.</div>;
+    }
 
-  // 1. Busca para a AGENDA (sem filtro de data)
-  const appointmentsForAgenda = await getAppointmentsForAgenda(
-    session.user.clinic.id,
-    doctorId,
-  );
-
-  // 2. Busca para a LISTA (com filtro de data)
-  const appointmentsForList = await getAppointmentsForList(
-    session.user.clinic.id,
-    doctorId,
-    from ? dayjs(from).startOf("day").toDate() : undefined,
-    to ? dayjs(to).endOf("day").toDate() : undefined,
-  );
-
-  return (
-    <PageContainer>
-      <PageHeader>
-        <PageHeaderContent>
-          <PageTitle>Agendamentos</PageTitle>
-          <PageDescription>
-            Gerencie os agendamentos da sua clínica
-          </PageDescription>
-        </PageHeaderContent>
-        <PageActions>
-          <AddAppointmentButton patients={patients} doctors={doctors} />
-        </PageActions>
-      </PageHeader>
-      <PageContent>
-        <Tabs defaultValue="agenda">
-          <div className="flex items-center justify-between gap-4">
-            <DoctorFilter doctors={doctors} />
-            <TabsList>
-              <TabsTrigger value="agenda">Agenda</TabsTrigger>
-              <TabsTrigger value="lista">Lista</TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="agenda">
-            <AgendaView
-              appointments={appointmentsForAgenda.map((a) => ({
-                ...a,
-                status: "confirmed",
-              }))}
-              patients={patients}
-              doctors={doctors}
-            />
-          </TabsContent>
-
-          <TabsContent value="lista">
-            <AppointmentListView appointments={appointmentsForList} />
-          </TabsContent>
-        </Tabs>
-      </PageContent>
-    </PageContainer>
-  );
+    return (
+      <PageContainer>
+        <PageHeader>
+          <PageHeaderContent>
+            <PageTitle>Agendamentos</PageTitle>
+            <PageDescription>
+              Gerencie os agendamentos da sua clínica
+            </PageDescription>
+          </PageHeaderContent>
+          <PageActions>
+            <AddAppointmentButton patients={patients} doctors={doctors} />
+          </PageActions>
+        </PageHeader>
+        <PageContent>
+          <Tabs defaultValue="agenda">
+            <div className="flex items-center justify-between gap-4">
+              <DoctorFilter doctors={doctors} />
+              <TabsList>
+                <TabsTrigger value="agenda">Agenda</TabsTrigger>
+                <TabsTrigger value="lista">Lista</TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent value="agenda">
+              <AgendaView
+                appointments={appointmentsForAgenda} // Removido status: "confirmed"
+                patients={patients}
+                doctors={doctors}
+              />
+            </TabsContent>
+            <TabsContent value="lista">
+              <AppointmentListView appointments={appointmentsForList} />
+            </TabsContent>
+          </Tabs>
+        </PageContent>
+      </PageContainer>
+    );
+  } catch {
+    return <div>Erro ao carregar dados. Tente novamente.</div>;
+  }
 };
 
 export default AppointmentsPage;

@@ -10,8 +10,13 @@ export const addAppointmentSchema = z.object({
   date: z.date({
     message: "Data é obrigatória.",
   }),
-  time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
-    message: "Formato de hora inválido (HH:MM ou HH:MM:SS).",
+  startTime: z
+    .string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
+      message: "Formato de hora inicial inválido (HH:MM ou HH:MM:SS).",
+    }),
+  endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
+    message: "Formato de hora final inválido (HH:MM ou HH:MM:SS).",
   }),
 });
 

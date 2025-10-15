@@ -1,12 +1,11 @@
 "use client";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import "./style.css";
 import "dayjs/locale/pt-br";
 
 import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
-import { useAction } from "next-safe-action/hooks"; // Importar hook
+import { useAction } from "next-safe-action/hooks";
 import React, { useCallback, useMemo } from "react";
 import {
   Calendar,
@@ -15,22 +14,21 @@ import {
 } from "react-big-calendar";
 import { toast } from "sonner";
 
-import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date"; // Importar action
+import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date";
 import { Dialog } from "@/components/ui/dialog";
+import { APP_CONFIG } from "@/constants/config";
 import {
   getAppointmentStyle,
   getValidDoctorColor,
 } from "@/helpers/doctor-colors";
 import { useAppointmentStore } from "@/stores";
-import { AppointmentWithRelations, Doctor, Patient } from "@/types"; // Usar tipo centralizado
+import { AppointmentWithRelations, Doctor, Patient } from "@/types";
 
 import AddAppointmentForm from "../_components/add-appointment-form";
 import { AppointmentDetailsModal } from "./appointment-details-modal";
 
 dayjs.locale("pt-br");
 const localizer = dayjsLocalizer(dayjs);
-
-// ... (componente CustomEvent permanece o mesmo)
 
 interface AgendaViewProps {
   appointments: AppointmentWithRelations[];
@@ -52,10 +50,19 @@ const CustomEvent = (props: CustomEventProps) => {
   return (
     <div className="flex h-full flex-col overflow-hidden p-1 text-white">
       <div className="flex items-center gap-2">
-        <p className="truncate font-semibold">{appointment.patient.name}</p>
-        {/* Badge removido pois não há campo status no schema */}
+        <p
+          className="truncate font-semibold"
+          title={appointment.patient.name}
+          aria-label={`Paciente: ${appointment.patient.name}`}
+        >
+          {appointment.patient.name}
+        </p>
       </div>
-      <p className="hidden truncate text-xs sm:block">
+      <p
+        className="hidden truncate text-xs sm:block"
+        title={`Dr(a). ${appointment.doctor.name}`}
+        aria-label={`Médico: ${appointment.doctor.name}`}
+      >
         Dr(a). {appointment.doctor.name}
       </p>
     </div>
@@ -78,7 +85,8 @@ export default function AgendaView({
   const doctorId = searchParams.get("doctorId");
 
   const { execute: executeUpdate } = useAction(updateAppointmentDate, {
-    onSuccess: (data) => toast.success(data.data.success),
+    onSuccess: (data) =>
+      toast.success(data.data.success || "Agendamento atualizado com sucesso."),
     onError: (error) =>
       toast.error(error.error?.serverError || "Falha ao reagendar."),
   });
@@ -86,8 +94,12 @@ export default function AgendaView({
   const handleEventDrop = useCallback(
     ({ event, start, end }: { event: RBCEvent; start: Date; end: Date }) => {
       const resource = event.resource as {
-        appointment: AppointmentWithRelations;
+        appointment?: AppointmentWithRelations;
       };
+      if (!resource?.appointment) {
+        toast.error("Erro: Agendamento inválido.");
+        return;
+      }
       executeUpdate({ id: resource.appointment.id, date: start, endDate: end });
     },
     [executeUpdate],
@@ -106,10 +118,12 @@ export default function AgendaView({
 
   const eventPropGetter = useCallback((event: RBCEvent) => {
     const resource = event.resource as {
-      appointment: AppointmentWithRelations;
+      appointment?: AppointmentWithRelations;
     };
-    const doctorColor = getValidDoctorColor(resource.appointment.doctor?.color);
-
+    if (!resource?.appointment?.doctor) {
+      return { style: { opacity: 0.9, display: "block" } };
+    }
+    const doctorColor = getValidDoctorColor(resource.appointment.doctor.color);
     return {
       style: {
         ...getAppointmentStyle(doctorColor),
@@ -122,8 +136,12 @@ export default function AgendaView({
   const handleSelectEvent = useCallback(
     (event: RBCEvent) => {
       const resource = event.resource as {
-        appointment: AppointmentWithRelations;
+        appointment?: AppointmentWithRelations;
       };
+      if (!resource?.appointment) {
+        toast.error("Erro: Agendamento inválido.");
+        return;
+      }
       openViewModal(resource.appointment);
     },
     [openViewModal],
@@ -131,14 +149,14 @@ export default function AgendaView({
 
   const handleSelectSlot = useCallback(
     ({ start, end }: { start: Date; end: Date }) => {
-      if (!doctorId || doctorId === "all") {
-        toast.error("Por favor, selecione um dentista para agendar.");
-        return;
-      }
       openCreateModal({ start, end });
     },
-    [openCreateModal, doctorId],
+    [openCreateModal, doctorId, doctors],
   );
+
+  if (!appointments || !patients.length || !doctors.length) {
+    return <div>Nenhum dado disponível para exibir o calendário.</div>;
+  }
 
   return (
     <>
@@ -154,41 +172,53 @@ export default function AgendaView({
           onSuccess={closeModal}
         />
       </Dialog>
-      <div className="bg-card relative h-[80vh] max-w-full overflow-x-auto rounded-lg border p-4 sm:p-2 md:p-4">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          culture="pt-br"
-          views={["month", "week", "day"]}
-          defaultView="week"
-          messages={{
-            next: "Próximo",
-            previous: "Anterior",
-            today: "Hoje",
-            month: "Mês",
-            week: "Semana",
-            day: "Dia",
-            agenda: "Agenda",
-            date: "Data",
-            time: "Hora",
-            event: "Evento",
-            noEventsInRange: "Não há agendamentos neste período.",
-          }}
-          eventPropGetter={eventPropGetter}
-          onSelectEvent={handleSelectEvent}
-          selectable
-          onSelectSlot={handleSelectSlot}
-          onEventDrop={handleEventDrop} // <-- Habilitado
-          resizable // <-- Habilitado
-          onEventResize={handleEventDrop} // Reutiliza a mesma lógica
-          components={{
-            event: CustomEvent as React.ComponentType<{
-              event: { resource: { appointment: AppointmentWithRelations } };
-            }>,
-          }}
-        />
+      <div className="bg-card relative h-[80vh] max-w-full overflow-auto rounded-lg border p-4">
+        <div className="bg-card rounded-lg">
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            culture="pt-br"
+            views={["month", "week", "day"]}
+            defaultView="week"
+            min={dayjs()
+              .set("hour", APP_CONFIG.AGENDA.DEFAULT_START_HOUR)
+              .set("minute", 0)
+              .set("second", 0)
+              .toDate()}
+            max={dayjs()
+              .set("hour", APP_CONFIG.AGENDA.DEFAULT_END_HOUR)
+              .set("minute", 0)
+              .set("second", 0)
+              .toDate()}
+            messages={{
+              next: "Próximo",
+              previous: "Anterior",
+              today: "Hoje",
+              month: "Mês",
+              week: "Semana",
+              day: "Dia",
+              agenda: "Agenda",
+              date: "Data",
+              time: "Hora",
+              event: "Evento",
+              noEventsInRange: "Não há agendamentos neste período.",
+            }}
+            eventPropGetter={eventPropGetter}
+            onSelectEvent={handleSelectEvent}
+            selectable
+            onSelectSlot={handleSelectSlot}
+            onEventDrop={handleEventDrop}
+            resizable
+            onEventResize={handleEventDrop}
+            components={{
+              event: CustomEvent as React.ComponentType<{
+                event: { resource: { appointment: AppointmentWithRelations } };
+              }>,
+            }}
+          />
+        </div>
       </div>
     </>
   );

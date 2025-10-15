@@ -4,7 +4,6 @@ import {
   CalendarIcon,
   ClockIcon,
   DollarSignIcon,
-  Edit,
   Stethoscope,
   Trash2,
   UserIcon,
@@ -36,7 +35,7 @@ import { formatCurrencyInCents } from "@/helpers/currency";
 import { useAppointmentStore } from "@/stores";
 
 export const AppointmentDetailsModal = () => {
-  const { isModalOpen, getSelectedAppointment, closeModal, isViewModal } =
+  const { isModalOpen, isViewModal, getSelectedAppointment, closeModal } =
     useAppointmentStore();
 
   const { execute: executeDelete, isPending: isDeleting } = useAction(
@@ -59,10 +58,15 @@ export const AppointmentDetailsModal = () => {
     }
   };
 
-  // ✅ SIMPLIFICADO: Usa getter para verificar se é modal de visualização
   const selectedAppointment = getSelectedAppointment();
 
-  if (!isModalOpen || !isViewModal() || !selectedAppointment) {
+  if (
+    !isModalOpen ||
+    !isViewModal() ||
+    !selectedAppointment ||
+    !selectedAppointment.patient ||
+    !selectedAppointment.doctor
+  ) {
     return null;
   }
 
@@ -85,7 +89,7 @@ export const AppointmentDetailsModal = () => {
   })}`;
 
   return (
-    <Dialog open={isModalOpen} onOpenChange={closeModal}>
+    <Dialog open={isModalOpen && isViewModal()} onOpenChange={closeModal}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="flex-row items-center gap-4 space-y-0">
           <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
@@ -127,9 +131,17 @@ export const AppointmentDetailsModal = () => {
         <Separator />
 
         <div className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" onClick={closeModal}>
+            Fechar
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" title="Excluir">
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Excluir agendamento"
+                aria-label="Excluir agendamento"
+              >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
@@ -149,10 +161,6 @@ export const AppointmentDetailsModal = () => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
-          <Button variant="ghost" size="icon" title="Editar">
-            <Edit className="h-4 w-4" />
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

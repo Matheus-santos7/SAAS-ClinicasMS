@@ -20,6 +20,10 @@ export function DoctorFilter({ doctors }: DoctorFilterProps) {
   const pathname = usePathname();
   const { replace } = useRouter();
 
+  if (!doctors.length) {
+    return <div>Nenhum dentista disponível.</div>;
+  }
+
   const handleSelectDoctor = (doctorId: string) => {
     const params = new URLSearchParams(searchParams);
     if (doctorId && doctorId !== "all") {
@@ -36,7 +40,7 @@ export function DoctorFilter({ doctors }: DoctorFilterProps) {
         onValueChange={handleSelectDoctor}
         defaultValue={searchParams.get("doctorId")?.toString() || "all"}
       >
-        <SelectTrigger>
+        <SelectTrigger aria-label="Filtrar por dentista">
           <SelectValue placeholder="Filtrar por dentista..." />
         </SelectTrigger>
         <SelectContent>
