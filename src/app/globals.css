@@ -136,3 +136,62 @@
     animation: heartbeat 1.5s ease-in-out infinite;
   }
 }
+
+/* Estilização customizada do React Big Calendar */
+.custom-calendar {
+  --rcbc-background: #ffffff;
+  --rcbc-border: #e5e7eb;
+  --rcbc-text: #374151;
+  --rcbc-today-bg: #fef3c7;
+  --rcbc-selected-bg: #dbeafe;
+  --rcbc-header-bg: #f8fafc;
+}
+
+/* Estilo dos eventos */
+.rbc-event {
+  border: none !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  margin-bottom: 2px !important;
+}
+
+/* Estilo das células */
+.rbc-day-slot,
+.rbc-time-slot {
+  border-color: #e5e7eb !important;
+}
+
+/* Header do calendário */
+.rbc-header {
+  background-color: #f8fafc !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  font-weight: 600 !important;
+  padding: 12px 8px !important;
+}
+
+/* Seleção de slot */
+.rbc-selected {
+  background-color: #dbeafe !important;
+}
+
+/* Hoje */
+.rbc-today {
+  background-color: #fef3c7 !important;
+}
+
+/* Scroll suave */
+.custom-calendar .rbc-time-header-content,
+.custom-calendar .rbc-header {
+  scrollbar-width: thin;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .custom-calendar {
+    font-size: 0.875rem;
+  }
+  
+  .rbc-event {
+    padding: 4px !important;
+  }
+}

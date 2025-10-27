@@ -14,7 +14,13 @@ declare module "react-big-calendar" {
     startAccessor: string | ((event: Event) => Date);
     endAccessor: string | ((event: Event) => Date);
     culture?: string;
-    messages?: Record<string, string>;
+    messages?: {
+      [key: string]: string | ((total: number) => string);
+      showMore?: (total: number) => string;
+    };
+    view?: "month" | "week" | "day" | "agenda";
+    views?: Array<"month" | "week" | "day" | "agenda">;
+    onView?: (view: "month" | "week" | "day" | "agenda") => void;
     eventPropGetter?: (event: Event) => { style?: CSSProperties };
     onEventDrop?: (args: { event: Event; start: Date; end: Date }) => void;
     selectable?: boolean;
