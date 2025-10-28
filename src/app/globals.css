@@ -122,7 +122,8 @@
 
 @layer utilities {
   @keyframes heartbeat {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
       opacity: 1;
     }
@@ -153,6 +154,16 @@
   border-radius: 8px !important;
   overflow: hidden !important;
   margin-bottom: 2px !important;
+}
+
+/* Hover sutil para eventos da agenda */
+.appointment-event {
+  transition:
+    filter 120ms ease,
+    opacity 120ms ease;
+}
+.appointment-event:hover {
+  filter: brightness(0.95);
 }
 
 /* Estilo das células */
@@ -190,7 +201,7 @@
   .custom-calendar {
     font-size: 0.875rem;
   }
-  
+
   .rbc-event {
     padding: 4px !important;
   }

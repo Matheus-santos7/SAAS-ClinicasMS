@@ -2,21 +2,19 @@
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "dayjs/locale/pt-br";
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
 import dayjs from "dayjs";
-import { Calendar as CalendarIcon, Plus } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import React, { useCallback, useMemo, useState } from "react";
-// 📍 MUDANÇA: Importamos 'withDragAndDrop' para criar um calendário "arrastável"
 import {
   Calendar,
   dayjsLocalizer,
   Event as RBCEvent,
 } from "react-big-calendar";
-// 📍 MUDANÇA: Importamos o DndProvider e o HTML5Backend
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { toast } from "sonner";
 
 import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date";
@@ -27,6 +25,7 @@ import {
   getAppointmentStyle,
   getValidDoctorColor,
 } from "@/helpers/doctor-colors";
+import { cn } from "@/lib/utils";
 import { useAppointmentStore } from "@/stores";
 import { AppointmentWithRelations, Doctor, Patient } from "@/types";
 
@@ -36,8 +35,7 @@ import { AppointmentDetailsModal } from "./appointment-details-modal";
 dayjs.locale("pt-br");
 const localizer = dayjsLocalizer(dayjs);
 
-// 📍 MUDANÇA: Não precisamos mais disto, pois o DndProvider cuidará do HOC
-// const DnDCalendar = withDragAndDrop(Calendar);
+const DnDCalendar = withDragAndDrop(Calendar);
 
 interface AgendaViewProps {
   appointments: AppointmentWithRelations[];
@@ -53,91 +51,88 @@ type CustomEventProps = {
   };
 };
 
-// ===================================================================
-// 📍 MUDANÇA: Criamos DOIS componentes de evento
-// ===================================================================
-
-/**
- * Componente para a visão MÊS (Month View)
- * Este é o seu componente original, que é ótimo para a visão de mês
- * (como no seu print 2).
- */
 const CustomMonthEvent = (props: CustomEventProps) => {
   const { event } = props;
   const { appointment } = event.resource;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-md p-2 text-white shadow-sm">
-      {/* Nome do Paciente */}
-      <div className="mb-1 flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-white/30"></div>
+    <div className="flex h-full flex-col overflow-hidden rounded-md p-1 text-white shadow-sm md:p-2">
+      <div className="mb-1 flex items-center gap-1 md:gap-2">
+        <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/40 md:h-2 md:w-2"></div>
         <p
-          className="truncate text-sm font-semibold"
+          className="truncate text-[10px] font-semibold md:text-xs"
           title={appointment.patient.name}
         >
           {appointment.patient.name}
         </p>
       </div>
-
-      {/* Médico */}
       <p
-        className="truncate text-xs opacity-90"
+        className="hidden truncate text-[10px] opacity-90 md:block md:text-xs"
         title={`Dr(a). ${appointment.doctor.name}`}
       >
         {appointment.doctor.name}
       </p>
-
-      {/* Status */}
       <span
-        className={`mt-1 inline-block rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
+        className={cn(
+          "mt-1 inline-block rounded px-1 py-0.5 text-[8px] font-medium md:text-[10px]",
           appointment.status === "confirmed"
-            ? "bg-green-500/20"
+            ? "bg-green-600/50"
             : appointment.status === "pending"
-              ? "bg-yellow-500/20"
-              : "bg-gray-500/20"
-        }`}
+              ? "bg-yellow-600/50"
+              : "bg-gray-600/50",
+        )}
       >
         {appointment.status === "confirmed"
-          ? "CONFIRMADO"
+          ? "OK"
           : appointment.status === "pending"
-            ? "PENDENTE"
-            : "CANCELADO"}
+            ? "PEND"
+            : "CANC"}
       </span>
     </div>
   );
 };
 
-/**
- * Componente para a visão SEMANA/DIA (Week/Day View)
- * Este é um novo componente, mais simples, para caber nas linhas do tempo
- * (como no seu print 1). Ele é horizontal (flex-row).
- */
 const CustomWeekDayEvent = (props: CustomEventProps) => {
   const { event } = props;
   const { appointment } = event.resource;
 
   return (
-    <div className="flex h-full w-full flex-row items-center gap-2 overflow-hidden px-2 text-white">
-      <div className="h-2 w-2 flex-shrink-0 rounded-full bg-white/30"></div>
+    <div className="flex h-full flex-col overflow-hidden p-1 text-white md:p-2">
+      <div className="mb-1 flex items-center gap-1 md:gap-2">
+        <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/40 md:h-2 md:w-2"></div>
+        <p
+          className="truncate text-[10px] font-semibold md:text-xs"
+          title={appointment.patient.name}
+        >
+          {appointment.patient.name}
+        </p>
+      </div>
       <p
-        className="truncate text-xs font-semibold"
-        title={appointment.patient.name}
-      >
-        {appointment.patient.name}
-      </p>
-      <p
-        className="hidden truncate text-xs opacity-90 sm:block"
+        className="truncate text-[10px] opacity-90 md:text-xs"
         title={`Dr(a). ${appointment.doctor.name}`}
       >
-        {`(${appointment.doctor.name.split(" ")[0]})`}
+        {appointment.doctor.name}
       </p>
+      <span
+        className={cn(
+          "mt-1 inline-block self-start rounded px-1 py-0.5 text-[8px] font-medium md:text-[10px]",
+          appointment.status === "confirmed"
+            ? "bg-green-600/50"
+            : appointment.status === "pending"
+              ? "bg-yellow-600/50"
+              : "bg-gray-600/50",
+        )}
+      >
+        {appointment.status === "confirmed"
+          ? "OK"
+          : appointment.status === "pending"
+            ? "PEND"
+            : "CANC"}
+      </span>
     </div>
   );
 };
 
-// ===================================================================
-// HEADER (Seu componente original, está perfeito)
-// ===================================================================
 const CalendarHeader = ({
   onViewChange,
   currentView,
@@ -147,7 +142,7 @@ const CalendarHeader = ({
   currentView: "day" | "week" | "month";
   doctorName?: string;
 }) => (
-  <Card className="from-primary/5 to-secondary/5 mb-6 border-0 bg-gradient-to-r">
+  <Card className="from-primary/5 to-secondary/5 mb-6 border-0 bg-linear-to-r">
     <CardHeader className="pb-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -174,9 +169,6 @@ const CalendarHeader = ({
   </Card>
 );
 
-// ===================================================================
-// COMPONENTE PRINCIPAL (AgendaView)
-// ===================================================================
 export default function AgendaView({
   appointments,
   patients,
@@ -196,15 +188,17 @@ export default function AgendaView({
   const doctorId = searchParams.get("doctorId");
   const selectedDoctor = doctors.find((d) => d.id === doctorId);
 
-  // ... (Toda a sua lógica de useAction, useCallback, useMemo está PERFEITA) ...
-  // ... (handleEventDrop, events, eventPropGetter, handleSelectEvent, etc.) ...
-  // ... (Vou omitir por brevidade, pois NADA precisa mudar aqui) ...
-  const { execute: executeUpdate } = useAction(updateAppointmentDate, {
-    onSuccess: (data) =>
-      toast.success(data.data.success || "Agendamento atualizado com sucesso!"),
-    onError: (error) =>
-      toast.error(error.error?.serverError || "Falha ao reagendar."),
-  });
+  const { execute: executeUpdate, isPending: isUpdating } = useAction(
+    updateAppointmentDate,
+    {
+      onSuccess: (data) =>
+        toast.success(
+          data?.data?.success || "Agendamento atualizado com sucesso!",
+        ),
+      onError: (error) =>
+        toast.error(error.error?.serverError || "Falha ao reagendar."),
+    },
+  );
 
   const handleEventDrop = useCallback(
     ({ event, start, end }: { event: RBCEvent; start: Date; end: Date }) => {
@@ -215,6 +209,7 @@ export default function AgendaView({
         toast.error("Erro: Agendamento inválido.");
         return;
       }
+      toast.info("Atualizando agendamento...");
       executeUpdate({ id: resource.appointment.id, date: start, endDate: end });
     },
     [executeUpdate],
@@ -235,18 +230,31 @@ export default function AgendaView({
     const resource = event.resource as {
       appointment?: AppointmentWithRelations;
     };
+    const isPast = event.end < new Date();
+    const baseStyle: React.CSSProperties = {
+      opacity: isPast ? 0.7 : 0.95,
+      display: "block",
+      borderRadius: "8px",
+      border: "none",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      transition: "filter 120ms ease, opacity 120ms ease",
+      cursor: "pointer",
+    };
+
     if (!resource?.appointment?.doctor) {
-      return { style: { opacity: 0.9, display: "block" } };
+      return {
+        className: "appointment-event",
+        style: baseStyle,
+      };
     }
+
     const doctorColor = getValidDoctorColor(resource.appointment.doctor.color);
+
     return {
+      className: "appointment-event",
       style: {
+        ...baseStyle,
         ...getAppointmentStyle(doctorColor),
-        opacity: 0.95,
-        display: "block",
-        borderRadius: "8px",
-        border: "none",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
       },
     };
   }, []);
@@ -264,120 +272,158 @@ export default function AgendaView({
     },
     [openViewModal],
   );
+
   const handleSelectSlot = useCallback(
     ({ start, end }: { start: Date; end: Date }) => {
       openCreateModal({ start, end });
     },
     [openCreateModal],
   );
-  const messages = {
-    next: "",
-    previous: "",
-    today: "Hoje",
-    month: "Mês",
-    week: "Semana",
-    day: "Dia",
-    agenda: "Agenda",
-    date: "Data",
-    time: "Hora",
-    event: "Evento",
-    noEventsInRange: "Clique para agendar",
-    showMore: (total: number) => `+${total} mais`,
-  };
 
-  // ... (Sua tela de "Nenhum agendamento" está PERFEITA) ...
-  if (!appointments?.length || !patients.length || !doctors.length) {
+  const messages = useMemo(
+    () => ({
+      next: "Próximo",
+      previous: "Anterior",
+      today: "Hoje",
+      month: "Mês",
+      week: "Semana",
+      day: "Dia",
+      agenda: "Agenda",
+      date: "Data",
+      time: "Hora",
+      event: "Evento",
+      noEventsInRange:
+        "Nenhum agendamento neste período. Clique em um horário para criar.",
+      showMore: (total: number) => `+ Ver ${total} mais`,
+    }),
+    [],
+  );
+
+  if (!appointments?.length && (!patients.length || !doctors.length)) {
     return (
-      <div className="flex h-[80vh] items-center justify-center">
-        {/* ... (código do card "Nenhum agendamento") ... */}
-      </div>
+      <Card className="mt-6">
+        <CardContent className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center">
+          <CalendarIcon className="text-muted-foreground h-16 w-16" />
+          <h3 className="text-xl font-semibold">
+            Nenhum agendamento encontrado
+          </h3>
+          <p className="text-muted-foreground">
+            {!patients.length || !doctors.length
+              ? "Cadastre pacientes e médicos para começar a agendar."
+              : "Clique em um horário vago na agenda ou no botão '+' para criar o primeiro agendamento."}
+          </p>
+          {patients.length > 0 && doctors.length > 0 && (
+            <Button
+              onClick={() => {
+                const now = new Date();
+                const end = new Date(now.getTime() + 60 * 60 * 1000);
+                handleSelectSlot({ start: now, end });
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Agendamento
+            </Button>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
-  // ===================================================================
-  // RENDERIZAÇÃO
-  // ===================================================================
   return (
-    // 📍 MUDANÇA: Envolvemos tudo com o DndProvider
-    // É ele que "liga" o "arrastar e soltar" para o calendário
-    <DndProvider backend={HTML5Backend}>
-      <div className="space-y-6 p-4 md:p-6">
-        {/* HEADER */}
-        <CalendarHeader
-          onViewChange={(view) => setCurrentView(view)}
-          currentView={currentView === "agenda" ? "week" : currentView}
-          doctorName={selectedDoctor?.name}
-        />
+    <div className="space-y-6 p-1 md:p-2 lg:p-4">
+      <CalendarHeader
+        onViewChange={(view) => setCurrentView(view)}
+        currentView={currentView === "agenda" ? "week" : currentView}
+        doctorName={selectedDoctor?.name}
+      />
 
-        {/* BOTÃO FLUTUANTE */}
+      <Button
+        onClick={() => {
+          const now = new Date();
+          const end = new Date(now.getTime() + 60 * 60 * 1000);
+          handleSelectSlot({ start: now, end });
+        }}
+        className="fixed right-6 bottom-6 z-50 h-14 w-14 rounded-full shadow-lg lg:hidden"
+        size="icon"
+        aria-label="Novo agendamento"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
+      <div className="hidden justify-end lg:flex">
         <Button
           onClick={() => {
             const now = new Date();
             const end = new Date(now.getTime() + 60 * 60 * 1000);
             handleSelectSlot({ start: now, end });
           }}
-          className="fixed right-6 bottom-6 z-50 h-14 w-14 rounded-full shadow-lg md:relative md:right-auto md:bottom-auto md:ml-auto"
-          size="icon"
+          size="sm"
         >
-          <Plus className="h-5 w-5" />
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Agendamento
         </Button>
-
-        {/* CONTAINER DO CALENDÁRIO */}
-        <Card className="overflow-hidden shadow-sm">
-          <CardContent className="p-0">
-            <div
-              className="h-[70vh] overflow-hidden"
-              style={{ minHeight: "600px" }}
-            >
-              {/* 📍 MUDANÇA: Usamos o <Calendar> normal, pois o Provider já está por fora */}
-              <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                views={["month", "week", "day"]}
-                view={currentView}
-                onView={(view: "day" | "week" | "month" | "agenda") =>
-                  setCurrentView(view)
-                }
-                messages={messages}
-                eventPropGetter={eventPropGetter}
-                onSelectEvent={handleSelectEvent}
-                selectable
-                onSelectSlot={handleSelectSlot}
-                /* 📍 MUDANÇA: Estas props agora funcionarão! */
-                onEventDrop={handleEventDrop}
-                resizable
-                onEventResize={handleEventDrop}
-                /* 📍 MUDANÇA: Aqui está a mágica! */
-                components={{
-                  event: CustomWeekDayEvent, // Componente padrão (para Dia/Semana)
-                  month: {
-                    event: CustomMonthEvent, // Componente específico para Mês
-                  },
-                  toolbar: () => null, // Seu toolbar customizado (ótimo!)
-                  navigationLabel: () => null,
-                }}
-                className="custom-calendar"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* MODAIS (Seu código original, está perfeito) */}
-        <AppointmentDetailsModal />
-        <Dialog
-          open={isModalOpen && isCreateModal()}
-          onOpenChange={(open) => !open && closeModal()}
-        >
-          <AddAppointmentForm
-            isOpen={isModalOpen && isCreateModal()}
-            patients={patients}
-            doctors={doctors}
-            onSuccess={closeModal}
-          />
-        </Dialog>
       </div>
-    </DndProvider>
+
+      <Card className="overflow-hidden shadow-sm">
+        <CardContent className="p-0">
+          {isUpdating && (
+            <div className="bg-background/50 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+              <Loader2 className="text-primary h-8 w-8 animate-spin" />
+            </div>
+          )}
+          <div
+            className="relative h-[70vh] overflow-y-auto"
+            style={{ minHeight: "600px" }}
+          >
+            <DnDCalendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              views={["month", "week", "day"]}
+              view={currentView as "month" | "week" | "day"}
+              onView={(view: "day" | "week" | "month" | "agenda") =>
+                setCurrentView(view)
+              }
+              messages={messages}
+              eventPropGetter={eventPropGetter}
+              onSelectEvent={handleSelectEvent}
+              selectable
+              onSelectSlot={handleSelectSlot}
+              onEventDrop={handleEventDrop}
+              resizable
+              onEventResize={handleEventDrop}
+              components={{
+                event: CustomWeekDayEvent,
+                month: {
+                  event: CustomMonthEvent,
+                },
+                toolbar: () => null,
+              }}
+              className="custom-calendar"
+              culture="pt-br"
+              popup
+              step={15}
+              timeslots={4}
+              min={dayjs().hour(7).minute(0).toDate()}
+              max={dayjs().hour(21).minute(0).toDate()}
+              defaultDate={new Date()}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <AppointmentDetailsModal />
+      <Dialog
+        open={isModalOpen && isCreateModal()}
+        onOpenChange={(open) => !open && closeModal()}
+      >
+        <AddAppointmentForm
+          isOpen={isModalOpen && isCreateModal()}
+          patients={patients}
+          doctors={doctors}
+          onSuccess={closeModal}
+        />
+      </Dialog>
+    </div>
   );
 }

@@ -23,11 +23,31 @@ declare module "react-big-calendar" {
     onView?: (view: "month" | "week" | "day" | "agenda") => void;
     eventPropGetter?: (event: Event) => { style?: CSSProperties };
     onEventDrop?: (args: { event: Event; start: Date; end: Date }) => void;
+    onEventResize?: (args: { event: Event; start: Date; end: Date }) => void;
     selectable?: boolean;
     resizable?: boolean;
     [key: string]: unknown;
   }
 
   export const Calendar: ComponentType<CalendarProps>;
-  export function dayjsLocalizer(dayjs: { locale: (locale: string) => void }): object;
+  export function dayjsLocalizer(dayjs: {
+    locale: (locale: string) => void;
+  }): object;
+}
+
+declare module "react-big-calendar/lib/addons/dragAndDrop" {
+  import { ComponentType } from "react";
+  import type { Event } from "react-big-calendar";
+  const withDragAndDrop: <P = Record<string, unknown>>(
+    component: ComponentType<P>,
+  ) => ComponentType<
+    P & {
+      onEventDrop?: (args: { event: Event; start: Date; end: Date }) => void;
+      onEventResize?: (args: { event: Event; start: Date; end: Date }) => void;
+      resizable?: boolean;
+      draggableAccessor?: string | ((event: Event) => boolean);
+      resizableAccessor?: string | ((event: Event) => boolean);
+    }
+  >;
+  export default withDragAndDrop;
 }
