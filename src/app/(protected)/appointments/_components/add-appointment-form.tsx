@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect } from "react";
@@ -12,13 +12,7 @@ import { z } from "zod";
 
 import { addAppointment } from "@/actions/appointment/add-appointment";
 import { Button } from "@/components/ui/button";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -37,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { useAppointmentStore } from "@/stores";
 import { Doctor, Patient } from "@/types";
+import UpsertPatientForm from "@/app/(protected)/patients/_components/upsert-patient-form";
 
 const formSchema = z.object({
   patientId: z.string().min(1, { message: "Paciente é obrigatório." }),
@@ -94,12 +89,32 @@ const AddAppointmentForm = ({
   }, [newAppointmentSlot, isOpen, doctorIdFromUrl, form]);
 
   const createAppointmentAction = useAction(addAppointment, {
-    onSuccess: () => {
+    onSuccess: (result) => {
+      const data = (result as any)?.data ?? result;
+
+      if (data?.errorMessage) {
+        toast.error(data.errorMessage);
+        return;
+      }
+
       toast.success("Agendamento criado com sucesso.");
       onSuccess?.();
     },
-    onError: () => {
-      toast.error("Erro ao criar agendamento.");
+    onError: (error) => {
+      const anyError = error as any;
+      const message =
+        anyError.serverError ||
+        anyError.error?.serverError ||
+        anyError.fetchError ||
+        anyError.message ||
+        "Erro ao criar agendamento.";
+
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.error("Erro ao criar agendamento:", anyError);
+      }
+
+      toast.error(message);
     },
   });
 
@@ -137,7 +152,7 @@ const AddAppointmentForm = ({
             <FormItem>
               <FormLabel>Horário de início</FormLabel>
               <FormControl>
-                <Input type="time" {...field} />
+                <Input type="time" step={900} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -150,7 +165,7 @@ const AddAppointmentForm = ({
             <FormItem>
               <FormLabel>Horário de término</FormLabel>
               <FormControl>
-                <Input type="time" {...field} />
+                <Input type="time" step={900} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -178,6 +193,19 @@ const AddAppointmentForm = ({
                         {patient.name}
                       </SelectItem>
                     ))}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="mt-2 w-full justify-start gap-2 border-t pt-2 text-xs font-normal text-primary"
+                        >
+                          <Plus className="h-3 w-3" />
+                          Cadastrar novo paciente
+                        </Button>
+                      </DialogTrigger>
+                      <UpsertPatientForm isOpen={true} onSuccess={onSuccess} />
+                    </Dialog>
                   </SelectContent>
                 </Select>
                 <FormMessage />

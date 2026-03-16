@@ -31,6 +31,44 @@ export function DateRangeFilter({
     from && to ? { from: new Date(from), to: new Date(to) } : undefined,
   );
 
+  const today = React.useMemo(() => new Date(), []);
+  const yesterday = React.useMemo(() => subDays(today, 1), [today]);
+  const last7Start = React.useMemo(() => subDays(today, 7), [today]);
+  const last30Start = React.useMemo(() => subDays(today, 30), [today]);
+
+  const activePreset = React.useMemo(() => {
+    if (!from || !to) return "custom";
+    const fromDate = dayjs(from);
+    const toDate = dayjs(to);
+
+    if (fromDate.isSame(dayjs(today), "day") && toDate.isSame(dayjs(today), "day")) {
+      return "today";
+    }
+
+    if (
+      fromDate.isSame(dayjs(yesterday), "day") &&
+      toDate.isSame(dayjs(yesterday), "day")
+    ) {
+      return "yesterday";
+    }
+
+    if (
+      fromDate.isSame(dayjs(last7Start), "day") &&
+      toDate.isSame(dayjs(today), "day")
+    ) {
+      return "last7";
+    }
+
+    if (
+      fromDate.isSame(dayjs(last30Start), "day") &&
+      toDate.isSame(dayjs(today), "day")
+    ) {
+      return "last30";
+    }
+
+    return "custom";
+  }, [from, to, today, yesterday, last7Start, last30Start]);
+
   const createQueryString = React.useCallback(
     (params: Record<string, string | undefined>) => {
       const newSearchParams = new URLSearchParams(searchParams.toString());
@@ -69,32 +107,41 @@ export function DateRangeFilter({
   };
 
   return (
-    <div className={cn("flex items-center justify-end gap-2", className)}>
+    <div
+      className={cn(
+        "flex flex-wrap items-center justify-end gap-1.5 md:flex-nowrap md:gap-2",
+        className,
+      )}
+    >
       <Button
-        variant="default"
+        variant={activePreset === "today" ? "default" : "outline"}
         size="sm"
-        onClick={() => setDatePreset(new Date(), new Date())}
+        className="h-8 px-2 text-xs"
+        onClick={() => setDatePreset(today, today)}
       >
         Hoje
       </Button>
       <Button
-        variant="default"
+        variant={activePreset === "yesterday" ? "default" : "outline"}
         size="sm"
-        onClick={() => setDatePreset(subDays(new Date(), 1), subDays(new Date(), 1))}
+        className="h-8 px-2 text-xs"
+        onClick={() => setDatePreset(yesterday, yesterday)}
       >
         Ontem
       </Button>
       <Button
-        variant="default"
+        variant={activePreset === "last7" ? "default" : "outline"}
         size="sm"
-        onClick={() => setDatePreset(subDays(new Date(), 7), new Date())}
+        className="h-8 px-2 text-xs"
+        onClick={() => setDatePreset(last7Start, today)}
       >
         Últimos 7 dias
       </Button>
       <Button
-        variant="default"
+        variant={activePreset === "last30" ? "default" : "outline"}
         size="sm"
-        onClick={() => setDatePreset(subDays(new Date(), 30), new Date())}
+        className="h-8 px-2 text-xs"
+        onClick={() => setDatePreset(last30Start, today)}
       >
         Últimos 30 dias
       </Button>
@@ -103,10 +150,10 @@ export function DateRangeFilter({
         <PopoverTrigger asChild>
           <Button
             id="date"
-            variant={"default"}
+            variant="outline"
             size="sm"
             className={cn(
-              "w-[280px] justify-start text-left font-normal",
+              "h-8 w-full justify-between text-left text-xs font-normal sm:w-[220px] md:w-[260px]",
               !date && "text-muted-foreground",
             )}
           >

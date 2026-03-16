@@ -12,8 +12,10 @@ interface AppointmentListProps {
 
 export function AppointmentListView({ appointments }: AppointmentListProps) {
   return (
-    <div className="mt-6 space-y-4">
-      <DateRangeFilter />
+    <div className="space-y-4 p-1 md:p-2 lg:p-4">
+      <div className="flex justify-end">
+        <DateRangeFilter className="w-full sm:w-auto" />
+      </div>
       <DataTable data={appointments} columns={appointmentsTableColumns} />
     </div>
   );

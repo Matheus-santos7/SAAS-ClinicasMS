@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 import {
-  PageActions,
   PageContainer,
   PageContent,
   PageDescription,
@@ -14,7 +13,7 @@ import {
   PageHeaderContent,
   PageTitle,
 } from "@/components/ui/page-container";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   getAppointmentsForAgenda,
   getAppointmentsForList,
@@ -24,8 +23,7 @@ import { getPatients } from "@/data/patients";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
-import AddAppointmentButton from "./_components/add-appointment-button";
-import { DoctorFilter } from "./_components/doctor-filter";
+import { AppointmentsToolbar } from "./_components/appointments-toolbar";
 import AgendaView from "./view-agenda";
 import { AppointmentListView } from "./view-list";
 
@@ -86,26 +84,17 @@ const AppointmentsPage = async ({
       <PageContainer>
         <PageHeader>
           <PageHeaderContent>
-            <PageTitle>Agendamentos</PageTitle>
+            <PageTitle>Agenda da clínica</PageTitle>
             <PageDescription>
-              Gerencie os agendamentos da sua clínica
+              Visualize e gerencie os horários da equipe com uma agenda clara e organizada.
             </PageDescription>
           </PageHeaderContent>
-          <PageActions>
-            <AddAppointmentButton patients={patients} doctors={doctors} />
-          </PageActions>
         </PageHeader>
         
         <PageContent>
           <Tabs defaultValue="agenda">
-            <div className="flex items-center justify-between gap-4">
-              <DoctorFilter doctors={doctors} />
-              <TabsList>
-                <TabsTrigger value="agenda">Agenda</TabsTrigger>
-                <TabsTrigger value="lista">Lista</TabsTrigger>
-              </TabsList>
-            </div>
-            
+            <AppointmentsToolbar doctors={doctors} patients={patients} />
+
             <TabsContent value="agenda">
               <AgendaView
                 appointments={appointmentsForAgenda}
@@ -113,7 +102,7 @@ const AppointmentsPage = async ({
                 doctors={doctors}
               />
             </TabsContent>
-            
+
             <TabsContent value="lista">
               <AppointmentListView appointments={appointmentsForList} />
             </TabsContent>

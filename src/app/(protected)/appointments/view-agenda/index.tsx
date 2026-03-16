@@ -19,7 +19,7 @@ import { toast } from "sonner";
 
 import { updateAppointmentDate } from "@/actions/appointment/update-appointment-date";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
 import {
   getAppointmentStyle,
@@ -30,6 +30,7 @@ import { useAppointmentStore } from "@/stores";
 import { AppointmentWithRelations, Doctor, Patient } from "@/types";
 
 import AddAppointmentForm from "../_components/add-appointment-form";
+import { ScheduleToolbar } from "../_components/schedule-toolbar";
 import { AppointmentDetailsModal } from "./appointment-details-modal";
 
 dayjs.locale("pt-br");
@@ -133,50 +134,15 @@ const CustomWeekDayEvent = (props: CustomEventProps) => {
   );
 };
 
-const CalendarHeader = ({
-  onViewChange,
-  currentView,
-  doctorName,
-}: {
-  onViewChange: (view: "day" | "week" | "month") => void;
-  currentView: "day" | "week" | "month";
-  doctorName?: string;
-}) => (
-  <Card className="from-primary/5 to-secondary/5 mb-6 border-0 bg-linear-to-r">
-    <CardHeader className="pb-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <CalendarIcon className="text-primary h-6 w-6" />
-          <CardTitle className="text-foreground text-2xl font-bold">
-            {doctorName ? `Agenda - Dr(a). ${doctorName}` : "Minha Agenda"}
-          </CardTitle>
-        </div>
-        <div className="flex gap-2">
-          {(["day", "week", "month"] as const).map((view) => (
-            <Button
-              key={view}
-              variant={currentView === view ? "default" : "outline"}
-              size="sm"
-              onClick={() => onViewChange(view)}
-              className="px-3 py-1 text-xs capitalize"
-            >
-              {view === "day" ? "Dia" : view === "week" ? "Semana" : "Mês"}
-            </Button>
-          ))}
-        </div>
-      </div>
-    </CardHeader>
-  </Card>
-);
-
 export default function AgendaView({
   appointments,
   patients,
   doctors,
 }: AgendaViewProps) {
-  const [currentView, setCurrentView] = useState<
-    "day" | "week" | "month" | "agenda"
-  >("week");
+  const [currentView, setCurrentView] = useState<"day" | "week" | "month">(
+    "week",
+  );
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const searchParams = useSearchParams();
   const {
     openViewModal,
@@ -331,38 +297,15 @@ export default function AgendaView({
 
   return (
     <div className="space-y-6 p-1 md:p-2 lg:p-4">
-      <CalendarHeader
-        onViewChange={(view) => setCurrentView(view)}
-        currentView={currentView === "agenda" ? "week" : currentView}
-        doctorName={selectedDoctor?.name}
-      />
-
-      <Button
-        onClick={() => {
-          const now = new Date();
-          const end = new Date(now.getTime() + 60 * 60 * 1000);
-          handleSelectSlot({ start: now, end });
-        }}
-        className="fixed right-6 bottom-6 z-50 h-14 w-14 rounded-full shadow-lg lg:hidden"
-        size="icon"
-        aria-label="Novo agendamento"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
-      <div className="hidden justify-end lg:flex">
-        <Button
-          onClick={() => {
-            const now = new Date();
-            const end = new Date(now.getTime() + 60 * 60 * 1000);
-            handleSelectSlot({ start: now, end });
-          }}
-          size="sm"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Agendamento
-        </Button>
+      <div className="flex justify-end">
+        <ScheduleToolbar
+          currentView={currentView}
+          currentDate={currentDate}
+          onViewChange={setCurrentView}
+          onDateChange={setCurrentDate}
+          className="justify-end"
+        />
       </div>
-
       <Card className="overflow-hidden shadow-sm">
         <CardContent className="p-0">
           {isUpdating && (
@@ -371,7 +314,7 @@ export default function AgendaView({
             </div>
           )}
           <div
-            className="relative h-[70vh] overflow-y-auto"
+            className="relative h-[70vh] overflow-y-auto bg-background"
             style={{ minHeight: "600px" }}
           >
             <DnDCalendar
@@ -380,10 +323,12 @@ export default function AgendaView({
               startAccessor="start"
               endAccessor="end"
               views={["month", "week", "day"]}
-              view={currentView as "month" | "week" | "day"}
-              onView={(view: "day" | "week" | "month" | "agenda") =>
-                setCurrentView(view)
+              view={currentView}
+              onView={(view) =>
+                setCurrentView((view as "day" | "week" | "month") ?? "week")
               }
+              date={currentDate}
+              onNavigate={(date: Date) => setCurrentDate(date)}
               messages={messages}
               eventPropGetter={eventPropGetter}
               onSelectEvent={handleSelectEvent}

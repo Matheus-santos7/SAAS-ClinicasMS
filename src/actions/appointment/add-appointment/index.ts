@@ -10,7 +10,6 @@ import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
 
-import { getAvailableTimes } from "../../clinic/get-available-times";
 import { type AddAppointmentSchema, addAppointmentSchema } from "./schema";
 
 export const addAppointment = protectedAction
@@ -25,21 +24,7 @@ export const addAppointment = protectedAction
         session?.user.clinic?.id,
       )
     ) {
-      throw new Error("Acesso negado à clínica");
-    }
-    const availableTimes = await getAvailableTimes({
-      doctorId: parsedInput.doctorId,
-      date: dayjs(parsedInput.date).format("YYYY-MM-DD"),
-    });
-    if (!availableTimes?.data) {
-      throw new Error("No available times");
-    }
-    const isTimeAvailable = availableTimes.data?.some(
-      (time: { value: string; available: boolean }) =>
-        time.value === parsedInput.startTime && time.available,
-    );
-    if (!isTimeAvailable) {
-      throw new Error("Time not available");
+      throw new Error("Acesso negado à clínica.");
     }
     const [startHour, startMinute] = parsedInput.startTime
       .split(":")
@@ -59,6 +44,38 @@ export const addAppointment = protectedAction
       .set("minute", endMinute)
       .set("second", 0)
       .toDate();
+
+    if (appointmentEndDate <= appointmentDateTime) {
+      return {
+        errorMessage: "Horário de término deve ser após o horário de início.",
+      };
+    }
+
+    // Validação inteligente de conflito: impede apenas sobreposição real
+    const sameDayAppointments = await db.query.appointmentsTable.findMany({
+      where: (appointments, { and, eq }) =>
+        and(
+          eq(appointments.doctorId, parsedInput.doctorId),
+          eq(appointments.clinicId, clinicId),
+        ),
+    });
+
+    const hasConflict = sameDayAppointments.some((appointment) => {
+      const existingStart = appointment.date;
+      const existingEnd = appointment.endDate ?? appointment.date;
+
+      // conflito se intervalos se sobrepõem: start < existingEnd && end > existingStart
+      return (
+        appointmentDateTime < existingEnd && appointmentEndDate > existingStart
+      );
+    });
+
+    if (hasConflict) {
+      return {
+        errorMessage:
+          "Já existe um agendamento neste intervalo para este médico.",
+      };
+    }
 
     // Buscar o preço do médico
     const doctor = await db.query.doctorsTable.findFirst({
@@ -80,4 +97,6 @@ export const addAppointment = protectedAction
 
     revalidatePath(ROUTES.APPOINTMENTS);
     revalidatePath(ROUTES.DASHBOARD);
+
+    return { success: true as const };
   });
