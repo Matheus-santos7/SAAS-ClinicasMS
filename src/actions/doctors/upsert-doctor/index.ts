@@ -34,21 +34,25 @@ export const upsertDoctor = protectedAction
       .set("second", parseInt(availableToTime.split(":")[2]))
       .utc();
 
+    const baseValues = {
+      ...parsedInput,
+      id: parsedInput.id,
+      clinicId,
+      availableFromTime: availableFromTimeUTC.format("HH:mm:ss"),
+      availableToTime: availableToTimeUTC.format("HH:mm:ss"),
+      // Campo ainda existe na tabela, mas não é mais usado na aplicação
+      appointmentPriceInCents: 0,
+    };
+
     await db
       .insert(doctorsTable)
       .values({
-        ...parsedInput,
-        id: parsedInput.id,
-        clinicId,
-        availableFromTime: availableFromTimeUTC.format("HH:mm:ss"),
-        availableToTime: availableToTimeUTC.format("HH:mm:ss"),
+        ...baseValues,
       })
       .onConflictDoUpdate({
         target: [doctorsTable.id],
         set: {
-          ...parsedInput,
-          availableFromTime: availableFromTimeUTC.format("HH:mm:ss"),
-          availableToTime: availableToTimeUTC.format("HH:mm:ss"),
+          ...baseValues,
         },
       });
     revalidatePath(ROUTES.DOCTORS);

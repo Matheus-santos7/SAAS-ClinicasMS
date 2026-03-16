@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -46,9 +45,6 @@ const formSchema = z
     specialty: z.string().trim().min(1, {
       message: "Especialidade é obrigatória.",
     }),
-    appointmentPrice: z.number().min(1, {
-      message: "Preço da consulta é obrigatório.",
-    }),
     availableFromWeekDay: z.string(),
     availableToWeekDay: z.string(),
     availableFromTime: z.string().min(1, {
@@ -89,9 +85,6 @@ const UpsertDoctorForm = ({
     defaultValues: {
       name: doctor?.name ?? "",
       specialty: doctor?.specialty ?? "",
-      appointmentPrice: doctor?.appointmentPriceInCents
-        ? doctor.appointmentPriceInCents / 100
-        : 0,
       availableFromWeekDay: doctor?.availableFromWeekDay?.toString() ?? "1",
       availableToWeekDay: doctor?.availableToWeekDay?.toString() ?? "5",
       availableFromTime: doctor?.availableFromTime ?? "",
@@ -104,9 +97,6 @@ const UpsertDoctorForm = ({
       form.reset({
         name: doctor?.name ?? "",
         specialty: doctor?.specialty ?? "",
-        appointmentPrice: doctor?.appointmentPriceInCents
-          ? doctor.appointmentPriceInCents / 100
-          : 0,
         availableFromWeekDay: doctor?.availableFromWeekDay?.toString() ?? "1",
         availableToWeekDay: doctor?.availableToWeekDay?.toString() ?? "5",
         availableFromTime: doctor?.availableFromTime ?? "",
@@ -136,7 +126,6 @@ const UpsertDoctorForm = ({
       id: doctor?.id,
       availableFromWeekDay: parseInt(values.availableFromWeekDay),
       availableToWeekDay: parseInt(values.availableToWeekDay),
-      appointmentPriceInCents: values.appointmentPrice * 100,
     });
   };
 
@@ -193,30 +182,6 @@ const UpsertDoctorForm = ({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="appointmentPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preço da consulta</FormLabel>
-                <NumericFormat
-                  value={field.value}
-                  onValueChange={(value) => {
-                    field.onChange(value.floatValue);
-                  }}
-                  decimalScale={2}
-                  fixedDecimalScale
-                  decimalSeparator=","
-                  allowNegative={false}
-                  allowLeadingZeros={false}
-                  thousandSeparator="."
-                  customInput={Input}
-                  prefix="R$"
-                />
                 <FormMessage />
               </FormItem>
             )}

@@ -42,36 +42,45 @@ const AppointmentsPage = async ({
     headers: await headers(),
   });
 
+  // 1. Guard Clauses de Sessão
   if (!session?.user) redirect(ROUTES.LOGIN);
   if (!session.user.clinic) redirect(ROUTES.CLINIC_FORM);
   if (!session.user.plan) redirect(ROUTES.SUBSCRIPTION);
 
+  const clinicId = session.user.clinic.id;
   const { doctorId, from, to } = (await searchParams) ?? {};
 
   try {
-    const [
-      patientsData,
-      doctorsData,
-      appointmentsForAgenda,
-      appointmentsForList,
-    ] = await Promise.all([
-      getPatients(session.user.clinic.id),
-      getDoctors(session.user.clinic.id),
-      getAppointmentsForAgenda(session.user.clinic.id, doctorId),
+    // 2. Verificação de Pré-requisitos (Médicos e Pacientes)
+    // Buscamos ambos primeiro para decidir o fluxo de redirecionamento
+    const [doctorsData, patientsData] = await Promise.all([
+      getDoctors(clinicId),
+      getPatients(clinicId),
+    ]);
+
+    const doctors = doctorsData.doctors;
+    const patients = patientsData.patients;
+
+    // Prioridade 1: Se não tem médico, vai para cadastro de médicos
+    if (doctors.length === 0) {
+      redirect(ROUTES.DOCTORS); 
+    }
+
+    // Prioridade 2: Se tem médico mas não tem paciente, vai para cadastro de pacientes
+    if (patients.length === 0) {
+      redirect(ROUTES.PATIENTS);
+    }
+
+    // 3. Busca de Dados da Agenda (Só ocorre se passar pelos redirecionamentos acima)
+    const [appointmentsForAgenda, appointmentsForList] = await Promise.all([
+      getAppointmentsForAgenda(clinicId, doctorId),
       getAppointmentsForList(
-        session.user.clinic.id,
+        clinicId,
         doctorId,
         from ? dayjs(from).startOf("day").toDate() : undefined,
         to ? dayjs(to).endOf("day").toDate() : undefined,
       ),
     ]);
-
-    const patients = patientsData.patients;
-    const doctors = doctorsData.doctors;
-
-    if (!patients.length || !doctors.length) {
-      return <div>Nenhum paciente ou médico disponível.</div>;
-    }
 
     return (
       <PageContainer>
@@ -86,6 +95,7 @@ const AppointmentsPage = async ({
             <AddAppointmentButton patients={patients} doctors={doctors} />
           </PageActions>
         </PageHeader>
+        
         <PageContent>
           <Tabs defaultValue="agenda">
             <div className="flex items-center justify-between gap-4">
@@ -95,13 +105,15 @@ const AppointmentsPage = async ({
                 <TabsTrigger value="lista">Lista</TabsTrigger>
               </TabsList>
             </div>
+            
             <TabsContent value="agenda">
               <AgendaView
-                appointments={appointmentsForAgenda} // Removido status: "confirmed"
+                appointments={appointmentsForAgenda}
                 patients={patients}
                 doctors={doctors}
               />
             </TabsContent>
+            
             <TabsContent value="lista">
               <AppointmentListView appointments={appointmentsForList} />
             </TabsContent>
@@ -109,8 +121,26 @@ const AppointmentsPage = async ({
         </PageContent>
       </PageContainer>
     );
-  } catch {
-    return <div>Erro ao carregar dados. Tente novamente.</div>;
+  } catch (error) {
+    // Deixa os redirects do Next passarem sem logar/alterar a resposta
+    if (
+      error instanceof Error &&
+      "digest" in error &&
+      typeof (error as { digest?: string }).digest === "string" &&
+      (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
+
+    console.error("Erro ao carregar agendamentos:", error);
+
+    return (
+      <div className="p-8 text-center">
+        <p className="text-destructive">
+          Erro ao carregar dados. Tente novamente mais tarde.
+        </p>
+      </div>
+    );
   }
 };
 

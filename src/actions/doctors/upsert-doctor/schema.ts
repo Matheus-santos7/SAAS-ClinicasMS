@@ -10,9 +10,6 @@ export const upsertDoctorSchema = z
       message: "Especialidade é obrigatória.",
     }),
     color: z.string().optional(),
-    appointmentPriceInCents: z.number().min(1, {
-      message: "Preço da consulta é obrigatório.",
-    }),
     availableFromWeekDay: z.number().min(0).max(6),
     availableToWeekDay: z.number().min(0).max(6),
     availableFromTime: z.string().min(1, {
