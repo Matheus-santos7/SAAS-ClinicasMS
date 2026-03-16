@@ -16,6 +16,7 @@ import {
 import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
+import { DateRangeFilter } from "@/components/filters/date-range-filter";
 import { AppHeader } from "../_components/app-header";
 
 import {
@@ -24,7 +25,6 @@ import {
   TopDoctorsWrapper,
   TopSpecialtiesWrapper,
 } from "./_components/dashboard-wrappers";
-import { DatePicker } from "./_components/date-picker";
 import { TodayAppointmentsTable } from "./_components/today-appointments-table";
 
 interface DashboardPageProps {
@@ -89,10 +89,10 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
             </PageDescription>
           </div>
 
-          {/* DatePicker posicionado no canto direito, mesmo no mobile */}
+          {/* Filtro de data padrão da aplicação */}
           <div className="mt-2 flex justify-end sm:mt-0">
             <PageActions className="w-fit">
-              <DatePicker />
+              <DateRangeFilter />
             </PageActions>
           </div>
         </div>
