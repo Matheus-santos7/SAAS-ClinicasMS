@@ -10,10 +10,10 @@ import { db } from "@/db";
 import { budgetsTable, patientsTable, treatmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
+import { AppHeader } from "../../_components/app-header";
 
 import PatientDetailsClient from "./_components/patient/patient-details-client";
 
-// ...existing code...
 const PatientDetailsPage = async ({
   params,
 }: {
@@ -76,25 +76,28 @@ const PatientDetailsPage = async ({
   });
 
   return (
-    <PatientDetailsClient
-      initialData={{
-        ...patientData,
-        doctorsTable: patientData.clinic?.doctors ?? [],
-        evolutionEntries: (patientData.evolutionEntries ?? []).map((e) => ({
-          date: e.date ?? null,
-          id: e.id ?? "",
-          createdAt: e.createdAt ?? null,
-          updatedAt: e.updatedAt ?? null,
-          description: e.description ?? "",
-          patientId: e.patientId ?? "",
-          doctorId: e.doctorId ?? "",
-          observations: e.observations ?? "",
-          doctor: e.doctor?.name ? { name: e.doctor.name } : { name: "" },
-        })),
-        budgets,
-        treatments,
-      }}
-    />
+    <>
+      <AppHeader />
+      <PatientDetailsClient
+        initialData={{
+          ...patientData,
+          doctorsTable: patientData.clinic?.doctors ?? [],
+          evolutionEntries: (patientData.evolutionEntries ?? []).map((e) => ({
+            date: e.date ?? null,
+            id: e.id ?? "",
+            createdAt: e.createdAt ?? null,
+            updatedAt: e.updatedAt ?? null,
+            description: e.description ?? "",
+            patientId: e.patientId ?? "",
+            doctorId: e.doctorId ?? "",
+            observations: e.observations ?? "",
+            doctor: e.doctor?.name ? { name: e.doctor.name } : { name: "" },
+          })),
+          budgets,
+          treatments,
+        }}
+      />
+    </>
   );
 };
 

@@ -22,6 +22,7 @@ import { getDoctors } from "@/data/doctors";
 import { getPatients } from "@/data/patients";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
+import { AppHeader } from "../_components/app-header";
 
 import { AppointmentsToolbar } from "./_components/appointments-toolbar";
 import AgendaView from "./view-agenda";
@@ -81,34 +82,38 @@ const AppointmentsPage = async ({
     ]);
 
     return (
-      <PageContainer>
-        <PageHeader>
-          <PageHeaderContent>
-            <PageTitle>Agenda da clínica</PageTitle>
-            <PageDescription>
-              Visualize e gerencie os horários da equipe com uma agenda clara e organizada.
-            </PageDescription>
-          </PageHeaderContent>
-        </PageHeader>
-        
-        <PageContent>
-          <Tabs defaultValue="agenda">
-            <AppointmentsToolbar doctors={doctors} patients={patients} />
+      <>
+        <AppHeader />
+        <PageContainer>
+          <PageHeader>
+            <PageHeaderContent>
+              <PageTitle>Agenda da clínica</PageTitle>
+              <PageDescription>
+                Visualize e gerencie os horários da equipe com uma agenda clara e
+                organizada.
+              </PageDescription>
+            </PageHeaderContent>
+          </PageHeader>
 
-            <TabsContent value="agenda">
-              <AgendaView
-                appointments={appointmentsForAgenda}
-                patients={patients}
-                doctors={doctors}
-              />
-            </TabsContent>
+          <PageContent>
+            <Tabs defaultValue="agenda">
+              <AppointmentsToolbar doctors={doctors} patients={patients} />
 
-            <TabsContent value="lista">
-              <AppointmentListView appointments={appointmentsForList} />
-            </TabsContent>
-          </Tabs>
-        </PageContent>
-      </PageContainer>
+              <TabsContent value="agenda">
+                <AgendaView
+                  appointments={appointmentsForAgenda}
+                  patients={patients}
+                  doctors={doctors}
+                />
+              </TabsContent>
+
+              <TabsContent value="lista">
+                <AppointmentListView appointments={appointmentsForList} />
+              </TabsContent>
+            </Tabs>
+          </PageContent>
+        </PageContainer>
+      </>
     );
   } catch (error) {
     // Deixa os redirects do Next passarem sem logar/alterar a resposta

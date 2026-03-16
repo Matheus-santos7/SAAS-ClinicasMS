@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 import { getPatients } from "@/data/patients";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
+import { AppHeader } from "../_components/app-header";
 
 import PatientsPageClient from "./_components/patients-page-client";
 
@@ -36,7 +37,10 @@ const PatientsPage = async ({
   );
 
   return (
-    <PatientsPageClient initialPatients={patients} pageCount={pageCount} />
+    <>
+      <AppHeader />
+      <PatientsPageClient initialPatients={patients} pageCount={pageCount} />
+    </>
   );
 };
 
