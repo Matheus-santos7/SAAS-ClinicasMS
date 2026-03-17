@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { Loader2, Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -58,13 +58,16 @@ const AddAppointmentForm = ({
   const searchParams = useSearchParams();
   const doctorIdFromUrl = searchParams.get("doctorId");
   const newAppointmentSlot = getNewAppointmentSlot();
+  const [isPatientDialogOpen, setIsPatientDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       patientId: "",
       doctorId: doctorIdFromUrl || "",
-      date: newAppointmentSlot?.start,
+      date: newAppointmentSlot?.start
+        ? dayjs(newAppointmentSlot.start).startOf("day").toDate()
+        : undefined,
       startTime: newAppointmentSlot?.start
         ? dayjs(newAppointmentSlot.start).format("HH:mm")
         : "",
@@ -79,7 +82,7 @@ const AddAppointmentForm = ({
       form.reset({
         patientId: "",
         doctorId: doctorIdFromUrl || "",
-        date: newAppointmentSlot.start,
+        date: dayjs(newAppointmentSlot.start).startOf("day").toDate(),
         startTime: dayjs(newAppointmentSlot.start).format("HH:mm"),
         endTime: newAppointmentSlot.end
           ? dayjs(newAppointmentSlot.end).format("HH:mm")
@@ -193,18 +196,26 @@ const AddAppointmentForm = ({
                         {patient.name}
                       </SelectItem>
                     ))}
-                    <Dialog>
+                    <Dialog
+                      open={isPatientDialogOpen}
+                      onOpenChange={setIsPatientDialogOpen}
+                    >
                       <DialogTrigger asChild>
                         <Button
                           type="button"
                           variant="ghost"
                           className="mt-2 w-full justify-start gap-2 border-t pt-2 text-xs font-normal text-primary"
+                          onClick={() => setIsPatientDialogOpen(true)}
                         >
                           <Plus className="h-3 w-3" />
                           Cadastrar novo paciente
                         </Button>
                       </DialogTrigger>
-                      <UpsertPatientForm isOpen={true} onSuccess={onSuccess} />
+                      <UpsertPatientForm
+                        isOpen={isPatientDialogOpen}
+                        onSuccess={() => setIsPatientDialogOpen(false)}
+                        preventOutsideClose
+                      />
                     </Dialog>
                   </SelectContent>
                 </Select>
@@ -251,7 +262,13 @@ const AddAppointmentForm = ({
                     value={
                       field.value ? dayjs(field.value).format("YYYY-MM-DD") : ""
                     }
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value
+                          ? dayjs(e.target.value).toDate()
+                          : undefined,
+                      )
+                    }
                   />
                 </FormControl>
                 <FormMessage />

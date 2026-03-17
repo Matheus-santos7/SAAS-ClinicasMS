@@ -45,12 +45,14 @@ interface UpsertPatientFormProps {
   isOpen: boolean;
   patient?: Patient;
   onSuccess?: () => void;
+  preventOutsideClose?: boolean;
 }
 
 const UpsertPatientForm = ({
   patient,
   onSuccess,
   isOpen,
+  preventOutsideClose,
 }: UpsertPatientFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     shouldUnregister: true,
@@ -111,7 +113,14 @@ const UpsertPatientForm = ({
   };
 
   return (
-    <DialogContent>
+    <DialogContent
+      onInteractOutside={
+        preventOutsideClose ? (event) => event.preventDefault() : undefined
+      }
+      onEscapeKeyDown={
+        preventOutsideClose ? (event) => event.preventDefault() : undefined
+      }
+    >
       <DialogHeader>
         <DialogTitle>
           {patient ? patient.name : "Adicionar paciente"}
