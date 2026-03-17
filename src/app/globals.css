@@ -143,7 +143,7 @@
   --rcbc-background: #ffffff;
   --rcbc-border: #e5e7eb;
   --rcbc-text: #374151;
-  --rcbc-today-bg: #fef3c7;
+  --rcbc-today-bg: #fce7f3;
   --rcbc-selected-bg: #dbeafe;
   --rcbc-header-bg: #f8fafc;
 }
@@ -154,6 +154,11 @@
   border-radius: 8px !important;
   overflow: hidden !important;
   margin-bottom: 2px !important;
+}
+/* 
+Remove a primeira linha com só o horário; mantém apenas paciente + horas no conteúdo customizado */
+.custom-calendar .rbc-event-label {
+  display: none !important;
 }
 
 /* Hover sutil para eventos da agenda */
@@ -187,7 +192,7 @@
 
 /* Hoje */
 .rbc-today {
-  background-color: #fef3c7 !important;
+  background-color: #fce7f3 !important;
 }
 
 /* Scroll suave */

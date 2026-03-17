@@ -161,9 +161,6 @@ export function AppHeader() {
             <span className="text-sm font-semibold leading-tight">
               {user?.clinic?.name ?? "Clínica Odontológica"}
             </span>
-            <span className="text-muted-foreground text-[11px]">
-              Fluxo otimizado para recepção e dentistas
-            </span>
           </div>
         </div>
 
@@ -247,15 +244,6 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            size="sm"
-            className="hidden rounded-full px-4 text-xs font-semibold shadow-sm md:inline-flex"
-            onClick={handleNewAppointment}
-          >
-            <Plus className="mr-1.5 size-4" />
-            + Novo Agendamento
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-muted/40 px-2 py-1 text-left text-xs transition-colors hover:bg-muted">

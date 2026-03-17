@@ -9,6 +9,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { upsertPatient } from "@/actions/patients/patient/upsert-patient";
+import {
+  upsertPatientSchema,
+  type UpsertPatientSchema,
+} from "@/actions/patients/patient/upsert-patient/schema";
 import { Button } from "@/components/ui/button";
 import {
   DialogContent,
@@ -35,21 +39,7 @@ import {
 } from "@/components/ui/select";
 import { Patient } from "@/types";
 
-const formSchema = z.object({
-  name: z.string().trim().min(1, {
-    message: "Nome é obrigatório.",
-  }),
-  email: z.string().email({
-    message: "Email inválido.",
-  }),
-  phoneNumber: z.string().trim().min(1, {
-    message: "Número de telefone é obrigatório.",
-  }),
-  cpf: z.string().trim().optional(),
-  sex: z.enum(["male", "female"], {
-    required_error: "Sexo é obrigatório.",
-  }),
-});
+const formSchema = upsertPatientSchema.omit({ id: true });
 
 interface UpsertPatientFormProps {
   isOpen: boolean;
@@ -112,10 +102,12 @@ const UpsertPatientForm = ({
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    upsertPatientAction.execute({
+    const payload: UpsertPatientSchema = {
       ...values,
       id: patient?.id,
-    });
+    };
+
+    upsertPatientAction.execute(payload);
   };
 
   return (
