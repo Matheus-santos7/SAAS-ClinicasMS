@@ -411,8 +411,8 @@ export default function AgendaView({
               popup
               step={15}
               timeslots={4}
-              min={dayjs().hour(7).minute(0).toDate()}
-              max={dayjs().hour(21).minute(0).toDate()}
+              min={dayjs().hour(6).minute(30).toDate()}
+              max={dayjs().hour(23).minute(30).toDate()}
               defaultDate={new Date()}
             />
           </div>
