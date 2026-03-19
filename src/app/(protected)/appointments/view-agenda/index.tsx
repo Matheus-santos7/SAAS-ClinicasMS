@@ -124,17 +124,21 @@ const CustomWeekDayEvent = (props: CustomEventProps) => {
         className={cn(
           "mt-1 inline-block self-start rounded px-1 py-0.5 text-[8px] font-medium md:text-[10px]",
           appointment.status === "confirmed"
-            ? "bg-green-600/50"
+            ? "bg-emerald-500/80"
             : appointment.status === "pending"
-              ? "bg-yellow-600/50"
-              : "bg-gray-600/50",
+              ? "bg-amber-400/80"
+              : appointment.status === "completed"
+                ? "bg-emerald-800/80"
+                : "bg-rose-500/80",
         )}
       >
         {appointment.status === "confirmed"
-          ? "OK"
+          ? "Confirmado"
           : appointment.status === "pending"
-            ? "PEND"
-            : "CANC"}
+            ? "Pendente"
+            : appointment.status === "completed"
+              ? "Concluído"
+              : "Cancelado"}
       </span>
     </div>
   );

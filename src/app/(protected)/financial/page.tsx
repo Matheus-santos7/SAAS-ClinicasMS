@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/page-container";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
-import { AppHeader } from "../_components/app-header";
 
 const FinancialPage = async () => {
   const session = await auth.api.getSession({
@@ -35,9 +34,7 @@ const FinancialPage = async () => {
   // const financialData = await getFinancialDashboardData(session.user.clinic.id);
 
   return (
-    <>
-      <AppHeader />
-      <PageContainer>
+    <PageContainer>
         <PageHeader>
           <PageHeaderContent>
             <PageTitle>Financeiro</PageTitle>
@@ -69,7 +66,6 @@ const FinancialPage = async () => {
           </Card>
         </PageContent>
       </PageContainer>
-    </>
   );
 };
 

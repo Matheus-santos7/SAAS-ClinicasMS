@@ -10,7 +10,6 @@ import { db } from "@/db";
 import { budgetsTable, patientsTable, treatmentsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
-import { AppHeader } from "../../_components/app-header";
 
 import PatientDetailsClient from "./_components/patient/patient-details-client";
 
@@ -76,9 +75,7 @@ const PatientDetailsPage = async ({
   });
 
   return (
-    <>
-      <AppHeader />
-      <PatientDetailsClient
+    <PatientDetailsClient
         initialData={{
           ...patientData,
           doctorsTable: patientData.clinic?.doctors ?? [],
@@ -97,7 +94,6 @@ const PatientDetailsPage = async ({
           treatments,
         }}
       />
-    </>
   );
 };
 

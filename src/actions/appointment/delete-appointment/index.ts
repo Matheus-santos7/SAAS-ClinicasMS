@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -30,7 +30,13 @@ export const deleteAppointment = protectedAction
       throw new Error("Agendamento não encontrado");
     }
     await db
-      .delete(appointmentsTable)
-      .where(eq(appointmentsTable.id, parsedInput.id));
+      .update(appointmentsTable)
+      .set({ status: "canceled" })
+      .where(
+        and(
+          eq(appointmentsTable.id, parsedInput.id),
+          eq(appointmentsTable.clinicId, clinicId),
+        ),
+      );
     revalidatePath(ROUTES.APPOINTMENTS);
   });

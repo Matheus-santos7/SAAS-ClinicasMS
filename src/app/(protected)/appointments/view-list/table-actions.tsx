@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVerticalIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, TrashIcon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 
@@ -17,14 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useAppointmentStore } from "@/stores";
 import { AppointmentWithRelations } from "@/types";
 
 interface AppointmentsTableActionsProps {
@@ -34,12 +27,13 @@ interface AppointmentsTableActionsProps {
 const AppointmentsTableActions = ({
   appointment,
 }: AppointmentsTableActionsProps) => {
+  const { openViewModal } = useAppointmentStore();
   const deleteAppointmentAction = useAction(deleteAppointment, {
     onSuccess: () => {
-      toast.success("Agendamento deletado com sucesso.");
+      toast.success("Agendamento cancelado com sucesso.");
     },
     onError: () => {
-      toast.error("Erro ao deletar agendamento.");
+      toast.error("Erro ao cancelar agendamento.");
     },
   });
 
@@ -49,42 +43,48 @@ const AppointmentsTableActions = ({
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Button variant="ghost" size="icon">
-          <MoreVerticalIcon className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuLabel>{appointment.patient.name}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              <TrashIcon className="mr-2 h-4 w-4" />
-              Excluir
-            </DropdownMenuItem>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Tem certeza que deseja deletar esse agendamento?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Essa ação não pode ser revertida. Isso irá deletar o agendamento
-                permanentemente.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteAppointmentClick}>
-                Deletar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-1">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        title="Editar agendamento"
+        aria-label="Editar agendamento"
+        onClick={() => openViewModal(appointment)}
+      >
+        <PencilIcon className="h-4 w-4" />
+      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive hover:text-destructive"
+            title="Cancelar agendamento"
+            aria-label="Cancelar agendamento"
+          >
+            <TrashIcon className="h-4 w-4" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Tem certeza que deseja cancelar esse agendamento?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser revertida. O agendamento será marcado como
+              cancelado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAppointmentClick}>
+                Confirmar cancelamento
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 };
 

@@ -6,7 +6,6 @@ export const dynamic = "force-dynamic";
 import { getDoctors } from "@/data/doctors";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
-import { AppHeader } from "../_components/app-header";
 
 import DoctorsPageClient from "./_components/DoctorsPageClient";
 
@@ -20,10 +19,5 @@ export default async function DoctorsPage() {
   // Busca todos os médicos da clínica (sem paginação por enquanto)
   const { doctors } = await getDoctors(session.user.clinic.id);
 
-  return (
-    <>
-      <AppHeader />
-      <DoctorsPageClient doctors={doctors} />
-    </>
-  );
+  return <DoctorsPageClient doctors={doctors} />;
 }

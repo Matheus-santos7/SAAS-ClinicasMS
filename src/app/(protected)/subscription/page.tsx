@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/page-container";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
-import { AppHeader } from "../_components/app-header";
 
 import { SubscriptionPlan } from "./_components/subscription-plan";
 
@@ -28,9 +27,7 @@ const SubscriptionPage = async () => {
     redirect(ROUTES.CLINIC_FORM);
   }
   return (
-    <>
-      <AppHeader />
-      <PageContainer>
+    <PageContainer>
         <PageHeader>
           <PageHeaderContent>
             <PageTitle>Assinatura</PageTitle>
@@ -45,7 +42,6 @@ const SubscriptionPage = async () => {
           />
         </PageContent>
       </PageContainer>
-    </>
   );
 };
 

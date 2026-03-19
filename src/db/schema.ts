@@ -405,6 +405,7 @@ export const appointmentsTable = pgTable(
     date: timestamp("date").notNull(),
     endDate: timestamp("endDate").notNull(),
     appointmentPriceInCents: integer("appointment_price_in_cents").notNull(),
+    observations: text("observations"),
     clinicId: uuid("clinic_id")
       .notNull()
       .references(() => clinicsTable.id, { onDelete: "cascade" }),

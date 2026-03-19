@@ -17,7 +17,6 @@ import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 import { DateRangeFilter } from "@/components/filters/date-range-filter";
-import { AppHeader } from "../_components/app-header";
 
 import {
   AppointmentsChartWrapper,
@@ -75,9 +74,7 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
   });
 
   return (
-    <>
-      <AppHeader />
-      <PageContainer>
+    <PageContainer>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           {/* Título + Descrição */}
           <div>
@@ -141,7 +138,6 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
           </div>
         </PageContent>
       </PageContainer>
-    </>
   );
 };
 

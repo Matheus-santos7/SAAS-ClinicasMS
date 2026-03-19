@@ -93,6 +93,7 @@ export const addAppointment = protectedAction
       date: appointmentDateTime,
       endDate: appointmentEndDate,
       appointmentPriceInCents: doctor.appointmentPriceInCents,
+      observations: parsedInput.observations ?? null,
     });
 
     revalidatePath(ROUTES.APPOINTMENTS);

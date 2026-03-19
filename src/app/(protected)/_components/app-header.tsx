@@ -24,14 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuSub,
-  NavigationMenuSubItem,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+import { NavigationMenu, NavigationMenuItem } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
@@ -51,23 +44,6 @@ const desktopSections = {
   agenda: {
     label: "Agenda",
     href: ROUTES.APPOINTMENTS,
-    items: [
-      {
-        label: "Calendário",
-        description: "Visualize a agenda completa da clínica.",
-        href: ROUTES.APPOINTMENTS,
-      },
-      {
-        label: "Lista do Dia",
-        description: "Veja todos os atendimentos agendados para hoje.",
-        href: ROUTES.APPOINTMENTS,
-      },
-      {
-        label: "Profissionais",
-        description: "Filtre a agenda por dentista ou sala.",
-        href: ROUTES.DOCTORS,
-      },
-    ],
   },
   patients: {
     label: "Pacientes",
@@ -115,12 +91,7 @@ export function AppHeader() {
 
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  if (!session || !session.data) {
-    return null;
-  }
-
-  const { user } = session.data;
-
+  const user = session?.data?.user;
   const userName = user?.name ?? "Usuário";
   const userEmail = user?.email ?? "";
   const userInitials = userName
@@ -186,59 +157,56 @@ export function AppHeader() {
 
             {/* Agenda */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Agenda</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <NavigationMenuSub>
-                  {desktopSections.agenda.items.map((item) => (
-                    <NavigationMenuSubItem
-                      key={item.label}
-                      title={item.label}
-                      description={item.description}
-                      href={item.href}
-                      icon={<CalendarDays className="size-3.5" />}
-                      active={isActive(item.href)}
-                    />
-                  ))}
-                </NavigationMenuSub>
-              </NavigationMenuContent>
+              <Button
+                asChild
+                variant={isActive(ROUTES.APPOINTMENTS) ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  "rounded-full px-3 text-xs font-medium",
+                  !isActive(ROUTES.APPOINTMENTS) &&
+                    "bg-transparent hover:bg-muted/70",
+                )}
+              >
+                <Link href={desktopSections.agenda.href}>
+                  Agenda
+                </Link>
+              </Button>
             </NavigationMenuItem>
 
             {/* Pacientes */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Pacientes</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <NavigationMenuSub>
-                  {desktopSections.patients.items.map((item) => (
-                    <NavigationMenuSubItem
-                      key={item.label}
-                      title={item.label}
-                      description={item.description}
-                      href={item.href}
-                      icon={<Users className="size-3.5" />}
-                      active={isActive(item.href)}
-                    />
-                  ))}
-                </NavigationMenuSub>
-              </NavigationMenuContent>
+              <Button
+                asChild
+                variant={isActive(ROUTES.PATIENTS) ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  "rounded-full px-3 text-xs font-medium",
+                  !isActive(ROUTES.PATIENTS) &&
+                    "bg-transparent hover:bg-muted/70",
+                )}
+              >
+                <Link href={desktopSections.patients.href}>
+                  Pacientes
+                </Link>
+              </Button>
             </NavigationMenuItem>
 
             {/* Financeiro */}
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Financeiro</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <NavigationMenuSub>
-                  {desktopSections.financial.items.map((item) => (
-                    <NavigationMenuSubItem
-                      key={item.label}
-                      title={item.label}
-                      description={item.description}
-                      href={item.href}
-                      icon={<Wallet className="size-3.5" />}
-                      active={isActive(item.href)}
-                    />
-                  ))}
-                </NavigationMenuSub>
-              </NavigationMenuContent>
+              <Button
+                asChild
+                variant={isActive(ROUTES.FINANCIAL) ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  "rounded-full px-3 text-xs font-medium",
+                  !isActive(ROUTES.FINANCIAL) &&
+                    "bg-transparent hover:bg-muted/70",
+                )}
+              >
+                <Link href={desktopSections.financial.href}>
+                  Financeiro
+                </Link>
+              </Button>
             </NavigationMenuItem>
           </NavigationMenu>
         </div>
@@ -301,6 +269,7 @@ export function AppHeader() {
             <span>Início</span>
           </button>
 
+          {/* Agenda (mobile) */}
           <button
             type="button"
             onClick={() => router.push(ROUTES.APPOINTMENTS)}
@@ -315,7 +284,7 @@ export function AppHeader() {
             <span>Agenda</span>
           </button>
 
-          {/* Central FAB */}
+          {/* Central FAB (abre Agenda) */}
           <button
             type="button"
             onClick={handleNewAppointment}

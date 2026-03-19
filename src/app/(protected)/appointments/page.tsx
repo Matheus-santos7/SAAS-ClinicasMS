@@ -22,7 +22,6 @@ import { getDoctors } from "@/data/doctors";
 import { getPatients } from "@/data/patients";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
-import { AppHeader } from "../_components/app-header";
 
 import { AppointmentsToolbar } from "./_components/appointments-toolbar";
 import AgendaView from "./view-agenda";
@@ -35,6 +34,7 @@ const AppointmentsPage = async ({
     doctorId?: string;
     from?: string;
     to?: string;
+    view?: string;
   }>;
 }) => {
   const session = await auth.api.getSession({
@@ -47,7 +47,7 @@ const AppointmentsPage = async ({
   if (!session.user.plan) redirect(ROUTES.SUBSCRIPTION);
 
   const clinicId = session.user.clinic.id;
-  const { doctorId, from, to } = (await searchParams) ?? {};
+  const { doctorId, from, to, view } = (await searchParams) ?? {};
 
   try {
     // 2. Verificação de Pré-requisitos (Médicos e Pacientes)
@@ -82,8 +82,6 @@ const AppointmentsPage = async ({
     ]);
 
     return (
-      <>
-        <AppHeader />
         <PageContainer>
           <PageHeader>
             <PageHeaderContent>
@@ -96,15 +94,23 @@ const AppointmentsPage = async ({
           </PageHeader>
 
           <PageContent>
-            <Tabs defaultValue="agenda">
+            <Tabs defaultValue={view === "lista" ? "lista" : "agenda"}>
               <AppointmentsToolbar doctors={doctors} patients={patients} />
 
               <TabsContent value="agenda">
-                <AgendaView
-                  appointments={appointmentsForAgenda}
-                  patients={patients}
-                  doctors={doctors}
-                />
+                {/* Agenda visível apenas em telas md+ */}
+                <div className="hidden md:block">
+                  <AgendaView
+                    appointments={appointmentsForAgenda}
+                    patients={patients}
+                    doctors={doctors}
+                  />
+                </div>
+                <div className="md:hidden py-12 text-center text-sm text-muted-foreground">
+                  A visualização de agenda está disponível apenas na versão
+                  desktop. Use a lista para gerenciar os agendamentos no
+                  celular.
+                </div>
               </TabsContent>
 
               <TabsContent value="lista">
@@ -113,7 +119,6 @@ const AppointmentsPage = async ({
             </Tabs>
           </PageContent>
         </PageContainer>
-      </>
     );
   } catch (error) {
     // Deixa os redirects do Next passarem sem logar/alterar a resposta

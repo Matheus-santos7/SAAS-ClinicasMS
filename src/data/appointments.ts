@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { and, count, eq, gte, isNull, lte } from "drizzle-orm";
+import { and, count, eq, gte, inArray, isNull, lte } from "drizzle-orm";
 
 import { APP_CONFIG } from "@/constants/config";
 import { db } from "@/db";
@@ -113,6 +113,28 @@ export async function getAppointmentsForAgenda(
     orderBy: (appointments, { asc }) => [asc(appointments.date)],
   });
 
+  // Auto-completar agendamentos passados (1 dia após) que não foram cancelados
+  const cutoff = dayjs().subtract(1, "day").endOf("day").toDate();
+  const toComplete = appointments.filter(
+    (appointment) =>
+      appointment.status !== "canceled" &&
+      appointment.status !== "completed" &&
+      appointment.endDate < cutoff,
+  );
+
+  if (toComplete.length > 0) {
+    const ids = toComplete.map((a) => a.id);
+    await db
+      .update(appointmentsTable)
+      .set({ status: "completed" })
+      .where(inArray(appointmentsTable.id, ids));
+
+    // Atualiza em memória para refletir imediatamente na UI
+    toComplete.forEach((a) => {
+      a.status = "completed";
+    });
+  }
+
   return appointments;
 }
 
@@ -144,6 +166,27 @@ export async function getAppointmentsForList(
     with: { patient: true, doctor: true },
     orderBy: (appointments, { asc }) => [asc(appointments.date)],
   });
+
+  // Auto-completar agendamentos passados (1 dia após) que não foram cancelados
+  const cutoff = dayjs().subtract(1, "day").endOf("day").toDate();
+  const toComplete = appointments.filter(
+    (appointment) =>
+      appointment.status !== "canceled" &&
+      appointment.status !== "completed" &&
+      appointment.endDate < cutoff,
+  );
+
+  if (toComplete.length > 0) {
+    const ids = toComplete.map((a) => a.id);
+    await db
+      .update(appointmentsTable)
+      .set({ status: "completed" })
+      .where(inArray(appointmentsTable.id, ids));
+
+    toComplete.forEach((a) => {
+      a.status = "completed";
+    });
+  }
 
   return appointments;
 }

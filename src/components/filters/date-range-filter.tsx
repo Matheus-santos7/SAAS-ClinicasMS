@@ -1,6 +1,6 @@
 "use client";
 
-import { format, subDays } from "date-fns";
+import { addDays, format, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import dayjs from "dayjs";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -59,6 +59,7 @@ export function DateRangeFilter({
   const yesterday = React.useMemo(() => subDays(today, 1), [today]);
   const last7Start = React.useMemo(() => subDays(today, 7), [today]);
   const last30Start = React.useMemo(() => subDays(today, 30), [today]);
+  const next30End = React.useMemo(() => addDays(today, 30), [today]);
 
   const activePreset = React.useMemo(() => {
     if (!from || !to) return "custom";
@@ -91,6 +92,13 @@ export function DateRangeFilter({
       toDate.isSame(dayjs(today), "day")
     ) {
       return "last30";
+    }
+
+    if (
+      fromDate.isSame(dayjs(today), "day") &&
+      toDate.isSame(dayjs(next30End), "day")
+    ) {
+      return "next30";
     }
 
     return "custom";
@@ -152,6 +160,7 @@ export function DateRangeFilter({
     yesterday: "Ontem",
     last7: "Últimos 7 dias",
     last30: "Últimos 30 dias",
+    next30: "Próximos 30 dias",
     custom: "Período personalizado",
   };
 
@@ -221,6 +230,14 @@ export function DateRangeFilter({
                 onClick={() => setDatePreset(last30Start, today)}
               >
                 Últimos 30
+              </Button>
+              <Button
+                variant={activePreset === "next30" ? "default" : "outline"}
+                size="sm"
+                className="h-7 px-2 text-[11px]"
+                onClick={() => setDatePreset(today, next30End)}
+              >
+                Próximos 30
               </Button>
             </div>
 

@@ -12,7 +12,15 @@ import { z } from "zod";
 
 import { addAppointment } from "@/actions/appointment/add-appointment";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -29,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAppointmentStore } from "@/stores";
 import { Doctor, Patient } from "@/types";
 import UpsertPatientForm from "@/app/(protected)/patients/_components/upsert-patient-form";
@@ -37,8 +46,17 @@ const formSchema = z.object({
   patientId: z.string().min(1, { message: "Paciente é obrigatório." }),
   doctorId: z.string().min(1, { message: "Médico é obrigatório." }),
   date: z.date({ required_error: "Data é obrigatória." }),
-  startTime: z.string().min(1, { message: "Horário de início é obrigatório." }),
-  endTime: z.string().min(1, { message: "Horário de término é obrigatório." }),
+  startTime: z
+    .string()
+    .min(1, { message: "Horário de início é obrigatório." }),
+  endTime: z
+    .string()
+    .min(1, { message: "Horário de término é obrigatório." }),
+  observations: z
+    .string()
+    .max(1000, { message: "Observações deve ter no máximo 1000 caracteres." })
+    .optional()
+    .nullable(),
 });
 
 interface AddAppointmentFormProps {
@@ -74,6 +92,7 @@ const AddAppointmentForm = ({
       endTime: newAppointmentSlot?.end
         ? dayjs(newAppointmentSlot.end).format("HH:mm")
         : "",
+      observations: "",
     },
   });
 
@@ -87,6 +106,7 @@ const AddAppointmentForm = ({
         endTime: newAppointmentSlot.end
           ? dayjs(newAppointmentSlot.end).format("HH:mm")
           : "",
+        observations: "",
       });
     }
   }, [newAppointmentSlot, isOpen, doctorIdFromUrl, form]);
@@ -130,7 +150,7 @@ const AddAppointmentForm = ({
       date: values.date,
       startTime: values.startTime,
       endTime: values.endTime,
-      // outros campos se necessário
+      observations: values.observations,
     });
   };
 
@@ -147,33 +167,6 @@ const AddAppointmentForm = ({
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        {/* ...campos existentes... */}
-        <FormField
-          control={form.control}
-          name="startTime"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Horário de início</FormLabel>
-              <FormControl>
-                <Input type="time" step={900} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="endTime"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Horário de término</FormLabel>
-              <FormControl>
-                <Input type="time" step={900} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
@@ -269,6 +262,52 @@ const AddAppointmentForm = ({
                           : undefined,
                       )
                     }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="startTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Horário de início</FormLabel>
+                  <FormControl>
+                    <Input type="time" step={900} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="endTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Horário de término</FormLabel>
+                  <FormControl>
+                    <Input type="time" step={900} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="observations"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Observações</FormLabel>
+                <FormControl>
+                  <Textarea
+                    rows={3}
+                    placeholder="Anote observações importantes sobre este agendamento (opcional)"
+                    {...field}
+                    value={field.value ?? ""}
                   />
                 </FormControl>
                 <FormMessage />
