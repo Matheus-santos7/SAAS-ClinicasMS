@@ -406,6 +406,7 @@ export const appointmentsTable = pgTable(
     endDate: timestamp("endDate").notNull(),
     appointmentPriceInCents: integer("appointment_price_in_cents").notNull(),
     observations: text("observations"),
+    paidAmountInCents: integer("paid_amount_in_cents"),
     clinicId: uuid("clinic_id")
       .notNull()
       .references(() => clinicsTable.id, { onDelete: "cascade" }),
@@ -612,9 +613,15 @@ export const paymentsTable = pgTable(
   "payments",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    treatmentId: uuid("treatment_id")
-      .notNull()
-      .references(() => treatmentsTable.id, { onDelete: "cascade" }),
+    treatmentId: uuid("treatment_id").references(() => treatmentsTable.id, {
+      onDelete: "cascade",
+    }),
+    appointmentId: uuid("appointment_id").references(
+      () => appointmentsTable.id,
+      {
+        onDelete: "set null",
+      },
+    ),
     clinicId: uuid("clinic_id")
       .notNull()
       .references(() => clinicsTable.id, { onDelete: "cascade" }),
@@ -632,6 +639,9 @@ export const paymentsTable = pgTable(
   },
   (table) => ({
     treatmentIdIdx: index("payments_treatment_id_idx").on(table.treatmentId),
+    appointmentIdIdx: index("payments_appointment_id_idx").on(
+      table.appointmentId,
+    ),
     clinicIdIdx: index("payments_clinic_id_idx").on(table.clinicId),
   }),
 );
@@ -691,6 +701,9 @@ export const clinicFinancialTransactionsTable = pgTable(
       onDelete: "set null",
     }),
     transactionDate: timestamp("transaction_date").defaultNow().notNull(),
+    // Contas a pagar / receber
+    dueDate: timestamp("due_date"),
+    isPaid: boolean("is_paid").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

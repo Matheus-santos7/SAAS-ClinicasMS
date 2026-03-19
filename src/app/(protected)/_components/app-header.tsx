@@ -27,7 +27,6 @@ import {
 import { NavigationMenu, NavigationMenuItem } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { authClient } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/routes";
 
 type NavItem = {
@@ -87,13 +86,11 @@ const desktopSections = {
 export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
-  const session = authClient.useSession();
 
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  const user = session?.data?.user;
-  const userName = user?.name ?? "Usuário";
-  const userEmail = user?.email ?? "";
+  const userName = "Usuário";
+  const userEmail = "";
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -103,16 +100,6 @@ export function AppHeader() {
 
   const handleNewAppointment = () => {
     router.push(ROUTES.APPOINTMENTS);
-  };
-
-  const handleSignOut = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push(ROUTES.LOGIN);
-        },
-      },
-    });
   };
 
   const isActive = (matchPath?: string) => {
@@ -130,7 +117,7 @@ export function AppHeader() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold leading-tight">
-              {user?.clinic?.name ?? "Clínica Odontológica"}
+              Clínica Odontológica
             </span>
           </div>
         </div>
@@ -243,8 +230,10 @@ export function AppHeader() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
-                <span className="text-destructive font-normal">Sair</span>
+              <DropdownMenuItem asChild>
+                <Link href={ROUTES.LOGIN}>
+                  <span className="text-destructive font-normal">Sair</span>
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -386,7 +375,7 @@ export function AppHeader() {
               type="button"
               onClick={() => {
                 setIsMenuOpen(false);
-                void handleSignOut();
+                router.push(ROUTES.LOGIN);
               }}
               className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs text-destructive hover:bg-destructive/10"
             >
