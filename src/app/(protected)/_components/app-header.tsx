@@ -7,6 +7,7 @@ import {
   Home,
   Menu,
   MoreHorizontal,
+  Stethoscope,
   Users,
   Wallet,
   Plus,
@@ -28,12 +29,7 @@ import { NavigationMenu, NavigationMenuItem } from "@/components/ui/navigation-m
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
-
-type NavItem = {
-  label: string;
-  href: string;
-  matchPath?: string;
-};
+import { useMobileNavFabStore } from "@/stores";
 
 const desktopSections = {
   dashboard: {
@@ -43,6 +39,10 @@ const desktopSections = {
   agenda: {
     label: "Agenda",
     href: ROUTES.APPOINTMENTS,
+  },
+  doctors: {
+    label: "Dentistas",
+    href: ROUTES.DOCTORS,
   },
   patients: {
     label: "Pacientes",
@@ -87,6 +87,9 @@ export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const mobileFabHandler = useMobileNavFabStore((s) => s.handler);
+  const mobileFabAriaLabel = useMobileNavFabStore((s) => s.ariaLabel);
+
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const userName = "Usuário";
@@ -97,10 +100,6 @@ export function AppHeader() {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-
-  const handleNewAppointment = () => {
-    router.push(ROUTES.APPOINTMENTS);
-  };
 
   const isActive = (matchPath?: string) => {
     if (!matchPath) return false;
@@ -174,6 +173,24 @@ export function AppHeader() {
               >
                 <Link href={desktopSections.patients.href}>
                   Pacientes
+                </Link>
+              </Button>
+            </NavigationMenuItem>
+
+            {/* Dentistas */}
+            <NavigationMenuItem>
+              <Button
+                asChild
+                variant={isActive(ROUTES.DOCTORS) ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  "rounded-full px-3 text-xs font-medium",
+                  !isActive(ROUTES.DOCTORS) &&
+                    "bg-transparent hover:bg-muted/70",
+                )}
+              >
+                <Link href={desktopSections.doctors.href}>
+                  Dentistas
                 </Link>
               </Button>
             </NavigationMenuItem>
@@ -273,15 +290,17 @@ export function AppHeader() {
             <span>Agenda</span>
           </button>
 
-          {/* Central FAB (abre Agenda) */}
-          <button
-            type="button"
-            onClick={handleNewAppointment}
-            className="absolute -top-6 left-1/2 flex -translate-x-1/2 items-center justify-center rounded-full bg-primary p-3 text-primary-foreground shadow-lg shadow-primary/40 transition-transform active:scale-95"
-            aria-label="Novo agendamento"
-          >
-            <Plus className="size-6" />
-          </button>
+          {/* Central FAB: só em páginas que registram ação (pacientes, dentistas, agenda) */}
+          {mobileFabHandler ? (
+            <button
+              type="button"
+              onClick={mobileFabHandler}
+              className="absolute -top-6 left-1/2 flex -translate-x-1/2 items-center justify-center rounded-full bg-primary p-3 text-primary-foreground shadow-lg shadow-primary/40 transition-transform active:scale-95"
+              aria-label={mobileFabAriaLabel}
+            >
+              <Plus className="size-6" />
+            </button>
+          ) : null}
 
           <button
             type="button"
@@ -353,6 +372,25 @@ export function AppHeader() {
                 <span className="text-xs font-semibold">Dashboard</span>
                 <span className="text-muted-foreground text-[11px]">
                   Visão geral da clínica
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMenuOpen(false);
+                router.push(ROUTES.DOCTORS);
+              }}
+              className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Stethoscope className="size-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold">Dentistas</span>
+                <span className="text-muted-foreground text-[11px]">
+                  Equipe e cadastro profissionais
                 </span>
               </div>
             </button>

@@ -2,9 +2,10 @@
 
 import { UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { AddResourceButton } from "@/app/(protected)/_components/AddResourceButton";
+import { useRegisterMobileNavFab } from "@/hooks/use-register-mobile-nav-fab";
 import { Dialog } from "@/components/ui/dialog";
 import {
   PageActions,
@@ -32,6 +33,12 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
     router.refresh(); // Atualiza a página para mostrar o novo Dentista
   };
 
+  const openAddDoctorDialog = useCallback(() => {
+    setIsDialogOpen(true);
+  }, []);
+
+  useRegisterMobileNavFab(openAddDoctorDialog, "Adicionar dentista");
+
   return (
     <>
       <PageContainer>
@@ -45,8 +52,9 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
           <PageActions>
             <AddResourceButton
               label="Adicionar Dentista"
-              onClick={() => setIsDialogOpen(true)}
+              onClick={openAddDoctorDialog}
               icon={<UserPlus className="h-4 w-4" />}
+              className="hidden md:inline-flex"
             />
           </PageActions>
         </PageHeader>
@@ -67,11 +75,6 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
               <p className="text-muted-foreground mb-6 text-sm">
                 Adicione seu primeiro Dentista para começar a gerenciar consultas
               </p>
-              <AddResourceButton
-                label="Adicionar Primeiro Dentista"
-                onClick={() => setIsDialogOpen(true)}
-                icon={<UserPlus />}
-              />
             </div>
           )}
         </PageContent>

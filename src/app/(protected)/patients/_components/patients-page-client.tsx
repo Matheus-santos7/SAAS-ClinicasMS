@@ -1,11 +1,12 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, UserRound } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation"; // Hooks de navegação
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useDebouncedCallback } from "use-debounce"; // Para a busca
 
 import { AddResourceButton } from "@/app/(protected)/_components/AddResourceButton";
+import { useRegisterMobileNavFab } from "@/hooks/use-register-mobile-nav-fab";
 import { DataTable } from "@/components/ui/data-table";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input"; // Componente de Input
@@ -21,6 +22,7 @@ import {
 import type { Patient } from "@/types";
 
 import { DataTablePagination } from "./data-table-pagination"; // Nosso novo componente de paginação
+import { PatientMobileCard } from "./patient-mobile-card";
 import { patientsTableColumns } from "./table-columns";
 import UpsertPatientForm from "./upsert-patient-form";
 
@@ -42,6 +44,12 @@ const PatientsPageClient = ({
     setIsDialogOpen(false);
     router.refresh(); // Atualiza a página para mostrar o novo paciente
   };
+
+  const openAddPatientDialog = useCallback(() => {
+    setIsDialogOpen(true);
+  }, []);
+
+  useRegisterMobileNavFab(openAddPatientDialog, "Adicionar paciente");
 
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams?.toString() ?? "");
@@ -65,38 +73,48 @@ const PatientsPageClient = ({
             </PageDescription>
           </PageHeaderContent>
           <PageActions>
-            <AddResourceButton
+          <AddResourceButton
               label="Adicionar Paciente"
-              onClick={() => setIsDialogOpen(true)}
-              icon={undefined}
+              onClick={openAddPatientDialog}
+              icon={<UserRound className="h-4 w-4" />}
+              className="hidden md:inline-flex"
             />
           </PageActions>
         </PageHeader>
         <PageContent>
           {/* Container para o campo de busca com o ícone */}
-          <div className="relative flex justify-end">
-            {/* O Ícone */}
+          <div className="relative flex w-full justify-start md:justify-end">
             <Search className="text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
 
-            {/* O Input com padding à esquerda para dar espaço ao ícone */}
             <Input
               placeholder="Buscar por nome ou CPF..."
-              className="max-w-sm pl-9" // <-- Aumentamos o padding esquerdo (pl)
+              className="w-full pl-9 md:max-w-sm"
               defaultValue={searchParams.get("search")?.toString()}
               onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
 
-          <DataTable data={initialPatients} columns={patientsTableColumns} />
-
-          {/* MENSAGEM DE NENHUM RESULTADO */}
-          {initialPatients.length === 0 && (
-            <div className="text-muted-foreground py-8 text-center">
+          {initialPatients.length === 0 ? (
+            <div className="text-muted-foreground py-8 text-center text-sm">
               Nenhum paciente encontrado.
             </div>
+          ) : (
+            <>
+              <div className="space-y-2 md:hidden">
+                {initialPatients.map((patient) => (
+                  <PatientMobileCard key={patient.id} patient={patient} />
+                ))}
+              </div>
+
+              <div className="hidden md:block">
+                <DataTable
+                  data={initialPatients}
+                  columns={patientsTableColumns}
+                />
+              </div>
+            </>
           )}
 
-          {/* CONTROLES DE PAGINAÇÃO */}
           <DataTablePagination pageCount={pageCount} />
         </PageContent>
       </PageContainer>

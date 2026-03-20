@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { useAppointmentStore } from "@/stores";
 import { Doctor, Patient } from "@/types";
 
@@ -12,11 +13,13 @@ import AddAppointmentForm from "./add-appointment-form";
 interface AddAppointmentButtonProps {
   patients: Patient[];
   doctors: Doctor[];
+  className?: string;
 }
 
 const AddAppointmentButton = ({
   patients,
   doctors,
+  className,
 }: AddAppointmentButtonProps) => {
   const { openCreateModal, isModalOpen, isCreateModal, closeModal } =
     useAppointmentStore();
@@ -39,7 +42,11 @@ const AddAppointmentButton = ({
       onOpenChange={(open) => !open && closeModal()}
     >
       <DialogTrigger asChild>
-        <Button onClick={handleOpenModal} aria-label="Criar novo agendamento">
+        <Button
+          onClick={handleOpenModal}
+          aria-label="Criar novo agendamento"
+          className={cn("inline-flex", className)}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Novo agendamento
         </Button>

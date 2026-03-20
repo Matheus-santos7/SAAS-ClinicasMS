@@ -15,6 +15,27 @@
       "when": 1773902195446,
       "tag": "0001_broad_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774037258795,
+      "tag": "0002_financial-structure-refactor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774038884837,
+      "tag": "0003_registry-module",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774040755156,
+      "tag": "0004_full-crud-registry",
+      "breakpoints": true
     }
   ]
 }

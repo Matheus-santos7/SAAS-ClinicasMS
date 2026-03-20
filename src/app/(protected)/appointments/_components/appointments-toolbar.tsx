@@ -3,7 +3,9 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRegisterMobileNavFab } from "@/hooks/use-register-mobile-nav-fab";
 import { cn } from "@/lib/utils";
+import { useAppointmentStore } from "@/stores";
 import { Doctor, Patient } from "@/types";
 
 import AddAppointmentButton from "./add-appointment-button";
@@ -40,6 +42,20 @@ export function AppointmentsToolbar({
     router.push(`${pathname}?${createQueryString({ view })}`);
   };
 
+  const openCreateModal = useAppointmentStore((s) => s.openCreateModal);
+  const canAddAppointment = patients.length > 0 && doctors.length > 0;
+
+  useRegisterMobileNavFab(
+    () => {
+      openCreateModal({
+        start: new Date(),
+        end: new Date(Date.now() + 30 * 60 * 1000),
+      });
+    },
+    "Novo agendamento",
+    canAddAppointment,
+  );
+
   return (
     <div
       className={cn(
@@ -69,7 +85,11 @@ export function AppointmentsToolbar({
       </div>
 
       <div className="flex justify-end">
-        <AddAppointmentButton patients={patients} doctors={doctors} />
+        <AddAppointmentButton
+          patients={patients}
+          doctors={doctors}
+          className="hidden md:inline-flex"
+        />
       </div>
     </div>
   );
