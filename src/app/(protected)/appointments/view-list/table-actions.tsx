@@ -1,11 +1,10 @@
 "use client";
 
-import { CircleXIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, TrashIcon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
 
 import { deleteAppointment } from "@/actions/appointment/delete-appointment";
-import { updateAppointmentStatus } from "@/actions/appointment/update-appointment-status";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,23 +37,9 @@ const AppointmentsTableActions = ({
     },
   });
 
-  const cancelAppointmentAction = useAction(updateAppointmentStatus, {
-    onSuccess: () => {
-      toast.success("Agendamento cancelado com sucesso.");
-    },
-    onError: () => {
-      toast.error("Erro ao cancelar agendamento.");
-    },
-  });
-
   const handleDeleteAppointmentClick = () => {
     if (!appointment) return;
     deleteAppointmentAction.execute({ id: appointment.id });
-  };
-
-  const handleCancelAppointmentClick = () => {
-    if (!appointment) return;
-    cancelAppointmentAction.execute({ id: appointment.id, status: "canceled" });
   };
 
   return (
@@ -95,36 +80,6 @@ const AppointmentsTableActions = ({
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteAppointmentClick}>
               Confirmar exclusão
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-amber-600 hover:text-amber-600"
-            title="Cancelar agendamento"
-            aria-label="Cancelar agendamento"
-          >
-            <CircleXIcon className="h-4 w-4" />
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Tem certeza que deseja cancelar esse agendamento?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              O agendamento será marcado como <strong>Cancelado</strong>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Não</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCancelAppointmentClick}>
-              Confirmar cancelamento
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
