@@ -79,7 +79,7 @@ export const appointmentsTableColumns: ColumnDef<AppointmentWithRelations>[] = [
   {
     id: "doctor",
     accessorKey: "doctor.name",
-    header: "Médico",
+    header: "Dentista",
   },
   {
     id: "date",

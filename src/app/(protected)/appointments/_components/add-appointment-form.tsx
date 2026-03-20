@@ -44,7 +44,7 @@ import UpsertPatientForm from "@/app/(protected)/patients/_components/upsert-pat
 
 const formSchema = z.object({
   patientId: z.string().min(1, { message: "Paciente é obrigatório." }),
-  doctorId: z.string().min(1, { message: "Médico é obrigatório." }),
+  doctorId: z.string().min(1, { message: "Dentista é obrigatório." }),
   date: z.date({ required_error: "Data é obrigatória." }),
   startTime: z
     .string()
@@ -155,7 +155,7 @@ const AddAppointmentForm = ({
   };
 
   if (!patients.length || !doctors.length) {
-    return <DialogContent>Nenhum paciente ou médico disponível.</DialogContent>;
+    return <DialogContent>Nenhum paciente ou Dentista disponível.</DialogContent>;
   }
 
   return (
@@ -221,14 +221,14 @@ const AddAppointmentForm = ({
             name="doctorId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Médico</FormLabel>
+                <FormLabel>Dentista</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger aria-label="Selecionar médico">
-                      <SelectValue placeholder="Selecione um médico" />
+                    <SelectTrigger aria-label="Selecionar Dentista">
+                      <SelectValue placeholder="Selecione um Dentista" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>

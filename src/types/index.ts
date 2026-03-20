@@ -45,7 +45,7 @@ export type PatientBasic = Pick<
 >;
 export type ClinicBasic = Pick<Clinic, "id" | "name">;
 
-// Tipo para evolução com médico
+// Tipo para evolução com Dentista
 export type EvolutionEntryWithDoctor = Evolution & {
   doctor: Pick<Doctor, "name"> | null;
 };
@@ -110,7 +110,7 @@ export type ColorSelectProps = {
   onSelectColor: (color: string) => void;
 };
 
-// Cores predefinidas para médicos
+// Cores predefinidas para Dentistas
 export type DoctorColor = {
   value: string;
   name: string;

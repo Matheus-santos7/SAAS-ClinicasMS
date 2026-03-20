@@ -96,7 +96,7 @@ export default function Home() {
                 Gestão de Pacientes
               </h3>
               <p className="text-muted-foreground">
-                Cadastro completo, histórico médico e busca avançada para
+                Cadastro completo, histórico Dentista e busca avançada para
                 encontrar pacientes rapidamente.
               </p>
             </CardContent>

@@ -73,17 +73,17 @@ export const addAppointment = protectedAction
     if (hasConflict) {
       return {
         errorMessage:
-          "Já existe um agendamento neste intervalo para este médico.",
+          "Já existe um agendamento neste intervalo para este Dentista.",
       };
     }
 
-    // Buscar o preço do médico
+    // Buscar o preço do Dentista
     const doctor = await db.query.doctorsTable.findFirst({
       where: (doctors, { eq }) => eq(doctors.id, parsedInput.doctorId),
     });
 
     if (!doctor) {
-      throw new Error("Médico não encontrado");
+      throw new Error("Dentista não encontrado");
     }
 
     await db.insert(appointmentsTable).values({

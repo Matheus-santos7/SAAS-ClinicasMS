@@ -6,7 +6,7 @@ export const upsertAnamnesisSchema = z
   .object({
     id: z.string().optional(),
     patientId: z.string().min(1, "ID do paciente é obrigatório"),
-    doctorId: z.string().min(1, "ID do médico é obrigatório"),
+    doctorId: z.string().min(1, "ID do Dentista é obrigatório"),
     reasonConsultation: z.string().optional(),
     systemicDiseases: z.string().optional(),
     medicationUsage: z.string().optional(),

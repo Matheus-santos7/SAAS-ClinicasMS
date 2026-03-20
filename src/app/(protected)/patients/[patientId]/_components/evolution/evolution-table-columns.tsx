@@ -34,7 +34,7 @@ export const columns: ColumnDef<EvolutionEntryWithDoctor>[] = [
   },
   {
     accessorKey: "doctor.name",
-    header: "Médico Responsável",
+    header: "Dentista Responsável",
     cell: ({ row }) => row.original.doctor?.name ?? "N/A",
   },
   {

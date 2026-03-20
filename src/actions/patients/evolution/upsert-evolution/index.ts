@@ -80,7 +80,7 @@ export const upsertEvolution = protectedAction
 
         if (!updatedEvolution) {
           return {
-            error: "Erro ao atualizar evolução ou médico não corresponde",
+            error: "Erro ao atualizar evolução ou Dentista não corresponde",
           };
         }
       } else {

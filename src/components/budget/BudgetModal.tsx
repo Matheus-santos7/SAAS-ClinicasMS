@@ -37,7 +37,7 @@ const procedureSchema = z.object({
 });
 
 const budgetFormSchema = z.object({
-  doctorId: z.string().min(1, "Médico é obrigatório"),
+  doctorId: z.string().min(1, "Dentista é obrigatório"),
   clinicId: z.string().min(1, "Clínica é obrigatória"),
   procedures: z
     .array(procedureSchema)
@@ -143,20 +143,20 @@ export function BudgetModal({
             className="space-y-6"
           >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Médico */}
+              {/* Dentista */}
               <FormField
                 control={form.control}
                 name="doctorId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Médico</FormLabel>
+                    <FormLabel>Dentista</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecione um médico" />
+                          <SelectValue placeholder="Selecione um Dentista" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

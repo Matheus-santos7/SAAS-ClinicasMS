@@ -50,7 +50,7 @@ const AppointmentsPage = async ({
   const { doctorId, from, to, view } = (await searchParams) ?? {};
 
   try {
-    // 2. Verificação de Pré-requisitos (Médicos e Pacientes)
+    // 2. Verificação de Pré-requisitos (Dentistas e Pacientes)
     // Buscamos ambos primeiro para decidir o fluxo de redirecionamento
     const [doctorsData, patientsData] = await Promise.all([
       getDoctors(clinicId),
@@ -60,12 +60,12 @@ const AppointmentsPage = async ({
     const doctors = doctorsData.doctors;
     const patients = patientsData.patients;
 
-    // Prioridade 1: Se não tem médico, vai para cadastro de médicos
+    // Prioridade 1: Se não tem Dentista, vai para cadastro de Dentistas
     if (doctors.length === 0) {
       redirect(ROUTES.DOCTORS); 
     }
 
-    // Prioridade 2: Se tem médico mas não tem paciente, vai para cadastro de pacientes
+    // Prioridade 2: Se tem Dentista mas não tem paciente, vai para cadastro de pacientes
     if (patients.length === 0) {
       redirect(ROUTES.PATIENTS);
     }

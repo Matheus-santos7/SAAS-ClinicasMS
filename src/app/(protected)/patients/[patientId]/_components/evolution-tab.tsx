@@ -149,7 +149,7 @@ export const EvolutionTab = ({
           </DialogHeader>
           <div className="prose dark:prose-invert max-w-none space-y-2 py-4">
             <div>
-              <h4 className="font-semibold">Médico Responsável</h4>
+              <h4 className="font-semibold">Dentista Responsável</h4>
               <p>{selectedEvolution?.doctor?.name ?? "N/A"}</p>
             </div>
             <div>

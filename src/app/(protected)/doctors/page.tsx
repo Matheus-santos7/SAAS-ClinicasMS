@@ -16,7 +16,7 @@ export default async function DoctorsPage() {
   if (!session.user.clinic) redirect(ROUTES.CLINIC_FORM);
   if (!session.user.plan) redirect(ROUTES.SUBSCRIPTION);
 
-  // Busca todos os médicos da clínica (sem paginação por enquanto)
+  // Busca todos os Dentistas da clínica (sem paginação por enquanto)
   const { doctors } = await getDoctors(session.user.clinic.id);
 
   return <DoctorsPageClient doctors={doctors} />;

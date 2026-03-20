@@ -145,7 +145,7 @@ const FinancialPage = async ({
                       <tr className="text-left">
                         <th className="px-2 py-2">Data</th>
                         <th className="px-2 py-2">Paciente</th>
-                        <th className="px-2 py-2">Médico</th>
+                        <th className="px-2 py-2">Dentista</th>
                         <th className="px-2 py-2 text-right">Valor recebido</th>
                       </tr>
                     </thead>

@@ -73,7 +73,7 @@ export const AppointmentsChartSkeleton = () => {
 };
 
 /**
- * Skeleton para o top de médicos
+ * Skeleton para o top de Dentistas
  */
 export const TopDoctorsSkeleton = () => {
   return (

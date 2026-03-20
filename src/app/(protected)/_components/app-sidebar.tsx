@@ -79,7 +79,7 @@ const clinicModules = [
       { title: "Lista de Pacientes", url: "/patients" },
       { title: "Novo Paciente", url: "/patients" },
       { title: "Fichas Clínicas", url: "/patients" },
-      { title: "Histórico Médico", url: "/patients" },
+      { title: "Histórico Dentista", url: "/patients" },
       { title: "Anamnese", url: "/patients" },
       { title: "Evolução", url: "/patients" },
       { title: "Exames", url: "/patients" },

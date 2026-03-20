@@ -41,10 +41,10 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
     useState(false);
   const deleteDoctorAction = useAction(deleteDoctor, {
     onSuccess: () => {
-      toast.success("Médico deletado com sucesso.");
+      toast.success("Dentista deletado com sucesso.");
     },
     onError: () => {
-      toast.error("Erro ao deletar médico.");
+      toast.error("Erro ao deletar Dentista.");
     },
   });
   const handleDeleteDoctorClick = () => {
@@ -69,7 +69,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
                   {doctorInitials}
                 </AvatarFallback>
               </Avatar>
-              {/* Indicador de cor do médico */}
+              {/* Indicador de cor do Dentista */}
               <div
                 className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full border-2 border-white shadow-sm"
                 style={{ backgroundColor: doctor.color }}
@@ -146,7 +146,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 px-2">
                 <TrashIcon className="h-3 w-3" />
-                <span className="sr-only">Deletar médico</span>
+                <span className="sr-only">Deletar Dentista</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="sm:max-w-md">
@@ -155,7 +155,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
                   Deletar {doctor.name}?
                 </AlertDialogTitle>
                 <AlertDialogDescription className="text-sm">
-                  Essa ação não pode ser revertida. Isso irá deletar o médico e
+                  Essa ação não pode ser revertida. Isso irá deletar o Dentista e
                   todas as consultas agendadas.
                 </AlertDialogDescription>
               </AlertDialogHeader>

@@ -109,14 +109,14 @@ const UpsertDoctorForm = ({
     onSuccess: () => {
       toast.success(
         doctor
-          ? "Médico atualizado com sucesso."
-          : "Médico adicionado com sucesso.",
+          ? "Dentista atualizado com sucesso."
+          : "Dentista adicionado com sucesso.",
       );
       form.reset(); // Limpa o formulário após sucesso
       onSuccess?.();
     },
     onError: () => {
-      toast.error("Erro ao salvar médico.");
+      toast.error("Erro ao salvar Dentista.");
     },
   });
 
@@ -133,12 +133,12 @@ const UpsertDoctorForm = ({
     <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-lg sm:text-xl">
-          {doctor ? `Editar ${doctor.name}` : "Adicionar médico"}
+          {doctor ? `Editar ${doctor.name}` : "Adicionar Dentista"}
         </DialogTitle>
         <DialogDescription className="text-sm">
           {doctor
-            ? "Edite as informações desse médico."
-            : "Preencha os dados do novo médico."}
+            ? "Edite as informações desse Dentista."
+            : "Preencha os dados do novo Dentista."}
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
@@ -199,7 +199,7 @@ const UpsertDoctorForm = ({
                 ? "Salvando..."
                 : doctor
                   ? "Salvar alterações"
-                  : "Adicionar médico"}
+                  : "Adicionar Dentista"}
             </Button>
           </DialogFooter>
         </form>

@@ -29,7 +29,7 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
 
   const handleSuccess = () => {
     setIsDialogOpen(false);
-    router.refresh(); // Atualiza a página para mostrar o novo médico
+    router.refresh(); // Atualiza a página para mostrar o novo Dentista
   };
 
   return (
@@ -44,7 +44,7 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
           </PageHeaderContent>
           <PageActions>
             <AddResourceButton
-              label="Adicionar Médico"
+              label="Adicionar Dentista"
               onClick={() => setIsDialogOpen(true)}
               icon={<UserPlus className="h-4 w-4" />}
             />
@@ -62,13 +62,13 @@ export default function DoctorsPageClient({ doctors }: DoctorsPageClientProps) {
                 <UserPlus className="mx-auto h-16 w-16" />
               </div>
               <h3 className="text-muted-foreground mb-2 text-lg font-medium">
-                Nenhum médico cadastrado
+                Nenhum Dentista cadastrado
               </h3>
               <p className="text-muted-foreground mb-6 text-sm">
-                Adicione seu primeiro médico para começar a gerenciar consultas
+                Adicione seu primeiro Dentista para começar a gerenciar consultas
               </p>
               <AddResourceButton
-                label="Adicionar Primeiro Médico"
+                label="Adicionar Primeiro Dentista"
                 onClick={() => setIsDialogOpen(true)}
                 icon={<UserPlus />}
               />

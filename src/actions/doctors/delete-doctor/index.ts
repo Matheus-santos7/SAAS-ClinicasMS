@@ -24,7 +24,7 @@ export const deleteDoctor = protectedAction
       where: eq(doctorsTable.id, parsedInput.id),
     });
     if (!doctor) {
-      throw new Error("Médico não encontrado");
+      throw new Error("Dentista não encontrado");
     }
     if (!canAccessClinicResource(doctor.clinicId, clinicId)) {
       throw new Error("Dentista não encontrado");

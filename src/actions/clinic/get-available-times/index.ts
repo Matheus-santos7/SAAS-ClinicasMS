@@ -37,7 +37,7 @@ export const getAvailableTimes = protectedAction
       where: eq(doctorsTable.id, parsedInput.doctorId),
     });
     if (!doctor) {
-      throw new Error("Médico não encontrado");
+      throw new Error("Dentista não encontrado");
     }
     const selectedDayOfWeek = dayjs(parsedInput.date).day();
     const doctorIsAvailable =

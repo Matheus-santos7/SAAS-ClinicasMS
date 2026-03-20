@@ -1,8 +1,8 @@
-// Utilitários para cores dos médicos na agenda
+// Utilitários para cores dos Dentistas na agenda
 
 import { DoctorColor } from "@/types";
 
-// Cores predefinidas para médicos (mesmas do componente ColorSelect)
+// Cores predefinidas para Dentistas (mesmas do componente ColorSelect)
 export const DOCTOR_COLORS: DoctorColor[] = [
   { value: "#3B82F6", name: "Azul", hex: "#3B82F6" }, // Blue
   { value: "#EF4444", name: "Vermelho", hex: "#EF4444" }, // Red
@@ -25,7 +25,7 @@ export const getColorName = (colorValue: string): string => {
 };
 
 /**
- * Gera um estilo CSS inline para o agendamento baseado na cor do médico
+ * Gera um estilo CSS inline para o agendamento baseado na cor do Dentista
  */
 export const getAppointmentStyle = (doctorColor: string) => ({
   backgroundColor: doctorColor,

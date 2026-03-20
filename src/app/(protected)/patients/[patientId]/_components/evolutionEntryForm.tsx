@@ -44,21 +44,21 @@ interface EvolutionEntryFormProps {
   patientId: string;
   initialData?: EvolutionEntry | null;
   onSuccess: () => void;
-  doctors: Array<{ id: string; name: string }>; // Recebe a lista de médicos
+  doctors: Array<{ id: string; name: string }>; // Recebe a lista de Dentistas
 }
 
 export const EvolutionEntryForm = ({
   patientId,
   initialData,
   onSuccess,
-  doctors, // A lista de médicos agora é uma prop
+  doctors, // A lista de Dentistas agora é uma prop
 }: EvolutionEntryFormProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(upsertEvolutionSchema),
     defaultValues: {
       id: initialData?.id,
       patientId: patientId,
-      doctorId: initialData?.doctorId ?? "", // Valor inicial para o médico
+      doctorId: initialData?.doctorId ?? "", // Valor inicial para o Dentista
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       description: initialData?.description ?? "",
       observations: initialData?.observations ?? "",
@@ -89,13 +89,13 @@ export const EvolutionEntryForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Campo de Médico Adicionado */}
+        {/* Campo de Dentista Adicionado */}
         <FormField
           control={form.control}
           name="doctorId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Médico responsável</FormLabel>
+              <FormLabel>Dentista responsável</FormLabel>
               <Select
                 onValueChange={field.onChange}
                 value={field.value}
@@ -103,7 +103,7 @@ export const EvolutionEntryForm = ({
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o médico" />
+                    <SelectValue placeholder="Selecione o Dentista" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

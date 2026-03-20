@@ -11,7 +11,7 @@ export async function getDoctors(
 ) {
   const itemsPerPage = APP_CONFIG.PAGINATION.DOCTORS_PER_PAGE;
 
-  // Se não há paginação, retorna todos os médicos da clínica
+  // Se não há paginação, retorna todos os Dentistas da clínica
   if (page === undefined) {
     const whereCondition = and(
       eq(doctorsTable.clinicId, clinicId),

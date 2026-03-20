@@ -169,7 +169,7 @@ export const usersToClinicsTableRelations = relations(
   }),
 );
 
-// Tabela de médicos
+// Tabela de Dentistas
 export const doctorsTable = pgTable(
   "doctors",
   {
@@ -197,7 +197,7 @@ export const doctorsTable = pgTable(
   }),
 );
 
-// Relações de médicos
+// Relações de Dentistas
 export const doctorsTableRelations = relations(
   doctorsTable,
   ({ many, one }) => ({

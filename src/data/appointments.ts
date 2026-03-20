@@ -194,7 +194,7 @@ export async function getAppointmentsForList(
 /**
  * Busca apenas os agendamentos do dia atual
  * @param clinicId - ID da clínica
- * @returns Lista de agendamentos do dia atual com dados do paciente e médico
+ * @returns Lista de agendamentos do dia atual com dados do paciente e Dentista
  */
 export async function getTodayAppointments(clinicId: string) {
   const today = new Date();
@@ -239,7 +239,7 @@ export async function getTodayAppointments(clinicId: string) {
 /**
  * Versão alternativa usando dayjs para buscar agendamentos do dia atual
  * @param clinicId - ID da clínica
- * @returns Lista de agendamentos do dia atual com dados do paciente e médico
+ * @returns Lista de agendamentos do dia atual com dados do paciente e Dentista
  */
 export async function getTodayAppointmentsWithDayjs(clinicId: string) {
   const startOfDay = dayjs().startOf("day").toDate();

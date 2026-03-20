@@ -45,7 +45,7 @@ dayjs.locale("pt-br");
 const localizer = dayjsLocalizer(dayjs);
 const DnDCalendar = withDragAndDrop(Calendar);
 
-/** Props da view de agenda: lista de agendamentos, pacientes e médicos */
+/** Props da view de agenda: lista de agendamentos, pacientes e Dentistas */
 interface AgendaViewProps {
   appointments: AppointmentWithRelations[];
   patients: Patient[];
@@ -145,7 +145,7 @@ const CustomWeekDayEvent = (props: CustomEventProps) => {
 };
 
 /**
- * View principal da agenda: calendário com arrastar/soltar, filtro por médico,
+ * View principal da agenda: calendário com arrastar/soltar, filtro por Dentista,
  * modais de detalhes e criação de agendamento.
  */
 export default function AgendaView({
@@ -214,7 +214,7 @@ export default function AgendaView({
     [appointments],
   );
 
-  /** Estilo do evento: no modo mês sem fundo (só texto primário); dia/semana com cor do médico */
+  /** Estilo do evento: no modo mês sem fundo (só texto primário); dia/semana com cor do Dentista */
   const eventPropGetter = useCallback(
     (event: RBCEvent) => {
       const resource = event.resource as {
@@ -330,7 +330,7 @@ export default function AgendaView({
     openCreateModal({ start, end });
   }, [dayDialogDate, openCreateModal]);
 
-  // Estado vazio: sem agendamentos ou sem pacientes/médicos cadastrados
+  // Estado vazio: sem agendamentos ou sem pacientes/Dentistas cadastrados
   if (!appointments?.length && (!patients.length || !doctors.length)) {
     return (
       <Card className="mt-6">
@@ -341,7 +341,7 @@ export default function AgendaView({
           </h3>
           <p className="text-muted-foreground">
             {!patients.length || !doctors.length
-              ? "Cadastre pacientes e médicos para começar a agendar."
+              ? "Cadastre pacientes e Dentistas para começar a agendar."
               : "Clique em um horário vago na agenda ou no botão '+' para criar o primeiro agendamento."}
           </p>
           {patients.length > 0 && doctors.length > 0 && (

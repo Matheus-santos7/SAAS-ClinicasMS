@@ -11,7 +11,7 @@ import { doctorsTable } from "@/db/schema";
 
 import { EvolutionTableActions } from "./evolution-table-actions";
 
-// Define o tipo para a entrada da tabela, incluindo a relação com o médico
+// Define o tipo para a entrada da tabela, incluindo a relação com o Dentista
 export type EvolutionEntryWithDoctor = typeof evolutionTable.$inferSelect & {
   doctor: Pick<typeof doctorsTable.$inferSelect, "name"> | null;
 };
@@ -40,7 +40,7 @@ export const columns: ColumnDef<EvolutionEntryWithDoctor>[] = [
   },
   {
     accessorKey: "doctor.name",
-    header: "Médico Responsável",
+    header: "Dentista Responsável",
     cell: ({ row }) => row.original.doctor?.name ?? "N/A",
   },
   {

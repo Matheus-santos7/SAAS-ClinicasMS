@@ -2,7 +2,7 @@
 
 ## 📋 **Visão Geral do Projeto**
 
-O **SynClinic** é um **sistema de gestão médica/odontológica** completo, desenvolvido em **Next.js 15** com **TypeScript**. É uma aplicação web para clínicas gerenciarem pacientes, médicos, agendamentos e prontuários médicos.
+O **SynClinic** é um **sistema de gestão médica/odontológica** completo, desenvolvido em **Next.js 15** com **TypeScript**. É uma aplicação web para clínicas gerenciarem pacientes, Dentistas, agendamentos e prontuários Dentistas.
 
 ## 🏗️ **Arquitetura e Stack Tecnológica**
 
@@ -42,7 +42,7 @@ O **SynClinic** é um **sistema de gestão médica/odontológica** completo, des
 - Criação e configuração de clínicas
 - Sistema multi-tenant (cada usuário pertence a uma clínica)
 
-### **3. Gestão de Médicos/Dentistas:**
+### **3. Gestão de Dentistas/Dentistas:**
 
 - Cadastro completo de profissionais
 - Especialidades odontológicas
@@ -60,7 +60,7 @@ O **SynClinic** é um **sistema de gestão médica/odontológica** completo, des
 
 - Criação de consultas
 - Verificação de disponibilidade automática
-- Gestão de horários por médico
+- Gestão de horários por Dentista
 - Integração com calendário
 
 ### **6. Prontuário Eletrônico:**
@@ -73,7 +73,7 @@ O **SynClinic** é um **sistema de gestão médica/odontológica** completo, des
 
 - Estatísticas de receita
 - Gráficos de agendamentos
-- Ranking de médicos mais ativos
+- Ranking de Dentistas mais ativos
 - Métricas por especialidade
 
 ## 📁 **Estrutura do Projeto**
@@ -83,7 +83,7 @@ src/
 ├── app/                          # App Router do Next.js
 │   ├── (protected)/             # Rotas protegidas
 │   │   ├── dashboard/           # Dashboard principal
-│   │   ├── doctors/             # Gestão de médicos
+│   │   ├── doctors/             # Gestão de Dentistas
 │   │   ├── patients/            # Gestão de pacientes
 │   │   │   └── [patientId]/     # Detalhes do paciente
 │   │   ├── appointments/        # Gestão de agendamentos
@@ -104,7 +104,7 @@ src/
 
 - **Users** - Usuários do sistema
 - **Clinics** - Clínicas médicas
-- **Doctors** - Médicos/Dentistas
+- **Doctors** - Dentistas/Dentistas
 - **Patients** - Pacientes
 - **Appointments** - Agendamentos
 - **Anamnesis** - Fichas de anamnese
@@ -114,8 +114,8 @@ src/
 ### **Relacionamentos:**
 
 - Usuários pertencem a clínicas
-- Médicos e pacientes pertencem a clínicas
-- Agendamentos ligam pacientes e médicos
+- Dentistas e pacientes pertencem a clínicas
+- Agendamentos ligam pacientes e Dentistas
 - Anamnese e evolução pertencem a pacientes
 
 ## 🚀 **Funcionalidades Avançadas**

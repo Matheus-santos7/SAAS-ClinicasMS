@@ -46,7 +46,7 @@ const anamnesisSchema = z.object({
   drinksAlcohol: z.boolean(),
   isPregnant: z.boolean(),
 
-  // Campo de seleção do médico
+  // Campo de seleção do Dentista
   doctorId: z.string().optional(),
 });
 
@@ -55,7 +55,7 @@ type AnamnesisFormValues = z.infer<typeof anamnesisSchema>;
 interface AnamnesisFormProps {
   patientId: string;
   doctorId?: string; // Torne opcional para seleção manual
-  doctors: Array<{ id: string; name: string }>; // Lista de médicos
+  doctors: Array<{ id: string; name: string }>; // Lista de Dentistas
   anamnesis?: typeof patientsAnamnesisTable.$inferSelect;
 }
 
@@ -168,14 +168,14 @@ export const AnamnesisTab = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Campo de seleção do doutor */}
             <div className="flex items-end justify-between gap-4">
-              {/* Coluna 1: O seletor de médico */}
+              {/* Coluna 1: O seletor de Dentista */}
               <div className="flex-grow">
                 <FormField
                   control={form.control}
                   name="doctorId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Médico responsável</FormLabel>
+                      <FormLabel>Dentista responsável</FormLabel>
                       <FormControl>
                         <select
                           {...field}
@@ -184,7 +184,7 @@ export const AnamnesisTab = ({
                           onChange={field.onChange}
                         >
                           <option value="" disabled>
-                            Selecione o médico
+                            Selecione o Dentista
                           </option>
                           {doctors.map((doctor) => (
                             <option key={doctor.id} value={doctor.id}>
@@ -250,7 +250,7 @@ export const AnamnesisTab = ({
                 {renderTextarea(
                   "currentTreatment",
                   "Tratamento Atual",
-                  "Descreva tratamentos médicos ou odontológicos em andamento...",
+                  "Descreva tratamentos Dentistas ou odontológicos em andamento...",
                 )}
                 {renderTextarea(
                   "familyHistory",
