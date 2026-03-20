@@ -9,7 +9,6 @@ import {
   MoreHorizontal,
   Stethoscope,
   Users,
-  Wallet,
   Plus,
 } from "lucide-react";
 import Link from "next/link";
@@ -61,23 +60,7 @@ const desktopSections = {
       {
         label: "Orçamentos",
         description: "Gerencie planos de tratamento e orçamentos.",
-        href: ROUTES.FINANCIAL,
-      },
-    ],
-  },
-  financial: {
-    label: "Financeiro",
-    href: ROUTES.FINANCIAL,
-    items: [
-      {
-        label: "Recebimentos",
-        description: "Controle os pagamentos recebidos.",
-        href: ROUTES.FINANCIAL,
-      },
-      {
-        label: "Despesas",
-        description: "Registre e acompanhe os custos da clínica.",
-        href: ROUTES.FINANCIAL,
+        href: ROUTES.PATIENTS,
       },
     ],
   },
@@ -194,24 +177,6 @@ export function AppHeader() {
                 </Link>
               </Button>
             </NavigationMenuItem>
-
-            {/* Financeiro */}
-            <NavigationMenuItem>
-              <Button
-                asChild
-                variant={isActive(ROUTES.FINANCIAL) ? "default" : "ghost"}
-                size="sm"
-                className={cn(
-                  "rounded-full px-3 text-xs font-medium",
-                  !isActive(ROUTES.FINANCIAL) &&
-                    "bg-transparent hover:bg-muted/70",
-                )}
-              >
-                <Link href={desktopSections.financial.href}>
-                  Financeiro
-                </Link>
-              </Button>
-            </NavigationMenuItem>
           </NavigationMenu>
         </div>
 
@@ -239,13 +204,6 @@ export function AppHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href={ROUTES.FINANCIAL}>
-                  <Wallet className="mr-2 size-4" />
-                  <span>Financeiro</span>
-                </Link>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href={ROUTES.LOGIN}>
@@ -338,25 +296,6 @@ export function AppHeader() {
           </SheetHeader>
 
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <button
-              type="button"
-              onClick={() => {
-                setIsMenuOpen(false);
-                router.push(ROUTES.FINANCIAL);
-              }}
-              className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted"
-            >
-              <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Wallet className="size-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-semibold">Financeiro</span>
-                <span className="text-muted-foreground text-[11px]">
-                  Recebimentos &amp; despesas
-                </span>
-              </div>
-            </button>
-
             <button
               type="button"
               onClick={() => {

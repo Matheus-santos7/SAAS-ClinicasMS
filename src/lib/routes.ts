@@ -4,7 +4,6 @@ export const ROUTES = {
   APPOINTMENTS: "/appointments",
   DOCTORS: "/doctors",
   PATIENTS: "/patients",
-  FINANCIAL: "/financial",
   SUBSCRIPTION: "/subscription",
   CLINIC_FORM: "/clinic-form",
   LOGIN: "/authentication",
