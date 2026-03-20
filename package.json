@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx src/db/seed.ts",
-    "db:drop": "tsx src/db/drop.ts"
+    "db:drop": "tsx src/db/drop.ts",
+    "db:ensure-registry": "tsx scripts/ensure-registry.ts"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.6",
@@ -78,6 +79,7 @@
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "tw-animate-css": "^1.3.0",
     "typescript": "^5"
   }

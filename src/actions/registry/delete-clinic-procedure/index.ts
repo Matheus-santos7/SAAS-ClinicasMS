@@ -1,0 +1,34 @@
+"use server";
+
+import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
+import { db } from "@/db";
+import { clinicProceduresTable } from "@/db/schema";
+import { canAccessClinicResource } from "@/helpers/permission";
+import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
+import { protectedAction } from "@/lib/next-safe-action";
+import { ROUTES } from "@/lib/routes";
+
+export const deleteClinicProcedure = protectedAction
+  .schema(z.object({ id: z.string().uuid() }))
+  .action(async ({ parsedInput }) => {
+    const session = await getSessionOrThrow();
+    const clinicId = getClinicIdOrThrow(session);
+
+    const row = await db.query.clinicProceduresTable.findFirst({
+      where: eq(clinicProceduresTable.id, parsedInput.id),
+    });
+    if (!row) throw new Error("Procedimento não encontrado.");
+    if (!canAccessClinicResource(row.clinicId, clinicId)) {
+      throw new Error("Acesso negado.");
+    }
+
+    await db
+      .update(clinicProceduresTable)
+      .set({ deletedAt: new Date() })
+      .where(eq(clinicProceduresTable.id, parsedInput.id));
+
+    revalidatePath(ROUTES.REGISTRY);
+  });

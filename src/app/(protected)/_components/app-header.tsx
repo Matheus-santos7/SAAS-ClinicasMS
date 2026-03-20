@@ -4,6 +4,7 @@ import * as React from "react";
 
 import {
   CalendarDays,
+  ClipboardList,
   Home,
   Menu,
   MoreHorizontal,
@@ -177,6 +178,22 @@ export function AppHeader() {
                 </Link>
               </Button>
             </NavigationMenuItem>
+
+            {/* Registry (labels PT-BR) */}
+            <NavigationMenuItem>
+              <Button
+                asChild
+                variant={isActive(ROUTES.REGISTRY) ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  "rounded-full px-3 text-xs font-medium",
+                  !isActive(ROUTES.REGISTRY) &&
+                    "bg-transparent hover:bg-muted/70",
+                )}
+              >
+                <Link href={ROUTES.REGISTRY}>Cadastros</Link>
+              </Button>
+            </NavigationMenuItem>
           </NavigationMenu>
         </div>
 
@@ -330,6 +347,25 @@ export function AppHeader() {
                 <span className="text-xs font-semibold">Dentistas</span>
                 <span className="text-muted-foreground text-[11px]">
                   Equipe e cadastro profissionais
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMenuOpen(false);
+                router.push(ROUTES.REGISTRY);
+              }}
+              className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <ClipboardList className="size-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold">Cadastros</span>
+                <span className="text-muted-foreground text-[11px]">
+                  Procedimentos, despesas e fornecedores
                 </span>
               </div>
             </button>

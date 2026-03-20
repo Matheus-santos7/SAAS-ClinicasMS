@@ -25,6 +25,15 @@ export const treatmentPaymentStatusEnum = pgEnum("treatment_payment_status", [
   "paid",
 ]);
 
+/** Recorrência para tipos de despesa cadastrados */
+export const expenseRecurrenceEnum = pgEnum("expense_recurrence_type", [
+  "one_time",
+  "weekly",
+  "monthly",
+  "quarterly",
+  "yearly",
+]);
+
 // Tabela de usuários
 export const usersTable = pgTable(
   "users",
@@ -131,6 +140,9 @@ export const clinicsTableRelations = relations(clinicsTable, ({ many }) => ({
   appointments: many(appointmentsTable),
   usersToClinics: many(usersToClinicsTable),
   transactionCategories: many(transactionCategoriesTable),
+  clinicProcedures: many(clinicProceduresTable),
+  expenseTypes: many(expenseTypesTable),
+  vendors: many(vendorsTable),
 }));
 
 // Tabela de relacionamento users_to_clinics
@@ -483,6 +495,7 @@ export const vendorsTable = pgTable(
       .references(() => clinicsTable.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     contactInfo: text("contact_info"),
+    notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -491,6 +504,55 @@ export const vendorsTable = pgTable(
   },
   (table) => ({
     clinicIdIdx: index("vendors_clinic_id_idx").on(table.clinicId),
+  }),
+);
+
+/** Procedimentos cadastrados pela clínica (valor base, duração, retorno) */
+export const clinicProceduresTable = pgTable(
+  "clinic_procedures",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    clinicId: uuid("clinic_id")
+      .notNull()
+      .references(() => clinicsTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    basePriceInCents: integer("base_price_in_cents").notNull(),
+    durationSeconds: integer("duration_seconds").notNull(),
+    hasReturn: boolean("has_return").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    clinicIdIdx: index("clinic_procedures_clinic_id_idx").on(table.clinicId),
+  }),
+);
+
+/** Tipos de despesa com recorrência e fornecedor opcional */
+export const expenseTypesTable = pgTable(
+  "expense_types",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    clinicId: uuid("clinic_id")
+      .notNull()
+      .references(() => clinicsTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    recurrenceType: expenseRecurrenceEnum("recurrence_type").notNull(),
+    notes: text("notes"),
+    vendorId: uuid("vendor_id").references(() => vendorsTable.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    clinicIdIdx: index("expense_types_clinic_id_idx").on(table.clinicId),
+    vendorIdIdx: index("expense_types_vendor_id_idx").on(table.vendorId),
   }),
 );
 
@@ -747,6 +809,31 @@ export const vendorsTableRelations = relations(
       references: [clinicsTable.id],
     }),
     transactions: many(clinicFinancialTransactionsTable),
+    expenseTypes: many(expenseTypesTable),
+  }),
+);
+
+export const clinicProceduresTableRelations = relations(
+  clinicProceduresTable,
+  ({ one }) => ({
+    clinic: one(clinicsTable, {
+      fields: [clinicProceduresTable.clinicId],
+      references: [clinicsTable.id],
+    }),
+  }),
+);
+
+export const expenseTypesTableRelations = relations(
+  expenseTypesTable,
+  ({ one }) => ({
+    clinic: one(clinicsTable, {
+      fields: [expenseTypesTable.clinicId],
+      references: [clinicsTable.id],
+    }),
+    vendor: one(vendorsTable, {
+      fields: [expenseTypesTable.vendorId],
+      references: [vendorsTable.id],
+    }),
   }),
 );
 
