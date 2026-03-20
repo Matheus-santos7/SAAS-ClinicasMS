@@ -8,6 +8,7 @@ import {
   ClockIcon,
   PencilIcon,
   Stethoscope,
+  XCircleIcon,
   Trash2,
   UserIcon,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { deleteAppointment } from "@/actions/appointment/delete-appointment";
+import { updateAppointmentStatus } from "@/actions/appointment/update-appointment-status";
 import { updateAppointment } from "@/actions/appointment/update-appointment";
 import {
   AlertDialog,
@@ -81,16 +83,31 @@ export const AppointmentDetailsModal = () => {
     deleteAppointment,
     {
       onSuccess: () => {
-        toast.success("Agendamento cancelado com sucesso.");
+        toast.success("Agendamento excluído com sucesso.");
         closeModal();
       },
       onError: (error) => {
         toast.error(
-          error.error.serverError || "Erro ao cancelar agendamento.",
+          error.error.serverError || "Erro ao excluir agendamento.",
         );
       },
     },
   );
+
+  const {
+    execute: executeCancel,
+    isPending: isCanceling,
+  } = useAction(updateAppointmentStatus, {
+    onSuccess: () => {
+      toast.success("Agendamento cancelado com sucesso.");
+      closeModal();
+    },
+    onError: (error) => {
+      toast.error(
+        error.error.serverError || "Erro ao cancelar agendamento.",
+      );
+    },
+  });
 
   const {
     execute: executeUpdate,
@@ -309,39 +326,82 @@ export const AppointmentDetailsModal = () => {
             />
 
             <div className="flex justify-between gap-2 pt-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:text-destructive"
-                    title="Excluir agendamento"
-                    aria-label="Excluir agendamento"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancelar agendamento?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta ação não pode ser desfeita. O agendamento será
-                      marcado como cancelado.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() =>
-                        executeDelete({ id: selectedAppointment.id })
-                      }
-                      disabled={isDeleting}
+              <div className="flex items-center gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-amber-600 hover:text-amber-600"
+                      title="Cancelar agendamento"
+                      aria-label="Cancelar agendamento"
                     >
-                      {isDeleting ? "Cancelando..." : "Confirmar cancelamento"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      <XCircleIcon className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Cancelar agendamento?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação não pode ser desfeita. O agendamento
+                        será marcado como <strong>Cancelado</strong>.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Não</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() =>
+                          executeCancel({
+                            id: selectedAppointment.id,
+                            status: "canceled",
+                          })
+                        }
+                        disabled={isCanceling}
+                      >
+                        {isCanceling ? "Cancelando..." : "Confirmar cancelamento"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      title="Excluir agendamento"
+                      aria-label="Excluir agendamento"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Excluir agendamento?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação não pode ser desfeita. O agendamento será
+                        removido das telas.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() =>
+                          executeDelete({ id: selectedAppointment.id })
+                        }
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? "Excluindo..." : "Confirmar exclusão"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
 
               <div className="flex gap-2">
                 <Button

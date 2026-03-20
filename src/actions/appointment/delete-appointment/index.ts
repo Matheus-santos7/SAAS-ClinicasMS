@@ -31,7 +31,8 @@ export const deleteAppointment = protectedAction
     }
     await db
       .update(appointmentsTable)
-      .set({ status: "canceled" })
+      // Soft delete: mantém registro no banco, mas remove das telas
+      .set({ deletedAt: new Date() })
       .where(
         and(
           eq(appointmentsTable.id, parsedInput.id),
