@@ -436,6 +436,11 @@ export const appointmentsTable = pgTable(
       // Vincula agendamento a um tratamento contínuo
       onDelete: "set null",
     }),
+    /** Procedimento cadastrado (tipo de atendimento / valor previsto no financeiro). */
+    clinicProcedureId: uuid("clinic_procedure_id").references(
+      () => clinicProceduresTable.id,
+      { onDelete: "set null" },
+    ),
     status: appointmentStatusEnum("status").notNull().default("pending"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -451,13 +456,16 @@ export const appointmentsTable = pgTable(
     treatmentIdIdx: index("appointments_treatment_id_idx").on(
       table.treatmentId,
     ),
+    clinicProcedureIdIdx: index("appointments_clinic_procedure_id_idx").on(
+      table.clinicProcedureId,
+    ),
   }),
 );
 
 // Relações de agendamentos
 export const appointmentsTableRelations = relations(
   appointmentsTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
     clinic: one(clinicsTable, {
       fields: [appointmentsTable.clinicId],
       references: [clinicsTable.id],
@@ -480,6 +488,11 @@ export const appointmentsTableRelations = relations(
       fields: [appointmentsTable.treatmentId],
       references: [treatmentsTable.id],
     }),
+    clinicProcedure: one(clinicProceduresTable, {
+      fields: [appointmentsTable.clinicProcedureId],
+      references: [clinicProceduresTable.id],
+    }),
+    payments: many(paymentsTable),
   }),
 );
 
@@ -516,7 +529,6 @@ export const clinicProceduresTable = pgTable(
       .notNull()
       .references(() => clinicsTable.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    basePriceInCents: integer("base_price_in_cents").notNull(),
     durationSeconds: integer("duration_seconds").notNull(),
     hasReturn: boolean("has_return").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -753,11 +765,20 @@ export const clinicFinancialTransactionsTable = pgTable(
     description: text("description").notNull(),
     amountInCents: integer("amount_in_cents").notNull(),
     type: text("type", { enum: ["income", "expense"] }).notNull(),
-    categoryId: uuid("category_id")
-      .notNull()
-      .references(() => transactionCategoriesTable.id, {
+    /** Legado: categorias em `transaction_categories`; novas despesas usam `expenseTypeId`. */
+    categoryId: uuid("category_id").references(
+      () => transactionCategoriesTable.id,
+      {
         onDelete: "restrict",
-      }),
+      },
+    ),
+    /** Classificação de despesa alinhada ao cadastro de tipos de despesa. */
+    expenseTypeId: uuid("expense_type_id").references(
+      () => expenseTypesTable.id,
+      {
+        onDelete: "restrict",
+      },
+    ),
     subcategory: text("subcategory"), // Mantido para flexibilidade adicional
     paymentId: uuid("payment_id").references(() => paymentsTable.id, {
       onDelete: "set null",
@@ -785,6 +806,9 @@ export const clinicFinancialTransactionsTable = pgTable(
     categoryIdIdx: index("clinic_financial_transactions_category_id_idx").on(
       table.categoryId,
     ),
+    expenseTypeIdIdx: index(
+      "clinic_financial_transactions_expense_type_id_idx",
+    ).on(table.expenseTypeId),
   }),
 );
 
@@ -815,17 +839,18 @@ export const vendorsTableRelations = relations(
 
 export const clinicProceduresTableRelations = relations(
   clinicProceduresTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
     clinic: one(clinicsTable, {
       fields: [clinicProceduresTable.clinicId],
       references: [clinicsTable.id],
     }),
+    appointments: many(appointmentsTable),
   }),
 );
 
 export const expenseTypesTableRelations = relations(
   expenseTypesTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
     clinic: one(clinicsTable, {
       fields: [expenseTypesTable.clinicId],
       references: [clinicsTable.id],
@@ -834,6 +859,7 @@ export const expenseTypesTableRelations = relations(
       fields: [expenseTypesTable.vendorId],
       references: [vendorsTable.id],
     }),
+    financialTransactions: many(clinicFinancialTransactionsTable),
   }),
 );
 
@@ -911,6 +937,10 @@ export const paymentsTableRelations = relations(paymentsTable, ({ one }) => ({
     fields: [paymentsTable.treatmentId],
     references: [treatmentsTable.id],
   }),
+  appointment: one(appointmentsTable, {
+    fields: [paymentsTable.appointmentId],
+    references: [appointmentsTable.id],
+  }),
   clinic: one(clinicsTable, {
     fields: [paymentsTable.clinicId],
     references: [clinicsTable.id],
@@ -939,6 +969,10 @@ export const clinicFinancialTransactionsTableRelations = relations(
     category: one(transactionCategoriesTable, {
       fields: [clinicFinancialTransactionsTable.categoryId],
       references: [transactionCategoriesTable.id],
+    }),
+    expenseType: one(expenseTypesTable, {
+      fields: [clinicFinancialTransactionsTable.expenseTypeId],
+      references: [expenseTypesTable.id],
     }),
   }),
 );

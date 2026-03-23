@@ -20,11 +20,13 @@ import {
 } from "@/data/appointments";
 import { getDoctors } from "@/data/doctors";
 import { getPatients } from "@/data/patients";
+import { getClinicProcedures } from "@/data/registry";
 import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/routes";
 
 import { AppointmentsToolbar } from "./_components/appointments-toolbar";
 import AgendaView from "./view-agenda";
+import { AppointmentDetailsModal } from "./view-agenda/appointment-details-modal";
 import { AppointmentListView } from "./view-list";
 
 const AppointmentsPage = async ({
@@ -71,15 +73,17 @@ const AppointmentsPage = async ({
     }
 
     // 3. Busca de Dados da Agenda (Só ocorre se passar pelos redirecionamentos acima)
-    const [appointmentsForAgenda, appointmentsForList] = await Promise.all([
-      getAppointmentsForAgenda(clinicId, doctorId),
-      getAppointmentsForList(
-        clinicId,
-        doctorId,
-        from ? dayjs(from).startOf("day").toDate() : undefined,
-        to ? dayjs(to).endOf("day").toDate() : undefined,
-      ),
-    ]);
+    const [appointmentsForAgenda, appointmentsForList, clinicProcedures] =
+      await Promise.all([
+        getAppointmentsForAgenda(clinicId, doctorId),
+        getAppointmentsForList(
+          clinicId,
+          doctorId,
+          from ? dayjs(from).startOf("day").toDate() : undefined,
+          to ? dayjs(to).endOf("day").toDate() : undefined,
+        ),
+        getClinicProcedures(clinicId),
+      ]);
 
     return (
         <PageContainer>
@@ -94,8 +98,13 @@ const AppointmentsPage = async ({
           </PageHeader>
 
           <PageContent>
+            <AppointmentDetailsModal clinicProcedures={clinicProcedures} />
             <Tabs defaultValue={view === "lista" ? "lista" : "agenda"}>
-              <AppointmentsToolbar doctors={doctors} patients={patients} />
+              <AppointmentsToolbar
+                doctors={doctors}
+                patients={patients}
+                clinicProcedures={clinicProcedures}
+              />
 
               <TabsContent value="agenda">
                 {/* Agenda visível apenas em telas md+ */}
@@ -104,6 +113,7 @@ const AppointmentsPage = async ({
                     appointments={appointmentsForAgenda}
                     patients={patients}
                     doctors={doctors}
+                    clinicProcedures={clinicProcedures}
                   />
                 </div>
                 <div className="md:hidden py-12 text-center text-sm text-muted-foreground">

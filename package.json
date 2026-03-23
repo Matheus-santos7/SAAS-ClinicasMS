@@ -9,7 +9,11 @@
     "lint": "next lint",
     "seed": "tsx src/db/seed.ts",
     "db:drop": "tsx src/db/drop.ts",
-    "db:ensure-registry": "tsx scripts/ensure-registry.ts"
+    "db:ensure-registry": "tsx scripts/ensure-registry.ts",
+    "db:migrate": "drizzle-kit migrate",
+    "db:ensure-expense-type-column": "tsx scripts/ensure-expense-type-column.ts",
+    "db:ensure-appointment-clinic-procedure": "tsx scripts/ensure-appointment-clinic-procedure-column.ts",
+    "db:ensure-drop-clinic-procedure-base-price": "tsx scripts/ensure-drop-clinic-procedure-base-price.ts"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.6",

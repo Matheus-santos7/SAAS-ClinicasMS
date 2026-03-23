@@ -4,6 +4,7 @@ export const ROUTES = {
   APPOINTMENTS: "/appointments",
   DOCTORS: "/doctors",
   PATIENTS: "/patients",
+  FINANCIAL: "/financial",
   /** Registry: clinic procedures, expense types, vendors (UI labels in pt-BR) */
   REGISTRY: "/registry",
   SUBSCRIPTION: "/subscription",

@@ -3,8 +3,11 @@
 import dayjs from "dayjs";
 import { revalidatePath } from "next/cache";
 
+import { and, eq, isNull } from "drizzle-orm";
+
 import { db } from "@/db";
-import { appointmentsTable } from "@/db/schema";
+import { appointmentsTable, clinicProceduresTable } from "@/db/schema";
+import { parseReaisToCents } from "@/helpers/currency";
 import { canAccessClinicResource } from "@/helpers/permission";
 import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { protectedAction } from "@/lib/next-safe-action";
@@ -77,13 +80,25 @@ export const addAppointment = protectedAction
       };
     }
 
-    // Buscar o preço do Dentista
-    const doctor = await db.query.doctorsTable.findFirst({
-      where: (doctors, { eq }) => eq(doctors.id, parsedInput.doctorId),
-    });
+    const procedureId = parsedInput.clinicProcedureId ?? null;
+    const appointmentPriceInCents = parseReaisToCents(
+      parsedInput.appointmentPriceReais,
+    );
+    if (appointmentPriceInCents < 0) {
+      return { errorMessage: "Valor da consulta inválido." };
+    }
 
-    if (!doctor) {
-      throw new Error("Dentista não encontrado");
+    if (procedureId) {
+      const proc = await db.query.clinicProceduresTable.findFirst({
+        where: and(
+          eq(clinicProceduresTable.id, procedureId),
+          eq(clinicProceduresTable.clinicId, clinicId),
+          isNull(clinicProceduresTable.deletedAt),
+        ),
+      });
+      if (!proc) {
+        throw new Error("Tipo de tratamento não encontrado.");
+      }
     }
 
     await db.insert(appointmentsTable).values({
@@ -92,7 +107,8 @@ export const addAppointment = protectedAction
       clinicId: clinicId,
       date: appointmentDateTime,
       endDate: appointmentEndDate,
-      appointmentPriceInCents: doctor.appointmentPriceInCents,
+      clinicProcedureId: procedureId,
+      appointmentPriceInCents,
       observations: parsedInput.observations ?? null,
     });
 

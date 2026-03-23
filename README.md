@@ -92,8 +92,7 @@ src/
 ├── actions/                     # Server Actions
 ├── components/ui/               # Componentes reutilizáveis
 ├── db/                         # Configuração do banco
-│   ├── schema.ts               # Schema das tabelas
-│   └── seed.ts                 # Dados de exemplo
+│   └── schema.ts               # Schema das tabelas
 ├── lib/                        # Utilitários
 └── providers/                  # Context providers
 ```
@@ -166,9 +165,6 @@ npm install
 
 # Configurar banco de dados
 npm run db:migrate
-
-# Popular dados de exemplo
-npm run seed
 
 # Executar em desenvolvimento
 npm run dev

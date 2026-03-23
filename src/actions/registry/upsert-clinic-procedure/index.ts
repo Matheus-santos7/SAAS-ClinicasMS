@@ -35,7 +35,6 @@ export const upsertClinicProcedure = protectedAction
         .update(clinicProceduresTable)
         .set({
           name: parsedInput.name,
-          basePriceInCents: parsedInput.basePriceInCents,
           durationSeconds: parsedInput.durationSeconds,
           hasReturn: parsedInput.hasReturn,
         })
@@ -44,7 +43,6 @@ export const upsertClinicProcedure = protectedAction
       await db.insert(clinicProceduresTable).values({
         clinicId,
         name: parsedInput.name,
-        basePriceInCents: parsedInput.basePriceInCents,
         durationSeconds: parsedInput.durationSeconds,
         hasReturn: parsedInput.hasReturn,
       });

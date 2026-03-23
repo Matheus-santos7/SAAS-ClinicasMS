@@ -11,6 +11,7 @@ import {
   Stethoscope,
   Users,
   Plus,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -176,6 +177,22 @@ export function AppHeader() {
                 <Link href={desktopSections.doctors.href}>
                   Dentistas
                 </Link>
+              </Button>
+            </NavigationMenuItem>
+
+            {/* Financeiro */}
+            <NavigationMenuItem>
+              <Button
+                asChild
+                variant={isActive(ROUTES.FINANCIAL) ? "default" : "ghost"}
+                size="sm"
+                className={cn(
+                  "rounded-full px-3 text-xs font-medium",
+                  !isActive(ROUTES.FINANCIAL) &&
+                    "bg-transparent hover:bg-muted/70",
+                )}
+              >
+                <Link href={ROUTES.FINANCIAL}>Financeiro</Link>
               </Button>
             </NavigationMenuItem>
 
@@ -347,6 +364,25 @@ export function AppHeader() {
                 <span className="text-xs font-semibold">Dentistas</span>
                 <span className="text-muted-foreground text-[11px]">
                   Equipe e cadastro profissionais
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMenuOpen(false);
+                router.push(ROUTES.FINANCIAL);
+              }}
+              className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted"
+            >
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Wallet className="size-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold">Financeiro</span>
+                <span className="text-muted-foreground text-[11px]">
+                  Contas a receber e a pagar
                 </span>
               </div>
             </button>

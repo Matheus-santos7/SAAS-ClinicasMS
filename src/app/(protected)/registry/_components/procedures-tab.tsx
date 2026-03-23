@@ -47,21 +47,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrencyInCents } from "@/helpers/currency";
 
 const formSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().trim().min(1, { message: "Nome é obrigatório." }),
-  basePriceReais: z
-    .string()
-    .min(1, { message: "Informe o valor base." })
-    .refine(
-      (v) => {
-        const n = parseFloat(v.replace(/\./g, "").replace(",", "."));
-        return !Number.isNaN(n) && n >= 0;
-      },
-      { message: "Valor inválido." },
-    ),
   durationMinutes: z.coerce
     .number({ invalid_type_error: "Informe a duração." })
     .int()
@@ -74,7 +63,6 @@ type FormValues = z.infer<typeof formSchema>;
 type ProcedureRow = {
   id: string;
   name: string;
-  basePriceInCents: number;
   durationSeconds: number;
   hasReturn: boolean;
 };
@@ -83,15 +71,6 @@ type ProcedureRow = {
 function formatDurationMinutes(sec: number) {
   const m = Math.round(sec / 60);
   return `${m} min`;
-}
-
-function reaisToCents(reaisStr: string): number {
-  const n = parseFloat(reaisStr.replace(/\./g, "").replace(",", "."));
-  return Math.round(n * 100);
-}
-
-function centsToReaisInput(cents: number): string {
-  return (cents / 100).toFixed(2).replace(".", ",");
 }
 
 interface ProceduresTabProps {
@@ -108,7 +87,6 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      basePriceReais: "",
       durationMinutes: 30,
       hasReturn: false,
     },
@@ -138,7 +116,6 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
     setEditing(null);
     form.reset({
       name: "",
-      basePriceReais: "",
       durationMinutes: 30,
       hasReturn: false,
     });
@@ -150,7 +127,6 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
     form.reset({
       id: p.id,
       name: p.name,
-      basePriceReais: centsToReaisInput(p.basePriceInCents),
       durationMinutes: Math.max(1, Math.round(p.durationSeconds / 60)),
       hasReturn: p.hasReturn,
     });
@@ -161,7 +137,6 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
     saveAction.execute({
       id: values.id,
       name: values.name,
-      basePriceInCents: reaisToCents(values.basePriceReais),
       durationSeconds: values.durationMinutes * 60,
       hasReturn: values.hasReturn,
     });
@@ -181,7 +156,6 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead className="hidden sm:table-cell">Valor base</TableHead>
               <TableHead className="hidden md:table-cell">Duração</TableHead>
               <TableHead className="hidden lg:table-cell">Retorno</TableHead>
               <TableHead className="w-[100px] text-right">Ações</TableHead>
@@ -191,7 +165,7 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
             {procedures.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="text-muted-foreground py-10 text-center text-sm"
                 >
                   Nenhum procedimento cadastrado.
@@ -201,9 +175,6 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
               procedures.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.name}</TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {formatCurrencyInCents(p.basePriceInCents)}
-                  </TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
                     {formatDurationMinutes(p.durationSeconds)}
                   </TableCell>
@@ -256,23 +227,6 @@ export function ProceduresTab({ procedures }: ProceduresTabProps) {
                     <FormLabel>Nome</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex.: Limpeza" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="basePriceReais"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valor base (R$)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="0,00"
-                        inputMode="decimal"
-                        {...field}
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

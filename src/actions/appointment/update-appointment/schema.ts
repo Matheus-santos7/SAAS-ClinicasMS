@@ -1,32 +1,49 @@
 import { z } from "zod";
 
-export const updateAppointmentSchema = z.object({
-  id: z.string().uuid({
-    message: "ID do agendamento é obrigatório.",
-  }),
-  date: z.date({
-    message: "Data é obrigatória.",
-  }),
-  startTime: z
-    .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
-      message: "Formato de hora inicial inválido (HH:MM ou HH:MM:SS).",
+import { parseReaisToCents } from "@/helpers/currency";
+
+export const updateAppointmentSchema = z
+  .object({
+    id: z.string().uuid({
+      message: "ID do agendamento é obrigatório.",
     }),
-  endTime: z
-    .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
-      message: "Formato de hora final inválido (HH:MM ou HH:MM:SS).",
+    date: z.date({
+      message: "Data é obrigatória.",
     }),
-  observations: z
-    .string()
-    .max(1000, { message: "Observações deve ter no máximo 1000 caracteres." })
-    .optional()
-    .nullable(),
-  status: z
-    .enum(["pending", "confirmed", "canceled", "completed"])
-    .optional()
-    .default("pending"),
-});
+    startTime: z
+      .string()
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
+        message: "Formato de hora inicial inválido (HH:MM ou HH:MM:SS).",
+      }),
+    endTime: z
+      .string()
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
+        message: "Formato de hora final inválido (HH:MM ou HH:MM:SS).",
+      }),
+    appointmentPriceReais: z
+      .string()
+      .min(1, { message: "Informe o valor da consulta." }),
+    observations: z
+      .string()
+      .max(1000, { message: "Observações deve ter no máximo 1000 caracteres." })
+      .optional()
+      .nullable(),
+    status: z
+      .enum(["pending", "confirmed", "canceled", "completed"])
+      .optional()
+      .default("pending"),
+    clinicProcedureId: z.union([z.string().uuid(), z.literal("")]).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const cents = parseReaisToCents(data.appointmentPriceReais);
+    if (cents < 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Valor da consulta inválido.",
+        path: ["appointmentPriceReais"],
+      });
+    }
+  });
 
 export type UpdateAppointmentSchema = z.infer<typeof updateAppointmentSchema>;
 

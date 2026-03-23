@@ -34,11 +34,10 @@ import {
 } from "@/helpers/doctor-colors";
 import { cn } from "@/lib/utils";
 import { useAppointmentStore } from "@/stores";
-import { AppointmentWithRelations, Doctor, Patient } from "@/types";
+import { AppointmentWithRelations, ClinicProcedure, Doctor, Patient } from "@/types";
 
 import AddAppointmentForm from "../_components/add-appointment-form";
 import { ScheduleToolbar } from "../_components/schedule-toolbar";
-import { AppointmentDetailsModal } from "./appointment-details-modal";
 
 // Configuração de locale e calendário com arrastar-e-soltar
 dayjs.locale("pt-br");
@@ -50,6 +49,7 @@ interface AgendaViewProps {
   appointments: AppointmentWithRelations[];
   patients: Patient[];
   doctors: Doctor[];
+  clinicProcedures: ClinicProcedure[];
 }
 
 /** Props dos componentes de evento customizado (event.resource.appointment) */
@@ -152,6 +152,7 @@ export default function AgendaView({
   appointments,
   patients,
   doctors,
+  clinicProcedures,
 }: AgendaViewProps) {
   // Estado da visualização (dia/semana/mês) e data atual
   const [currentView, setCurrentView] = useState<"day" | "week" | "month">(
@@ -423,7 +424,6 @@ export default function AgendaView({
         </CardContent>
       </Card>
 
-      <AppointmentDetailsModal />
 
       {/* Card do dia (modo mês): lista de agendamentos ao clicar em um dia */}
       <Dialog
@@ -503,6 +503,7 @@ export default function AgendaView({
           isOpen={isModalOpen && isCreateModal()}
           patients={patients}
           doctors={doctors}
+          clinicProcedures={clinicProcedures}
           onSuccess={closeModal}
         />
       </Dialog>

@@ -4,6 +4,7 @@ import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import type {
   appointmentsTable,
   budgetsTable,
+  clinicProceduresTable,
   clinicsTable,
   doctorsTable,
   evolutionTable,
@@ -21,6 +22,7 @@ export type Anamnesis = InferSelectModel<typeof patientsAnamnesisTable>;
 export type Evolution = InferSelectModel<typeof evolutionTable>;
 export type Budget = InferSelectModel<typeof budgetsTable>;
 export type Treatment = InferSelectModel<typeof treatmentsTable>;
+export type ClinicProcedure = InferSelectModel<typeof clinicProceduresTable>;
 
 // Tipos para inserção (útil para formulários)
 export type InsertAppointment = InferInsertModel<typeof appointmentsTable>;
@@ -54,6 +56,7 @@ export type EvolutionEntryWithDoctor = Evolution & {
 export type AppointmentWithRelations = Appointment & {
   patient: PatientBasic;
   doctor: DoctorWithSpecialty;
+  clinicProcedure?: Pick<ClinicProcedure, "id" | "name"> | null;
 };
 
 // Tipo para orçamento com relações

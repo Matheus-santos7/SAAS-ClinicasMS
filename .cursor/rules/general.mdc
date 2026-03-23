@@ -39,5 +39,8 @@ React/Next.js
 - Ao criar páginas, use os componentes dentro de [page-container.tsx](mdc:src/components/ui/page-container.tsx) para manter os padrões de margin, padding e spacing nas páginas. Exemplo: [page.tsx](mdc:src/app/(protected)/doctors/page.tsx).
 - Sempre use a biblioteca "react-number-format" ao criar máscaras para inputs.
 
+Banco de dados (Drizzle / Postgres)
+- Ao alterar `src/db/schema.ts` (novas tabelas ou colunas), aplique no banco antes de considerar a tarefa concluída: `pnpm db:migrate` e/ou script idempotente em `drizzle/ensure-*.sql` + `pnpm db:ensure-*` (ex.: `pnpm db:ensure-appointment-clinic-procedure`, `pnpm db:ensure-drop-clinic-procedure-base-price`). Execute no ambiente e confirme que não há erro.
+
 
 

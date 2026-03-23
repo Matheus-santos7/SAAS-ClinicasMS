@@ -12,7 +12,6 @@ import { formatPhoneBr } from "@/helpers/phone";
 import { cn } from "@/lib/utils";
 import { AppointmentWithRelations } from "@/types";
 
-import { AppointmentDetailsModal } from "../view-agenda/appointment-details-modal";
 import { DateRangeFilter } from "./date-range-filter";
 import AppointmentsTableActions from "./table-actions";
 import { appointmentsTableColumns } from "./table-columns";
@@ -49,7 +48,6 @@ export function AppointmentListView({ appointments }: AppointmentListProps) {
           <DataTable data={appointments} columns={appointmentsTableColumns} />
         </div>
       </div>
-      <AppointmentDetailsModal />
     </>
   );
 }

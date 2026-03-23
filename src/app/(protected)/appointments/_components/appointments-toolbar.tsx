@@ -6,7 +6,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRegisterMobileNavFab } from "@/hooks/use-register-mobile-nav-fab";
 import { cn } from "@/lib/utils";
 import { useAppointmentStore } from "@/stores";
-import { Doctor, Patient } from "@/types";
+import { ClinicProcedure, Doctor, Patient } from "@/types";
 
 import AddAppointmentButton from "./add-appointment-button";
 import { DoctorFilter } from "./doctor-filter";
@@ -14,12 +14,14 @@ import { DoctorFilter } from "./doctor-filter";
 interface AppointmentsToolbarProps {
   doctors: Doctor[];
   patients: Patient[];
+  clinicProcedures: ClinicProcedure[];
   className?: string;
 }
 
 export function AppointmentsToolbar({
   doctors,
   patients,
+  clinicProcedures,
   className,
 }: AppointmentsToolbarProps) {
   const router = useRouter();
@@ -88,6 +90,7 @@ export function AppointmentsToolbar({
         <AddAppointmentButton
           patients={patients}
           doctors={doctors}
+          clinicProcedures={clinicProcedures}
           className="hidden md:inline-flex"
         />
       </div>

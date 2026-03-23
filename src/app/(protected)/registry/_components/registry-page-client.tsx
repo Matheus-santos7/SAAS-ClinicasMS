@@ -20,7 +20,6 @@ type ProcedureRow = {
   id: string;
   clinicId: string;
   name: string;
-  basePriceInCents: number;
   durationSeconds: number;
   hasReturn: boolean;
   createdAt: Date;
@@ -57,16 +56,20 @@ type VendorRow = {
   deletedAt: Date | null;
 };
 
+export type RegistryTabId = "procedimentos" | "despesas" | "fornecedores";
+
 interface RegistryPageClientProps {
   procedures: ProcedureRow[];
   expenseTypes: ExpenseTypeRow[];
   vendors: VendorRow[];
+  defaultTab: RegistryTabId;
 }
 
 export function RegistryPageClient({
   procedures,
   expenseTypes,
   vendors,
+  defaultTab,
 }: RegistryPageClientProps) {
   return (
     <PageContainer>
@@ -74,14 +77,14 @@ export function RegistryPageClient({
         <PageHeaderContent>
           <PageTitle>Cadastros</PageTitle>
           <PageDescription>
-            Procedimentos, tipos de despesa e fornecedores usados em relatórios e
-            fluxos do sistema.
+            Procedimentos (nome do procedimento), tipos de despesa e fornecedores
+            — dados persistidos no banco e usados no financeiro e demais fluxos.
           </PageDescription>
         </PageHeaderContent>
       </PageHeader>
 
       <PageContent>
-        <Tabs defaultValue="procedimentos" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid h-auto w-full grid-cols-1 gap-2 sm:grid-cols-3">
             <TabsTrigger
               value="procedimentos"

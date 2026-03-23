@@ -1,16 +1,15 @@
 /**
- * Aplica drizzle/ensure-registry.sql (idempotente) via DATABASE_URL.
- * Uso: pnpm db:ensure-registry
+ * Aplica drizzle/ensure-expense-type-column.sql (idempotente) via DATABASE_URL.
+ * Uso: pnpm db:ensure-expense-type-column
  */
-import { config } from "dotenv";
-
 import { readFileSync } from "fs";
+import path from "path";
+
+import { config } from "dotenv";
+import { Client } from "pg";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
-import path from "path";
-
-import { Client } from "pg";
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -18,7 +17,11 @@ if (!url) {
   process.exit(1);
 }
 
-const sqlPath = path.join(process.cwd(), "drizzle", "ensure-registry.sql");
+const sqlPath = path.join(
+  process.cwd(),
+  "drizzle",
+  "ensure-expense-type-column.sql",
+);
 
 async function main() {
   const sql = readFileSync(sqlPath, "utf8");
@@ -26,7 +29,9 @@ async function main() {
   await client.connect();
   try {
     await client.query(sql);
-    console.log("OK: registry aplicado (clinic_procedures, expense_types, vendors.notes).");
+    console.log(
+      "OK: coluna expense_type_id e índice aplicados (clinic_financial_transactions).",
+    );
   } finally {
     await client.end();
   }

@@ -4,6 +4,7 @@ import { and, count, eq, gte, inArray, isNull, lte } from "drizzle-orm";
 import { APP_CONFIG } from "@/constants/config";
 import { db } from "@/db";
 import { appointmentsTable } from "@/db/schema";
+import { applyProcedurePriceWhenAppointmentCompletes } from "@/helpers/appointment-procedure-price";
 
 export async function getAppointments(
   clinicId: string,
@@ -109,7 +110,11 @@ export async function getAppointmentsForAgenda(
 
   const appointments = await db.query.appointmentsTable.findMany({
     where: and(...whereConditions),
-    with: { patient: true, doctor: true },
+    with: {
+      patient: true,
+      doctor: true,
+      clinicProcedure: { columns: { id: true, name: true } },
+    },
     orderBy: (appointments, { asc }) => [asc(appointments.date)],
   });
 
@@ -124,6 +129,9 @@ export async function getAppointmentsForAgenda(
 
   if (toComplete.length > 0) {
     const ids = toComplete.map((a) => a.id);
+    for (const id of ids) {
+      await applyProcedurePriceWhenAppointmentCompletes(id, clinicId);
+    }
     await db
       .update(appointmentsTable)
       .set({ status: "completed" })
@@ -163,7 +171,11 @@ export async function getAppointmentsForList(
 
   const appointments = await db.query.appointmentsTable.findMany({
     where: and(...whereConditions),
-    with: { patient: true, doctor: true },
+    with: {
+      patient: true,
+      doctor: true,
+      clinicProcedure: { columns: { id: true, name: true } },
+    },
     orderBy: (appointments, { asc }) => [asc(appointments.date)],
   });
 
@@ -178,6 +190,9 @@ export async function getAppointmentsForList(
 
   if (toComplete.length > 0) {
     const ids = toComplete.map((a) => a.id);
+    for (const id of ids) {
+      await applyProcedurePriceWhenAppointmentCompletes(id, clinicId);
+    }
     await db
       .update(appointmentsTable)
       .set({ status: "completed" })

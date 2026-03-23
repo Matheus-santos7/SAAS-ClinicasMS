@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { appointmentsTable } from "@/db/schema";
+import { applyProcedurePriceWhenAppointmentCompletes } from "@/helpers/appointment-procedure-price";
 import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
@@ -25,6 +26,13 @@ export const updateAppointmentStatus = protectedAction
       const session = await getSessionOrThrow();
       const clinicId = getClinicIdOrThrow(session);
 
+      if (parsedInput.status === "completed") {
+        await applyProcedurePriceWhenAppointmentCompletes(
+          parsedInput.id,
+          clinicId,
+        );
+      }
+
       await db
         .update(appointmentsTable)
         .set({ status: parsedInput.status })
@@ -37,6 +45,7 @@ export const updateAppointmentStatus = protectedAction
 
       revalidatePath(ROUTES.APPOINTMENTS);
       revalidatePath(ROUTES.DASHBOARD);
+      revalidatePath(ROUTES.FINANCIAL);
 
       return { success: true as const };
     },

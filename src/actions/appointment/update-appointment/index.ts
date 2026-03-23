@@ -1,11 +1,14 @@
 "use server";
 
 import dayjs from "dayjs";
-import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+import { and, eq, isNull } from "drizzle-orm";
+
 import { db } from "@/db";
-import { appointmentsTable } from "@/db/schema";
+import { appointmentsTable, clinicProceduresTable } from "@/db/schema";
+import { getAppointmentPaidSumFromPayments } from "@/helpers/appointment-payments";
+import { parseReaisToCents } from "@/helpers/currency";
 import { getClinicIdOrThrow, getSessionOrThrow } from "@/helpers/session";
 import { protectedAction } from "@/lib/next-safe-action";
 import { ROUTES } from "@/lib/routes";
@@ -46,6 +49,46 @@ export const updateAppointment = protectedAction
       };
     }
 
+    const existing = await db.query.appointmentsTable.findFirst({
+      where: and(
+        eq(appointmentsTable.id, parsedInput.id),
+        eq(appointmentsTable.clinicId, clinicId),
+        isNull(appointmentsTable.deletedAt),
+      ),
+    });
+
+    if (!existing) {
+      throw new Error("Agendamento não encontrado.");
+    }
+
+    const procedureId =
+      parsedInput.clinicProcedureId === undefined
+        ? existing.clinicProcedureId
+        : parsedInput.clinicProcedureId === ""
+          ? null
+          : parsedInput.clinicProcedureId;
+
+    const rawPrice = parseReaisToCents(parsedInput.appointmentPriceReais);
+    if (rawPrice < 0) {
+      return { errorMessage: "Valor da consulta inválido." };
+    }
+
+    if (procedureId) {
+      const proc = await db.query.clinicProceduresTable.findFirst({
+        where: and(
+          eq(clinicProceduresTable.id, procedureId),
+          eq(clinicProceduresTable.clinicId, clinicId),
+          isNull(clinicProceduresTable.deletedAt),
+        ),
+      });
+      if (!proc) {
+        throw new Error("Tipo de tratamento não encontrado.");
+      }
+    }
+
+    const paidSum = await getAppointmentPaidSumFromPayments(parsedInput.id);
+    const appointmentPriceInCents = Math.max(rawPrice, paidSum);
+
     await db
       .update(appointmentsTable)
       .set({
@@ -53,6 +96,8 @@ export const updateAppointment = protectedAction
         endDate: appointmentEndDate,
         observations: parsedInput.observations ?? null,
         status: parsedInput.status ?? undefined,
+        clinicProcedureId: procedureId,
+        appointmentPriceInCents,
       })
       .where(
         and(
@@ -63,6 +108,7 @@ export const updateAppointment = protectedAction
 
     revalidatePath(ROUTES.APPOINTMENTS);
     revalidatePath(ROUTES.DASHBOARD);
+    revalidatePath(ROUTES.FINANCIAL);
 
     return { success: true as const };
   });

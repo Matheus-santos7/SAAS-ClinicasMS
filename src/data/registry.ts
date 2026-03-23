@@ -60,3 +60,20 @@ export async function getVendors(clinicId: string) {
     )
     .orderBy(asc(vendorsTable.name));
 }
+
+/** Tipos de despesa para classificar contas a pagar no financeiro. */
+export async function getExpenseTypesForFinancial(clinicId: string) {
+  return db
+    .select({
+      id: expenseTypesTable.id,
+      name: expenseTypesTable.name,
+    })
+    .from(expenseTypesTable)
+    .where(
+      and(
+        eq(expenseTypesTable.clinicId, clinicId),
+        isNull(expenseTypesTable.deletedAt),
+      ),
+    )
+    .orderBy(asc(expenseTypesTable.name));
+}

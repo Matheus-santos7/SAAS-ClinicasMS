@@ -43,6 +43,27 @@
       "when": 1774047917934,
       "tag": "0005_registry-cadastros",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774049000000,
+      "tag": "0006_financial-expense-type",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774050000000,
+      "tag": "0007_appointment-clinic-procedure",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774051000000,
+      "tag": "0008_drop-clinic-procedure-base-price",
+      "breakpoints": true
     }
   ]
 }

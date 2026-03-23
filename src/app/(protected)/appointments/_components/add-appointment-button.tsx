@@ -6,19 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useAppointmentStore } from "@/stores";
-import { Doctor, Patient } from "@/types";
+import { ClinicProcedure, Doctor, Patient } from "@/types";
 
 import AddAppointmentForm from "./add-appointment-form";
 
 interface AddAppointmentButtonProps {
   patients: Patient[];
   doctors: Doctor[];
+  clinicProcedures: ClinicProcedure[];
   className?: string;
 }
 
 const AddAppointmentButton = ({
   patients,
   doctors,
+  clinicProcedures,
   className,
 }: AddAppointmentButtonProps) => {
   const { openCreateModal, isModalOpen, isCreateModal, closeModal } =
@@ -55,6 +57,7 @@ const AddAppointmentButton = ({
         isOpen={isModalOpen && isCreateModal()}
         patients={patients}
         doctors={doctors}
+        clinicProcedures={clinicProcedures}
         onSuccess={closeModal}
       />
     </Dialog>
