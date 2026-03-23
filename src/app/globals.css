@@ -211,3 +211,24 @@ Remove a primeira linha com só o horário; mantém apenas paciente + horas no c
     padding: 4px !important;
   }
 }
+
+/* Hora atual (agenda): linha com cor primária, mais grossa e círculo no início. */
+.custom-calendar .rbc-current-time-indicator {
+  position: relative !important;
+  border-top-width: 4px !important;
+  border-top-color: var(--primary) !important;
+}
+
+.custom-calendar .rbc-current-time-indicator::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--primary), transparent 75%);
+}
+
