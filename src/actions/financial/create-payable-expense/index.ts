@@ -57,7 +57,6 @@ export const createPayableExpense = protectedAction
       description: parsedInput.description.trim(),
       amountInCents: parsedInput.amountInCents,
       type: "expense" as const,
-      categoryId: null,
       expenseTypeId: parsedInput.expenseTypeId,
       vendorId: parsedInput.vendorId ?? null,
       transactionDate: new Date(),

@@ -139,7 +139,6 @@ export const clinicsTableRelations = relations(clinicsTable, ({ many }) => ({
   patients: many(patientsTable),
   appointments: many(appointmentsTable),
   usersToClinics: many(usersToClinicsTable),
-  transactionCategories: many(transactionCategoriesTable),
   clinicProcedures: many(clinicProceduresTable),
   expenseTypes: many(expenseTypesTable),
   vendors: many(vendorsTable),
@@ -496,8 +495,6 @@ export const appointmentsTableRelations = relations(
   }),
 );
 
-// === MÓDULO FINANCEIRO ===
-
 // Nova tabela de fornecedores
 export const vendorsTable = pgTable(
   "vendors",
@@ -600,7 +597,7 @@ export const budgetsTable = pgTable(
   }),
 );
 
-// Nova tabela para histórico de orçamentos
+// Tabela para histórico de orçamentos
 export const budgetHistoryTable = pgTable(
   "budget_history",
   {
@@ -720,36 +717,20 @@ export const paymentsTable = pgTable(
   }),
 );
 
-// Tabela de categorias de transações financeiras
-export const transactionCategoriesTable = pgTable(
-  "transaction_categories",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    clinicId: uuid("clinic_id")
-      .notNull()
-      .references(() => clinicsTable.id, { onDelete: "cascade" }),
-    name: text("name").notNull(), // Ex: "Salários", "Materiais de Consumo", "Receita de Tratamento"
-    type: text("type", { enum: ["income", "expense"] }).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-    deletedAt: timestamp("deleted_at"),
-    isActive: boolean("is_active").notNull().default(true),
-  },
-  (table) => ({
-    clinicIdIdx: index("transaction_categories_clinic_id_idx").on(
-      table.clinicId,
-    ),
-    typeIdx: index("transaction_categories_type_idx").on(table.type),
-    // Evita categorias duplicadas por clínica
-    uniqueCategoryPerClinic: index("unique_category_per_clinic").on(
-      table.clinicId,
-      table.name,
-      table.type,
-    ),
+export const paymentsTableRelations = relations(paymentsTable, ({ one }) => ({
+  treatment: one(treatmentsTable, {
+    fields: [paymentsTable.treatmentId],
+    references: [treatmentsTable.id],
   }),
-);
+  appointment: one(appointmentsTable, {
+    fields: [paymentsTable.appointmentId],
+    references: [appointmentsTable.id],
+  }),
+  clinic: one(clinicsTable, {
+    fields: [paymentsTable.clinicId],
+    references: [clinicsTable.id],
+  }),
+}));
 
 // Tabela de transações financeiras da clínica
 export const clinicFinancialTransactionsTable = pgTable(
@@ -765,13 +746,6 @@ export const clinicFinancialTransactionsTable = pgTable(
     description: text("description").notNull(),
     amountInCents: integer("amount_in_cents").notNull(),
     type: text("type", { enum: ["income", "expense"] }).notNull(),
-    /** Legado: categorias em `transaction_categories`; novas despesas usam `expenseTypeId`. */
-    categoryId: uuid("category_id").references(
-      () => transactionCategoriesTable.id,
-      {
-        onDelete: "restrict",
-      },
-    ),
     /** Classificação de despesa alinhada ao cadastro de tipos de despesa. */
     expenseTypeId: uuid("expense_type_id").references(
       () => expenseTypesTable.id,
@@ -780,9 +754,6 @@ export const clinicFinancialTransactionsTable = pgTable(
       },
     ),
     subcategory: text("subcategory"), // Mantido para flexibilidade adicional
-    paymentId: uuid("payment_id").references(() => paymentsTable.id, {
-      onDelete: "set null",
-    }),
     transactionDate: timestamp("transaction_date").defaultNow().notNull(),
     // Contas a pagar / receber
     dueDate: timestamp("due_date"),
@@ -800,28 +771,27 @@ export const clinicFinancialTransactionsTable = pgTable(
     vendorIdIdx: index("clinic_financial_transactions_vendor_id_idx").on(
       table.vendorId,
     ),
-    paymentIdIdx: index("clinic_financial_transactions_payment_id_idx").on(
-      table.paymentId,
-    ),
-    categoryIdIdx: index("clinic_financial_transactions_category_id_idx").on(
-      table.categoryId,
-    ),
     expenseTypeIdIdx: index(
       "clinic_financial_transactions_expense_type_id_idx",
     ).on(table.expenseTypeId),
   }),
 );
 
-// Relações do módulo financeiro
-
-export const transactionCategoriesTableRelations = relations(
-  transactionCategoriesTable,
-  ({ one, many }) => ({
+export const clinicFinancialTransactionsTableRelations = relations(
+  clinicFinancialTransactionsTable,
+  ({ one }) => ({
     clinic: one(clinicsTable, {
-      fields: [transactionCategoriesTable.clinicId],
+      fields: [clinicFinancialTransactionsTable.clinicId],
       references: [clinicsTable.id],
     }),
-    transactions: many(clinicFinancialTransactionsTable),
+    vendor: one(vendorsTable, {
+      fields: [clinicFinancialTransactionsTable.vendorId],
+      references: [vendorsTable.id],
+    }),
+    expenseType: one(expenseTypesTable, {
+      fields: [clinicFinancialTransactionsTable.expenseTypeId],
+      references: [expenseTypesTable.id],
+    }),
   }),
 );
 
@@ -929,51 +899,6 @@ export const treatmentsTableRelations = relations(
     }),
     payments: many(paymentsTable),
     appointments: many(appointmentsTable), // Agendamentos do tratamento
-  }),
-);
-
-export const paymentsTableRelations = relations(paymentsTable, ({ one }) => ({
-  treatment: one(treatmentsTable, {
-    fields: [paymentsTable.treatmentId],
-    references: [treatmentsTable.id],
-  }),
-  appointment: one(appointmentsTable, {
-    fields: [paymentsTable.appointmentId],
-    references: [appointmentsTable.id],
-  }),
-  clinic: one(clinicsTable, {
-    fields: [paymentsTable.clinicId],
-    references: [clinicsTable.id],
-  }),
-  clinicTransaction: one(clinicFinancialTransactionsTable, {
-    fields: [paymentsTable.id],
-    references: [clinicFinancialTransactionsTable.paymentId],
-  }),
-}));
-
-export const clinicFinancialTransactionsTableRelations = relations(
-  clinicFinancialTransactionsTable,
-  ({ one }) => ({
-    clinic: one(clinicsTable, {
-      fields: [clinicFinancialTransactionsTable.clinicId],
-      references: [clinicsTable.id],
-    }),
-    payment: one(paymentsTable, {
-      fields: [clinicFinancialTransactionsTable.paymentId],
-      references: [paymentsTable.id],
-    }),
-    vendor: one(vendorsTable, {
-      fields: [clinicFinancialTransactionsTable.vendorId],
-      references: [vendorsTable.id],
-    }),
-    category: one(transactionCategoriesTable, {
-      fields: [clinicFinancialTransactionsTable.categoryId],
-      references: [transactionCategoriesTable.id],
-    }),
-    expenseType: one(expenseTypesTable, {
-      fields: [clinicFinancialTransactionsTable.expenseTypeId],
-      references: [expenseTypesTable.id],
-    }),
   }),
 );
 

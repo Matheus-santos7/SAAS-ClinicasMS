@@ -1,8 +1,15 @@
 import dayjs from "dayjs";
-import { and, count, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNull, lte, sql, sum } from "drizzle-orm";
 
 import { db } from "@/db";
-import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
+import {
+  appointmentsTable,
+  clinicFinancialTransactionsTable,
+  clinicProceduresTable,
+  doctorsTable,
+  patientsTable,
+  vendorsTable,
+} from "@/db/schema";
 
 import { getTodayAppointmentsWithDayjs } from "./appointments";
 
@@ -36,6 +43,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
     topSpecialties,
     todayAppointments,
     dailyAppointmentsResult,
+    expensesByVendor,
+    revenueByProcedureType,
   ] = await Promise.all([
     db
       .select({
@@ -139,6 +148,68 @@ export const getDashboard = async ({ from, to, session }: Params) => {
       GROUP BY ds.date
       ORDER BY ds.date
     `),
+
+    // =================================
+    // FINANCEIRO: Despesas por fornecedor
+    // =================================
+    db
+      .select({
+        vendorName: sql<string>`coalesce(${vendorsTable.name}, 'Sem fornecedor')`,
+        totalInCents: sum(clinicFinancialTransactionsTable.amountInCents),
+      })
+      .from(clinicFinancialTransactionsTable)
+      .leftJoin(
+        vendorsTable,
+        eq(clinicFinancialTransactionsTable.vendorId, vendorsTable.id),
+      )
+      .where(
+        and(
+          eq(clinicFinancialTransactionsTable.clinicId, session.user.clinic.id),
+          isNull(clinicFinancialTransactionsTable.deletedAt),
+          eq(clinicFinancialTransactionsTable.type, "expense"),
+          gte(
+            clinicFinancialTransactionsTable.transactionDate,
+            new Date(from),
+          ),
+          lte(
+            clinicFinancialTransactionsTable.transactionDate,
+            new Date(to),
+          ),
+        ),
+      )
+      .groupBy(sql`coalesce(${vendorsTable.name}, 'Sem fornecedor')`)
+      .orderBy(desc(sql`sum(${clinicFinancialTransactionsTable.amountInCents})`))
+      .limit(10),
+
+    // =================================
+    // FINANCEIRO: Faturamento por tipo de procedimento
+    // (somente o que foi efetivamente recebido: paid_amount > 0)
+    // =================================
+    db
+      .select({
+        procedureName: sql<string>`coalesce(${clinicProceduresTable.name}, 'Sem procedimento')`,
+        totalInCents: sum(
+          sql<number>`coalesce(${appointmentsTable.paidAmountInCents}, 0)`,
+        ),
+      })
+      .from(appointmentsTable)
+      .leftJoin(
+        clinicProceduresTable,
+        eq(appointmentsTable.clinicProcedureId, clinicProceduresTable.id),
+      )
+      .where(
+        and(
+          eq(appointmentsTable.clinicId, session.user.clinic.id),
+          isNull(appointmentsTable.deletedAt),
+          eq(appointmentsTable.status, "completed"),
+          gte(appointmentsTable.date, new Date(from)),
+          lte(appointmentsTable.date, new Date(to)),
+          sql`coalesce(${appointmentsTable.paidAmountInCents}, 0) > 0`,
+        ),
+      )
+      .groupBy(sql`coalesce(${clinicProceduresTable.name}, 'Sem procedimento')`)
+      .orderBy(desc(sql`sum(coalesce(${appointmentsTable.paidAmountInCents}, 0))`))
+      .limit(10),
   ]);
 
   // Processar resultado da query otimizada
@@ -159,5 +230,7 @@ export const getDashboard = async ({ from, to, session }: Params) => {
     topSpecialties,
     todayAppointments,
     dailyAppointmentsData,
+    expensesByVendor,
+    revenueByProcedureType,
   };
 };

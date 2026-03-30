@@ -25,6 +25,10 @@ import { deleteAllAppointmentPayments } from "@/actions/financial/delete-all-app
 import { markPayablePaid } from "@/actions/financial/mark-payable-paid";
 import { updatePayableExpense } from "@/actions/financial/update-payable-expense";
 import { registerReceivablePayment } from "@/actions/financial/register-receivable-payment";
+import { upsertExpenseType } from "@/actions/registry/upsert-expense-type";
+import { expenseRecurrenceValues } from "@/actions/registry/upsert-expense-type/schema";
+import { upsertVendor } from "@/actions/registry/upsert-vendor";
+import { upsertVendorSchema } from "@/actions/registry/upsert-vendor/schema";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -166,6 +170,25 @@ type VendorOption = {
   name: string;
 };
 
+const RECURRENCE_LABELS: Record<(typeof expenseRecurrenceValues)[number], string> =
+  {
+    one_time: "Unica",
+    weekly: "Semanal",
+    monthly: "Mensal",
+    quarterly: "Trimestral",
+    yearly: "Anual",
+  };
+
+const quickExpenseTypeFormSchema = z.object({
+  name: z.string().trim().min(1, { message: "Nome e obrigatorio." }),
+  recurrenceType: z.enum(expenseRecurrenceValues),
+  notes: z.string().optional(),
+  vendorId: z.string().optional(),
+});
+
+type QuickExpenseTypeFormValues = z.infer<typeof quickExpenseTypeFormSchema>;
+type QuickVendorFormValues = z.infer<typeof upsertVendorSchema>;
+
 function receivableSituation(
   r: ReceivableRow,
 ): "pendente" | "parcial" | "quitado" {
@@ -207,6 +230,8 @@ export function FinancialPageClient({
   });
   const [deletePayableTarget, setDeletePayableTarget] =
     useState<PayableRow | null>(null);
+  const [quickExpenseTypeOpen, setQuickExpenseTypeOpen] = useState(false);
+  const [quickVendorOpen, setQuickVendorOpen] = useState(false);
 
   const paymentForm = useForm<RegisterPaymentFormValues>({
     resolver: zodResolver(registerPaymentFormSchema),
@@ -230,6 +255,23 @@ export function FinancialPageClient({
       expenseTypeId: expenseTypes[0]?.id ?? "",
       vendorId: "",
       dueDate: "",
+    },
+  });
+  const quickExpenseTypeForm = useForm<QuickExpenseTypeFormValues>({
+    resolver: zodResolver(quickExpenseTypeFormSchema),
+    defaultValues: {
+      name: "",
+      recurrenceType: "monthly",
+      notes: "",
+      vendorId: "",
+    },
+  });
+  const quickVendorForm = useForm<QuickVendorFormValues>({
+    resolver: zodResolver(upsertVendorSchema),
+    defaultValues: {
+      name: "",
+      contactInfo: "",
+      notes: "",
     },
   });
 
@@ -319,6 +361,37 @@ export function FinancialPageClient({
       toast.error(
         ctx.error.serverError ?? "Não foi possível excluir os pagamentos.",
       );
+    },
+  });
+  const createExpenseType = useAction(upsertExpenseType, {
+    onSuccess: () => {
+      toast.success("Tipo de despesa salvo.");
+      setQuickExpenseTypeOpen(false);
+      quickExpenseTypeForm.reset({
+        name: "",
+        recurrenceType: "monthly",
+        notes: "",
+        vendorId: "",
+      });
+      router.refresh();
+    },
+    onError: (ctx) => {
+      toast.error(ctx.error.serverError ?? "Nao foi possivel salvar o tipo.");
+    },
+  });
+  const createVendor = useAction(upsertVendor, {
+    onSuccess: () => {
+      toast.success("Fornecedor salvo.");
+      setQuickVendorOpen(false);
+      quickVendorForm.reset({
+        name: "",
+        contactInfo: "",
+        notes: "",
+      });
+      router.refresh();
+    },
+    onError: (ctx) => {
+      toast.error(ctx.error.serverError ?? "Nao foi possivel salvar o fornecedor.");
     },
   });
 
@@ -411,6 +484,23 @@ export function FinancialPageClient({
     payableModal.kind === "edit"
       ? updatePayable.status === "executing"
       : createPayable.status === "executing";
+
+  const onSubmitQuickExpenseType = (values: QuickExpenseTypeFormValues) => {
+    createExpenseType.execute({
+      name: values.name,
+      recurrenceType: values.recurrenceType,
+      notes: values.notes?.trim() || null,
+      vendorId: values.vendorId?.trim() ? values.vendorId : null,
+    });
+  };
+
+  const onSubmitQuickVendor = (values: QuickVendorFormValues) => {
+    createVendor.execute({
+      name: values.name,
+      contactInfo: values.contactInfo?.trim() || null,
+      notes: values.notes?.trim() || null,
+    });
+  };
 
   return (
     <PageContainer>
@@ -1110,28 +1200,28 @@ export function FinancialPageClient({
                 ? payableModal.row.isPaid
                   ? "Altere os dados desta despesa já quitada. Ela continuará listada em contas pagas após salvar."
                   : "Altere os dados desta despesa ainda em aberto."
-                : "Registra somente despesa da clínica em contas a pagar (não cria receita nem altera valores de consultas na aba Contas a receber)."}
+                : "Registra somente despesa da clínica em contas a pagar."}
             </DialogDescription>
           </DialogHeader>
-          {expenseTypes.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              Não há tipos de despesa cadastrados para esta clínica. Cadastre-os
-              em{" "}
-              <Link
-                href={`${ROUTES.REGISTRY}?tab=despesas`}
-                className="text-primary underline"
-              >
-                Cadastros
-              </Link>
-              , na aba &quot;Tipos de despesa&quot; (nome usado para classificar
-              contas a pagar).
-            </p>
-          ) : (
-            <Form {...payableForm}>
-              <form
-                onSubmit={payableForm.handleSubmit(onSubmitPayable)}
-                className="space-y-4"
-              >
+          <Form {...payableForm}>
+            <form
+              onSubmit={payableForm.handleSubmit(onSubmitPayable)}
+              className="space-y-4"
+            >
+              {expenseTypes.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  Ainda nao ha tipos de despesa cadastrados. Voce pode criar aqui
+                  no botao <span className="font-medium text-foreground">Novo tipo</span>{" "}
+                  ou na pagina{" "}
+                  <Link
+                    href={`${ROUTES.REGISTRY}?tab=despesas`}
+                    className="text-primary underline"
+                  >
+                    Cadastros
+                  </Link>
+                  .
+                </p>
+              ) : null}
                 <FormField
                   control={payableForm.control}
                   name="description"
@@ -1168,7 +1258,19 @@ export function FinancialPageClient({
                   name="expenseTypeId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de despesa</FormLabel>
+                      <div className="flex items-center justify-between gap-2">
+                        <FormLabel>Tipo de despesa</FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1"
+                          onClick={() => setQuickExpenseTypeOpen(true)}
+                        >
+                          <Plus className="size-3.5" />
+                          Novo tipo
+                        </Button>
+                      </div>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -1179,9 +1281,14 @@ export function FinancialPageClient({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {expenseTypes.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.name}
+                          {expenseTypes.length === 0 ? (
+                            <SelectItem value="__no_expense_type__" disabled>
+                              Nenhum tipo cadastrado
+                            </SelectItem>
+                          ) : null}
+                          {expenseTypes.map((expenseType) => (
+                            <SelectItem key={expenseType.id} value={expenseType.id}>
+                              {expenseType.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1195,7 +1302,19 @@ export function FinancialPageClient({
                   name="vendorId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fornecedor (opcional)</FormLabel>
+                      <div className="flex items-center justify-between gap-2">
+                        <FormLabel>Fornecedor (opcional)</FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1"
+                          onClick={() => setQuickVendorOpen(true)}
+                        >
+                          <Plus className="size-3.5" />
+                          Novo fornecedor
+                        </Button>
+                      </div>
                       <Select
                         onValueChange={(v) =>
                           field.onChange(v === "__none__" ? "" : v)
@@ -1254,9 +1373,208 @@ export function FinancialPageClient({
                     )}
                   </Button>
                 </DialogFooter>
-              </form>
-            </Form>
-          )}
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={quickExpenseTypeOpen} onOpenChange={setQuickExpenseTypeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo tipo de despesa</DialogTitle>
+            <DialogDescription>
+              Cadastro rapido para usar imediatamente no lancamento da despesa.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...quickExpenseTypeForm}>
+            <form
+              onSubmit={quickExpenseTypeForm.handleSubmit(onSubmitQuickExpenseType)}
+              className="space-y-4"
+            >
+              <FormField
+                control={quickExpenseTypeForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex.: Aluguel" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={quickExpenseTypeForm.control}
+                name="recurrenceType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recorrencia</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {expenseRecurrenceValues.map((recurrence) => (
+                          <SelectItem key={recurrence} value={recurrence}>
+                            {RECURRENCE_LABELS[recurrence]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={quickExpenseTypeForm.control}
+                name="vendorId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fornecedor (opcional)</FormLabel>
+                    <Select
+                      onValueChange={(v) =>
+                        field.onChange(v === "__none__" ? "" : v)
+                      }
+                      value={field.value?.trim() ? field.value : "__none__"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Nenhum" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="__none__">Nenhum</SelectItem>
+                        {vendors.map((vendor) => (
+                          <SelectItem key={vendor.id} value={vendor.id}>
+                            {vendor.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={quickExpenseTypeForm.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observacao</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={3} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setQuickExpenseTypeOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createExpenseType.status === "executing"}
+                >
+                  {createExpenseType.status === "executing" ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Salvando
+                    </>
+                  ) : (
+                    "Salvar"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={quickVendorOpen} onOpenChange={setQuickVendorOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Novo fornecedor</DialogTitle>
+            <DialogDescription>
+              Cadastro rapido para vincular no lancamento atual.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...quickVendorForm}>
+            <form
+              onSubmit={quickVendorForm.handleSubmit(onSubmitQuickVendor)}
+              className="space-y-4"
+            >
+              <FormField
+                control={quickVendorForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Razao social ou fantasia" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={quickVendorForm.control}
+                name="contactInfo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contato</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Telefone, e-mail ou responsavel"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={quickVendorForm.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Observacao</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={3} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setQuickVendorOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={createVendor.status === "executing"}>
+                  {createVendor.status === "executing" ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Salvando
+                    </>
+                  ) : (
+                    "Salvar"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 

@@ -76,7 +76,6 @@ export const updatePayableExpense = protectedAction
         expenseTypeId: parsedInput.expenseTypeId,
         vendorId: parsedInput.vendorId ?? null,
         dueDate: parsedInput.dueDate ?? null,
-        categoryId: null,
       })
       .where(eq(clinicFinancialTransactionsTable.id, row.id));
 

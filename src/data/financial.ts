@@ -157,7 +157,6 @@ async function fetchPayableRows(
     orderBy: (t, { desc }) => [desc(t.transactionDate)],
     with: {
       expenseType: { columns: { name: true } },
-      category: { columns: { name: true } },
       vendor: { columns: { name: true } },
     },
   });
@@ -168,8 +167,7 @@ async function fetchPayableRows(
     amountInCents: t.amountInCents,
     dueDate: t.dueDate,
     transactionDate: t.transactionDate,
-    categoryName:
-      t.expenseType?.name ?? t.category?.name ?? "—",
+    categoryName: t.expenseType?.name ?? "—",
     vendorName: t.vendor?.name ?? null,
     expenseTypeId: t.expenseTypeId ?? null,
     vendorId: t.vendorId ?? null,

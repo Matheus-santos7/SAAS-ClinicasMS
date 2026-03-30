@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { Calendar } from "lucide-react";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -25,11 +26,13 @@ import {
   TopSpecialtiesWrapper,
 } from "./_components/dashboard-wrappers";
 import { TodayAppointmentsTable } from "./_components/today-appointments-table";
+import DashboardFinanceiro from "./_components/dashboard-financeiro";
 
 interface DashboardPageProps {
   searchParams: Promise<{
     from: string;
     to: string;
+    tab?: string;
   }>;
 }
 
@@ -46,10 +49,14 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
   if (!session.user.plan) {
     redirect(ROUTES.SUBSCRIPTION);
   }
-  const { from, to } = await searchParams;
+  const { from, to, tab: tabParam } = await searchParams;
+  const tab = tabParam === "financeiro" ? "financeiro" : "geral";
+
   if (!from || !to) {
     redirect(
-      `${ROUTES.DASHBOARD}?from=${dayjs().format("YYYY-MM-DD")}&to=${dayjs().add(1, "month").format("YYYY-MM-DD")}`,
+      `${ROUTES.DASHBOARD}?from=${dayjs().format(
+        "YYYY-MM-DD",
+      )}&to=${dayjs().add(1, "month").format("YYYY-MM-DD")}&tab=${tab}`,
     );
   }
   const {
@@ -61,6 +68,8 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
     topSpecialties,
     todayAppointments,
     dailyAppointmentsData,
+    expensesByVendor,
+    revenueByProcedureType,
   } = await getDashboard({
     from,
     to,
@@ -75,68 +84,100 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 
   return (
     <PageContainer>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          {/* Título + Descrição */}
-          <div>
-            <PageTitle className="text-2xl font-semibold sm:text-3xl">
-              Dashboard
-            </PageTitle>
-            <PageDescription className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Tenha uma visão geral da sua clínica.
-            </PageDescription>
-          </div>
-
-          {/* Filtro de data padrão da aplicação */}
-          <div className="mt-2 flex justify-end sm:mt-0">
-            <PageActions className="w-fit">
-              <DateRangeFilter />
-            </PageActions>
-          </div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        {/* Título + Descrição */}
+        <div>
+          <PageTitle className="text-2xl font-semibold sm:text-3xl">
+            Dashboard
+          </PageTitle>
+          <PageDescription className="text-muted-foreground mt-1 text-sm sm:text-base">
+            Tenha uma visão geral da sua clínica.
+          </PageDescription>
         </div>
 
-        <PageContent>
-          {/* Stats Cards - Sempre visível */}
-          <StatsCardsWrapper
-            totalRevenue={
-              totalRevenue.total ? Number(totalRevenue.total) : null
-            }
-            totalAppointments={totalAppointments.total}
-            totalPatients={totalPatients.total}
-            totalDoctors={totalDoctors.total}
+        {/* Filtro de data padrão da aplicação */}
+        <div className="mt-2 flex justify-end sm:mt-0">
+          <PageActions className="w-fit">
+            <DateRangeFilter />
+          </PageActions>
+        </div>
+      </div>
+
+      <div className="mt-4 flex w-full items-center justify-start gap-2 sm:justify-end">
+        <Link
+          href={`${ROUTES.DASHBOARD}?from=${from}&to=${to}&tab=geral`}
+          className={[
+            "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            tab === "geral"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "bg-muted text-muted-foreground hover:bg-muted/70",
+          ].join(" ")}
+        >
+          Dashboard Geral
+        </Link>
+        <Link
+          href={`${ROUTES.DASHBOARD}?from=${from}&to=${to}&tab=financeiro`}
+          className={[
+            "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            tab === "financeiro"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "bg-muted text-muted-foreground hover:bg-muted/70",
+          ].join(" ")}
+        >
+          Dashboard Financeiro
+        </Link>
+      </div>
+
+      <PageContent>
+        {tab === "financeiro" ? (
+          <DashboardFinanceiro
+            expensesByVendor={expensesByVendor}
+            revenueByProcedureType={revenueByProcedureType}
           />
+        ) : (
+          <>
+            {/* Stats Cards - Sempre visível */}
+            <StatsCardsWrapper
+              totalRevenue={totalRevenue.total ? Number(totalRevenue.total) : null}
+              totalAppointments={totalAppointments.total}
+              totalPatients={totalPatients.total}
+              totalDoctors={totalDoctors.total}
+            />
 
-          {/* Agendamentos de hoje - Sempre visível */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Calendar className="text-muted-foreground hidden sm:block" />
-                <CardTitle className="text-sm sm:text-base">
-                  Agendamentos de hoje
-                </CardTitle>
+            {/* Agendamentos de hoje - Sempre visível */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Calendar className="text-muted-foreground hidden sm:block" />
+                  <CardTitle className="text-sm sm:text-base">
+                    Agendamentos de hoje
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <TodayAppointmentsTable appointments={todayAppointments} />
+              </CardContent>
+            </Card>
+
+            {/* Conteúdo apenas para desktop */}
+            <div className="hidden space-y-6 lg:block">
+              {/* Gráfico + Top Doctors */}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
+                <AppointmentsChartWrapper
+                  dailyAppointmentsData={dailyAppointmentsData}
+                />
+                <TopDoctorsWrapper doctors={topDoctors} />
               </div>
-            </CardHeader>
-            <CardContent>
-              <TodayAppointmentsTable appointments={todayAppointments} />
-            </CardContent>
-          </Card>
 
-          {/* Conteúdo apenas para desktop */}
-          <div className="hidden space-y-6 lg:block">
-            {/* Gráfico + Top Doctors */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
-              <AppointmentsChartWrapper
-                dailyAppointmentsData={dailyAppointmentsData}
-              />
-              <TopDoctorsWrapper doctors={topDoctors} />
+              {/* Top Especialidades */}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
+                <div></div> {/* Espaço vazio para manter o layout */}
+                <TopSpecialtiesWrapper topSpecialties={topSpecialties} />
+              </div>
             </div>
-
-            {/* Top Especialidades */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.25fr_1fr]">
-              <div></div> {/* Espaço vazio para manter o layout */}
-              <TopSpecialtiesWrapper topSpecialties={topSpecialties} />
-            </div>
-          </div>
-        </PageContent>
+          </>
+        )}
+      </PageContent>
       </PageContainer>
   );
 };
