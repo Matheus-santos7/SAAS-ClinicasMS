@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
+# Projeto usa pnpm; evita que o Vercel escolha Yarn por causa de yarn.lock duplicado.
+yarn.lock
 /node_modules
 /.pnp
 .pnp.*
