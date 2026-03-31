@@ -8,12 +8,13 @@ import { dentalSpecialties } from "../constants/dental-specialties";
 import { db } from ".";
 import {
   appointmentsTable,
+  clinicFinancialTransactionsTable,
   clinicsTable,
   doctorsTable,
   evolutionTable,
+  expenseTypesTable,
   patientsAnamnesisTable,
   patientsTable,
-  transactionCategoriesTable,
   usersTable,
   usersToClinicsTable,
 } from "./schema";
@@ -102,29 +103,19 @@ async function seed() {
   }
 }
 
-async function populateTransactionCategories(clinicId: string) {
-  console.log("📊 Populando categorias de transação...");
+async function populateExpenseTypes(clinicId: string) {
+  console.log("📊 Populando tipos de despesa (cadastro financeiro)...");
 
-  // Verificar se já existem categorias para esta clínica
-  const existingCategories =
-    await db.query.transactionCategoriesTable.findFirst({
-      where: eq(transactionCategoriesTable.clinicId, clinicId),
-    });
+  const existing = await db.query.expenseTypesTable.findFirst({
+    where: eq(expenseTypesTable.clinicId, clinicId),
+  });
 
-  if (existingCategories) {
-    console.log("✅ Categorias de transação já existem para esta clínica.");
+  if (existing) {
+    console.log("✅ Tipos de despesa já existem para esta clínica.");
     return;
   }
 
-  // Categorias de RECEITA (income)
-  const incomeCategories = [
-    "Receita de Consultas",
-    "Receita de Tratamentos",
-    "Receita de Procedimentos",
-  ];
-
-  // Categorias de DESPESA (expense)
-  const expenseCategories = [
+  const expenseTypeNames = [
     "Salários e Encargos",
     "Materiais de Consumo",
     "Equipamentos e Manutenção",
@@ -133,27 +124,15 @@ async function populateTransactionCategories(clinicId: string) {
     "Impostos e Taxas",
   ];
 
-  // Inserir categorias de receita
-  for (const category of incomeCategories) {
-    await db.insert(transactionCategoriesTable).values({
+  for (const name of expenseTypeNames) {
+    await db.insert(expenseTypesTable).values({
       clinicId,
-      name: category,
-      type: "income",
+      name,
+      recurrenceType: "one_time",
     });
   }
 
-  // Inserir categorias de despesa
-  for (const category of expenseCategories) {
-    await db.insert(transactionCategoriesTable).values({
-      clinicId,
-      name: category,
-      type: "expense",
-    });
-  }
-
-  console.log(
-    `✅ ${incomeCategories.length + expenseCategories.length} categorias de transação criadas.`,
-  );
+  console.log(`✅ ${expenseTypeNames.length} tipos de despesa criados.`);
 }
 
 async function populateClinicData(clinic: { id: string; name: string }) {
@@ -175,12 +154,14 @@ async function populateClinicData(clinic: { id: string; name: string }) {
   await db.delete(patientsTable).where(eq(patientsTable.clinicId, clinic.id));
   await db.delete(doctorsTable).where(eq(doctorsTable.clinicId, clinic.id));
   await db
-    .delete(transactionCategoriesTable)
-    .where(eq(transactionCategoriesTable.clinicId, clinic.id));
+    .delete(clinicFinancialTransactionsTable)
+    .where(eq(clinicFinancialTransactionsTable.clinicId, clinic.id));
+  await db
+    .delete(expenseTypesTable)
+    .where(eq(expenseTypesTable.clinicId, clinic.id));
   console.log("✅ Dados antigos limpos.");
 
-  // --- Populando categorias de transação ---
-  await populateTransactionCategories(clinic.id);
+  await populateExpenseTypes(clinic.id);
 
   // --- Gerando Dentistas ---
   const NUM_DENTISTS = 15; // Reduzido para dividir entre as clínicas
